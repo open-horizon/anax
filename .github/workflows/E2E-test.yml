@@ -85,12 +85,29 @@ jobs:
         if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
         run: docker logs exchange-api
       
-      - name: Test Failure Catch - Capture All Agent Service Container Logs
+      - name: Test Failure Catch - Check Infrastructure Container Logs
         continue-on-error: true
         if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
         run: |
-          echo "=== Capturing logs from all agent service containers ==="
-          for container in $(docker ps -a --format "{{.Names}}" | grep -v -E "^(agbot|css-api|exchange-api)$"); do
+          echo "=== Infrastructure Container Logs ==="
+          for container in e2edevregistry fdo-owner-services bao postgres postgres-fdo-owner-service mongo; do
+            if docker ps -a --format "{{.Names}}" | grep -q "^${container}$"; then
+              echo ""
+              echo "=========================================="
+              echo "Container: $container"
+              echo "Status: $(docker inspect --format='{{.State.Status}}' $container 2>/dev/null || echo 'unknown')"
+              echo "=========================================="
+              docker logs $container 2>&1 | tail -100 || echo "Failed to get logs for $container"
+              echo ""
+            fi
+          done
+
+      - name: Test Failure Catch - Capture Agent Service Container Logs
+        continue-on-error: true
+        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
+        run: |
+          echo "=== Agent Service Container Logs ==="
+          for container in $(docker ps -a --format "{{.Names}}" | grep -v -E "^(agbot|css-api|exchange-api|e2edevtest|e2edevregistry|fdo-owner-services|bao|postgres|postgres-fdo-owner-service|mongo)$"); do
             echo ""
             echo "=========================================="
             echo "Container: $container"
@@ -170,69 +187,39 @@ jobs:
         if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
         run: |
           echo "=== Test Framework Summary Report ==="
-          if [ -f ${GOPATH}/src/github.com/${{ github.repository }}/test/gov/framework/test_results/test_summary.txt ]; then
-            cat ${GOPATH}/src/github.com/${{ github.repository }}/test/gov/framework/test_results/test_summary.txt
-          else
-            echo "No test summary report found"
-          fi
+          docker exec e2edevtest bash -c "if [ -f /root/framework/test_results/test_summary.txt ]; then cat /root/framework/test_results/test_summary.txt; else echo 'No test summary report found'; fi"
 
       - name: Test Failure Catch - Print Test Framework Detailed Report
         continue-on-error: true
         if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
         run: |
           echo "=== Test Framework Detailed Report ==="
-          if [ -f ${GOPATH}/src/github.com/${{ github.repository }}/test/gov/framework/test_results/test_report.txt ]; then
-            cat ${GOPATH}/src/github.com/${{ github.repository }}/test/gov/framework/test_results/test_report.txt
-          else
-            echo "No detailed test report found"
-          fi
+          docker exec e2edevtest bash -c "if [ -f /root/framework/test_results/test_report.txt ]; then cat /root/framework/test_results/test_report.txt; else echo 'No detailed test report found'; fi"
 
       - name: Test Failure Catch - Print Test Framework XML Report
         continue-on-error: true
         if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
         run: |
           echo "=== Test Framework XML Report ==="
-          if [ -f ${GOPATH}/src/github.com/${{ github.repository }}/test/gov/framework/test_results/test_results.xml ]; then
-            cat ${GOPATH}/src/github.com/${{ github.repository }}/test/gov/framework/test_results/test_results.xml
-          else
-            echo "No XML test report found"
-          fi
+          docker exec e2edevtest bash -c "if [ -f /root/framework/test_results/test_results.xml ]; then cat /root/framework/test_results/test_results.xml; else echo 'No XML test report found'; fi"
 
       - name: Test Failure Catch - Print Test Framework JSON Report
         continue-on-error: true
         if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
         run: |
           echo "=== Test Framework JSON Report ==="
-          if [ -f ${GOPATH}/src/github.com/${{ github.repository }}/test/gov/framework/test_results/test_results.json ]; then
-            cat ${GOPATH}/src/github.com/${{ github.repository }}/test/gov/framework/test_results/test_results.json
-          else
-            echo "No JSON test report found"
-          fi
+          docker exec e2edevtest bash -c "if [ -f /root/framework/test_results/test_results.json ]; then cat /root/framework/test_results/test_results.json; else echo 'No JSON test report found'; fi"
 
       - name: Test Failure Catch - List All Test Framework Output Files
         continue-on-error: true
         if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
         run: |
           echo "=== Test Framework Output Files ==="
-          if [ -d ${GOPATH}/src/github.com/${{ github.repository }}/test/gov/framework/test_results ]; then
-            ls -lah ${GOPATH}/src/github.com/${{ github.repository }}/test/gov/framework/test_results/
-          else
-            echo "No test results directory found"
-          fi
+          docker exec e2edevtest bash -c "if [ -d /root/framework/test_results ]; then ls -lah /root/framework/test_results/; else echo 'No test results directory found'; fi"
 
       - name: Test Failure Catch - Print Individual Test Logs
         continue-on-error: true
         if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
         run: |
           echo "=== Individual Test Logs ==="
-          if [ -d ${GOPATH}/src/github.com/${{ github.repository }}/test/gov/framework/test_results ]; then
-            for log in ${GOPATH}/src/github.com/${{ github.repository }}/test/gov/framework/test_results/*.log; do
-              if [ -f "$log" ]; then
-                echo "--- $(basename $log) ---"
-                cat "$log"
-                echo ""
-              fi
-            done
-          else
-            echo "No test log files found"
-          fi
+          docker exec e2edevtest bash -c "if [ -d /root/framework/test_results ]; then for log in /root/framework/test_results/*.log; do if [ -f \"\$log\" ]; then echo \"--- \$(basename \$log) ---\"; cat \"\$log\"; echo \"\"; fi; done; else echo 'No test log files found'; fi"

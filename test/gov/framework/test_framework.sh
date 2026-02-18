@@ -74,17 +74,17 @@ run_test() {
     if [ "$TEST_VERBOSE" == "1" ]; then
         # Show output in real-time
         if [ -n "$test_args" ]; then
-            $test_script $test_args 2>&1 | tee "$test_log"
+            eval "$test_script $test_args" 2>&1 | tee "$test_log"
         else
-            $test_script 2>&1 | tee "$test_log"
+            eval "$test_script" 2>&1 | tee "$test_log"
         fi
         exit_code=${PIPESTATUS[0]}
     else
         # Capture output to log file
         if [ -n "$test_args" ]; then
-            $test_script $test_args > "$test_log" 2>&1
+            eval "$test_script $test_args" > "$test_log" 2>&1
         else
-            $test_script > "$test_log" 2>&1
+            eval "$test_script" > "$test_log" 2>&1
         fi
         exit_code=$?
     fi
@@ -231,13 +231,13 @@ EOF
         cat >> "$report_file" <<EOF
 
 Anax Status:
-$(curl -sS $ANAX_API/status 2>&1 || echo "Failed to get status")
+$(curl -sS "$ANAX_API/status" 2>&1 || echo "Failed to get status")
 
 Active Agreements:
-$(curl -sS $ANAX_API/agreement 2>&1 || echo "Failed to get agreements")
+$(curl -sS "$ANAX_API/agreement" 2>&1 || echo "Failed to get agreements")
 
 Active Services:
-$(curl -sS $ANAX_API/service 2>&1 || echo "Failed to get services")
+$(curl -sS "$ANAX_API/service" 2>&1 || echo "Failed to get services")
 
 EOF
     fi

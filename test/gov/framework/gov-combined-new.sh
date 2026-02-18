@@ -48,7 +48,7 @@ function set_exports {
             export HZN_MGMT_HUB_CERT_PATH="/certs/css.crt"
         fi
 
-        if [[ $TEST_DIFF_ORG -eq 1 ]]; then
+        if [ "$TEST_DIFF_ORG" -eq 1 ]; then
             export USER=useranax1
             export PASS=useranax1pw
             export DEVICE_ORG="userdev"
@@ -60,7 +60,7 @@ function set_exports {
 
 # Check if hub is remote or all-in-one
 EXCH_URL="${EXCH_APP_HOST}"
-if [[ ${EXCH_APP_HOST} == *"://exchange-api:"* ]]; then
+if echo "${EXCH_APP_HOST}" | grep -q "://exchange-api:"; then
     export REMOTE_HUB=0
 else
     export REMOTE_HUB=1
@@ -70,12 +70,14 @@ log_message INFO "REMOTE_HUB is set to ${REMOTE_HUB}"
 # Update hosts file if needed
 if [ "$ICP_HOST_IP" != "0" ]; then
     log_message INFO "Updating hosts file"
-    HOST_NAME_ICP=$(echo $EXCH_URL | awk -F/ '{print $3}' | sed 's/:.*//g')
-    HOST_NAME=$(echo $EXCH_URL | awk -F/ '{print $3}' | sed 's/:.*//g' | sed 's/\.icp*//g')
+    HOST_NAME_ICP=$(echo "$EXCH_URL" | awk -F/ '{print $3}' | sed 's/:.*//g')
+    HOST_NAME=$(echo "$EXCH_URL" | awk -F/ '{print $3}' | sed 's/:.*//g' | sed 's/\.icp*//g')
     echo "$ICP_HOST_IP $HOST_NAME_ICP $HOST_NAME" >> /etc/hosts
 fi
 
-cd /root
+cd /root || {
+    echo "Warning: Failed to change to /root directory, continuing in current directory"
+}
 
 # Setup certificate variable
 if [ ${CERT_LOC} -eq "1" ]; then
@@ -162,7 +164,7 @@ fi
 
 # Test 5: Pattern-based or Policy-based tests
 if [ "$TESTFAIL" != "1" ]; then
-    if [[ "${TEST_PATTERNS}" == "" ]]; then
+    if [ "${TEST_PATTERNS}" = "" ]; then
         # Policy-based deployment
         log_message INFO "Testing policy-based deployment"
         
@@ -199,9 +201,9 @@ if [ "$TESTFAIL" != "1" ]; then
         # Pattern-based deployment
         log_message INFO "Testing pattern-based deployment"
         
-        last_pattern=$(echo $TEST_PATTERNS | sed -e 's/^.*,//')
+        last_pattern=$(echo "$TEST_PATTERNS" | sed -e 's/^.*,//')
         
-        for pat in $(echo $TEST_PATTERNS | tr "," " "); do
+        for pat in $(echo "$TEST_PATTERNS" | tr "," " "); do
             export PATTERN=$pat
             log_message INFO "Testing pattern: $PATTERN"
             

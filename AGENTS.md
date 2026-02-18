@@ -246,6 +246,224 @@ chmod +x test_script.sh
 ./test_script.sh
 ```
 
+### Shell Script Best Practices
+
+**CRITICAL: Shell Scripting Guidelines for Robustness and Portability**
+
+When writing or modifying shell scripts, follow these best practices to ensure reliability, security, and maintainability:
+
+#### 1. Variable Quoting and Word Splitting
+
+**Always quote variables** to prevent word splitting and glob expansion:
+
+```bash
+# BAD - Unquoted variables can cause issues
+echo $VARIABLE | awk '{print $1}'
+curl -sS $API_URL/endpoint
+for item in $LIST; do
+
+# GOOD - Quoted variables are safe
+echo "$VARIABLE" | awk '{print $1}'
+curl -sS "$API_URL/endpoint"
+for item in "$LIST"; do
+```
+
+**Exceptions where unquoted variables are acceptable:**
+- Variable assignments: `TIMEOUT=$(get_timeout $DEFAULT_TIMEOUT)`
+- Intentional word splitting: `docker network rm $networks` (when `$networks` contains space-separated list)
+- Inside `[[ ]]` constructs (but prefer `[ ]` for portability)
+
+#### 2. Command Execution with Environment Variables
+
+When passing environment variables to commands, use `eval` for proper execution:
+
+```bash
+# BAD - Will fail with "ORG_ID=value: command not found"
+$script_name ORG_ID=value ./command.sh
+
+# GOOD - Use eval for proper environment variable handling
+eval "$script_name ORG_ID=value ./command.sh"
+```
+
+**Why this matters:**
+- Shell tries to execute `ORG_ID=value` as a command without `eval`
+- `eval` ensures environment variables are set in the command's context
+- Critical for test frameworks and wrapper scripts
+
+#### 3. POSIX Compatibility
+
+**Prefer POSIX-compliant syntax** over bash-specific features for better portability:
+
+```bash
+# BAD - Bash-specific [[ ]] syntax
+if [[ $VAR == "value" ]]; then
+if [[ $STRING == *"substring"* ]]; then
+
+# GOOD - POSIX-compliant [ ] syntax
+if [ "$VAR" = "value" ]; then
+if echo "$STRING" | grep -q "substring"; then
+
+# BAD - Bash-specific == operator
+if [ "$VAR" == "value" ]; then
+
+# GOOD - POSIX = operator
+if [ "$VAR" = "value" ]; then
+```
+
+**Why this matters:**
+- Scripts may run in different shells (sh, bash, dash)
+- POSIX compliance ensures broader compatibility
+- Reduces unexpected behavior across environments
+
+#### 4. Error Handling for Directory Changes
+
+**Always handle cd failures** to prevent commands running in wrong directory:
+
+```bash
+# BAD - No error handling
+cd /some/directory
+rm -rf *  # Dangerous if cd failed!
+
+# GOOD - Error handling with fallback
+cd /some/directory || {
+    echo "Error: Failed to change to /some/directory"
+    exit 1
+}
+
+# GOOD - Error handling with warning
+cd /some/directory || {
+    echo "Warning: Failed to change directory, continuing in current directory"
+}
+```
+
+#### 5. Command Substitution Safety
+
+**Quote command substitutions** to preserve output integrity:
+
+```bash
+# BAD - Unquoted command substitution
+result=$(curl -sS $API_URL)
+for file in $(ls *.txt); do
+
+# GOOD - Quoted command substitution
+result="$(curl -sS "$API_URL")"
+while IFS= read -r file; do
+    # process "$file"
+done < <(find . -name "*.txt")
+```
+
+#### 6. Curl Command Safety
+
+**Always quote URLs** in curl commands:
+
+```bash
+# BAD - Unquoted URL
+curl -sS $ANAX_API/status
+
+# GOOD - Quoted URL
+curl -sS "$ANAX_API/status"
+```
+
+#### 7. Test Condition Best Practices
+
+**Use proper quoting in test conditions:**
+
+```bash
+# BAD - Unquoted variables in tests
+if [ $COUNT -eq 0 ]; then
+if [ -z $VARIABLE ]; then
+
+# GOOD - Quoted variables in tests
+if [ "$COUNT" -eq 0 ]; then
+if [ -z "$VARIABLE" ]; then
+```
+
+#### 8. Common Pitfalls to Avoid
+
+**Avoid these common mistakes:**
+
+1. **Unquoted variables in echo/command substitution**
+   ```bash
+   # BAD
+   HOST=$(echo $URL | awk '{print $1}')
+   
+   # GOOD
+   HOST=$(echo "$URL" | awk '{print $1}')
+   ```
+
+2. **Missing error handling for critical operations**
+   ```bash
+   # BAD
+   source config.sh
+   cd /important/directory
+   
+   # GOOD
+   source config.sh || { echo "Failed to load config"; exit 1; }
+   cd /important/directory || { echo "Failed to cd"; exit 1; }
+   ```
+
+3. **Bash-specific features without shebang**
+   ```bash
+   # If using bash features, declare it
+   #!/bin/bash
+   
+   # Otherwise, stick to POSIX sh
+   #!/bin/sh
+   ```
+
+#### 9. Testing Shell Scripts
+
+**Validate shell scripts before committing:**
+
+```bash
+# Use shellcheck if available (recommended)
+shellcheck script.sh
+
+# Manual checks:
+# - Run with bash -n (syntax check)
+bash -n script.sh
+
+# - Test with different shells
+sh script.sh
+bash script.sh
+
+# - Verify executable permissions
+ls -la script.sh
+```
+
+#### 10. Security Considerations
+
+**Prevent command injection and path traversal:**
+
+```bash
+# BAD - Potential command injection
+eval $USER_INPUT
+
+# GOOD - Validate and sanitize input
+if [[ "$USER_INPUT" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+    eval "$USER_INPUT"
+else
+    echo "Invalid input"
+    exit 1
+fi
+
+# BAD - Unquoted variables in sensitive operations
+rm -rf $DIRECTORY/*
+
+# GOOD - Quoted and validated
+if [ -d "$DIRECTORY" ] && [ -n "$DIRECTORY" ]; then
+    rm -rf "${DIRECTORY:?}"/*
+fi
+```
+
+**Key Takeaways:**
+- Quote variables unless you have a specific reason not to
+- Use POSIX-compliant syntax for portability
+- Handle errors explicitly, especially for cd and source
+- Use `eval` when passing environment variables to commands
+- Test scripts thoroughly before committing
+- Validate and sanitize user input
+
 ### Code Style and Organization
 
 **Indentation and Formatting:**
