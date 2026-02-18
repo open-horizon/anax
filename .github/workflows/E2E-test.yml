@@ -217,9 +217,23 @@ jobs:
           echo "=== Test Framework Output Files ==="
           docker exec e2edevtest bash -c "if [ -d /root/framework/test_results ]; then ls -lah /root/framework/test_results/; else echo 'No test results directory found'; fi"
 
-      - name: Test Failure Catch - Print Individual Test Logs
+      - name: Test Failure Catch - Print Passed Test Logs
         continue-on-error: true
         if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
         run: |
-          echo "=== Individual Test Logs ==="
-          docker exec e2edevtest bash -c "if [ -d /root/framework/test_results ]; then for log in /root/framework/test_results/*.log; do if [ -f \"\$log\" ]; then echo \"--- \$(basename \$log) ---\"; cat \"\$log\"; echo \"\"; fi; done; else echo 'No test log files found'; fi"
+          echo "=== Passed Test Logs ==="
+          docker exec e2edevtest bash -c "if [ -d /root/framework/test_results ]; then for log in /root/framework/test_results/*.log; do if [ -f \"\$log\" ]; then test_name=\$(basename \"\$log\" .log); if [ ! -f \"/root/framework/test_results/failure_\${test_name}.txt\" ]; then echo \"--- \$(basename \$log) ---\"; cat \"\$log\"; echo \"\"; fi; fi; done; else echo 'No test log files found'; fi"
+
+      - name: Test Failure Catch - Print Failed Test Logs
+        continue-on-error: true
+        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
+        run: |
+          echo "=== Failed Test Logs ==="
+          docker exec e2edevtest bash -c "if [ -d /root/framework/test_results ]; then for log in /root/framework/test_results/*.log; do if [ -f \"\$log\" ]; then test_name=\$(basename \"\$log\" .log); if [ -f \"/root/framework/test_results/failure_\${test_name}.txt\" ]; then echo \"--- \$(basename \$log) ---\"; cat \"\$log\"; echo \"\"; fi; fi; done; else echo 'No test log files found'; fi"
+
+      - name: Test Failure Catch - Print Test Failure Reports
+        continue-on-error: true
+        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
+        run: |
+          echo "=== Test Failure Reports ==="
+          docker exec e2edevtest bash -c "if [ -d /root/framework/test_results ]; then for report in /root/framework/test_results/failure_*.txt; do if [ -f \"\$report\" ]; then echo \"========================================\"; echo \"Report: \$(basename \$report)\"; echo \"========================================\"; cat \"\$report\"; echo \"\"; echo \"\"; fi; done; else echo 'No failure reports found'; fi"
