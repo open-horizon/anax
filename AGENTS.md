@@ -209,6 +209,43 @@ persistence/
    - **Documentation**: Clear intent and purpose in one location
    - **Evolution**: Easy to extend or modify without hunting through codebase
 
+### Shell Script File Permissions
+
+**CRITICAL: Executable Permissions for Shell Scripts**
+
+When creating shell script files (`.sh` extension), agents MUST set executable permissions:
+
+```bash
+# After creating a shell script file, make it executable
+chmod +x script_name.sh
+```
+
+**Why This Matters:**
+- Shell scripts need execute permissions to run directly
+- Without execute permissions, scripts must be invoked as `bash script.sh` instead of `./script.sh`
+- Test frameworks and automation expect scripts to be directly executable
+- Prevents "Permission denied" errors when running scripts
+
+**Implementation:**
+- Use `chmod +x` immediately after creating any `.sh` file
+- This applies to test scripts, wrappers, utilities, and any executable shell files
+- Verify permissions with `ls -la` to confirm execute bit is set
+
+**Example:**
+```bash
+# Create script
+cat > test_script.sh << 'EOF'
+#!/bin/bash
+echo "Hello"
+EOF
+
+# REQUIRED: Make it executable
+chmod +x test_script.sh
+
+# Now it can be run directly
+./test_script.sh
+```
+
 ### Code Style and Organization
 
 **Indentation and Formatting:**

@@ -5,6 +5,7 @@
 
 # Source test framework
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PARENT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 source "${SCRIPT_DIR}/test_config.sh"
 source "${SCRIPT_DIR}/test_utils.sh"
 
@@ -53,10 +54,10 @@ fi
 # Run the service config state test
 log_message INFO "Running service configuration state test"
 if [ "$TEST_RETRY_ENABLED" == "1" ]; then
-    retry_command $TEST_MAX_RETRIES $TEST_RETRY_DELAY "${SCRIPT_DIR}/service_configstate_test.sh"
+    retry_command $TEST_MAX_RETRIES $TEST_RETRY_DELAY "${PARENT_DIR}/service_configstate_test.sh"
     result=$?
 else
-    "${SCRIPT_DIR}/service_configstate_test.sh"
+    "${PARENT_DIR}/service_configstate_test.sh"
     result=$?
 fi
 

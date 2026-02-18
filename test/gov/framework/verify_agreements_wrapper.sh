@@ -5,6 +5,7 @@
 
 # Source test framework
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PARENT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 source "${SCRIPT_DIR}/test_config.sh"
 source "${SCRIPT_DIR}/test_utils.sh"
 
@@ -49,7 +50,7 @@ if [ "$TEST_RETRY_ENABLED" == "1" ]; then
         "ORG_ID=$ORG_ID ADMIN_AUTH=$ADMIN_AUTH ${SCRIPT_DIR}/verify_agreements.sh"
     result=$?
 else
-    ORG_ID=$ORG_ID ADMIN_AUTH=$ADMIN_AUTH "${SCRIPT_DIR}/verify_agreements.sh"
+    ORG_ID=$ORG_ID ADMIN_AUTH=$ADMIN_AUTH "${PARENT_DIR}/verify_agreements.sh"
     result=$?
 fi
 

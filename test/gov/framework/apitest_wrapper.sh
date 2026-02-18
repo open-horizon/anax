@@ -5,6 +5,7 @@
 
 # Source test framework
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PARENT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 source "${SCRIPT_DIR}/test_config.sh"
 source "${SCRIPT_DIR}/test_utils.sh"
 
@@ -64,10 +65,10 @@ done
 # Run the actual API test suite
 log_message INFO "Running comprehensive API test suite"
 if [ "$TEST_RETRY_ENABLED" == "1" ]; then
-    retry_command $TEST_MAX_RETRIES $TEST_RETRY_DELAY "${SCRIPT_DIR}/apitest.sh"
+    retry_command $TEST_MAX_RETRIES $TEST_RETRY_DELAY "${PARENT_DIR}/apitest.sh"
     result=$?
 else
-    "${SCRIPT_DIR}/apitest.sh"
+    "${PARENT_DIR}/apitest.sh"
     result=$?
 fi
 

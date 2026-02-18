@@ -5,6 +5,7 @@
 
 # Source test framework
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PARENT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 source "${SCRIPT_DIR}/test_config.sh"
 source "${SCRIPT_DIR}/test_utils.sh"
 
@@ -46,10 +47,10 @@ capture_metrics "${TEST_NAME}_start"
 # Run the hzn registration test
 log_message INFO "Running hzn registration/unregistration test"
 if [ "$TEST_RETRY_ENABLED" == "1" ]; then
-    retry_command $TEST_MAX_RETRIES $TEST_RETRY_DELAY "${SCRIPT_DIR}/hzn_reg.sh"
+    retry_command $TEST_MAX_RETRIES $TEST_RETRY_DELAY "${PARENT_DIR}/hzn_reg.sh"
     result=$?
 else
-    "${SCRIPT_DIR}/hzn_reg.sh"
+    "${PARENT_DIR}/hzn_reg.sh"
     result=$?
 fi
 

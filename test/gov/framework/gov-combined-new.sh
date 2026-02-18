@@ -5,6 +5,7 @@
 
 # Get script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PARENT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 # Source test framework
 source "${SCRIPT_DIR}/test_config.sh"
@@ -17,6 +18,17 @@ init_test_suite
 # Configuration
 TEST_DIFF_ORG=${TEST_DIFF_ORG:-1}
 export ARCH=${ARCH}
+
+# Initialize critical variables early
+export HZN_AGENT_PORT=${HZN_AGENT_PORT:-8510}
+export ANAX_API="http://localhost:${HZN_AGENT_PORT}"
+export DEVICE_ORG=${DEVICE_ORG:-"e2edev@somecomp.com"}
+export DEVICE_ID=${DEVICE_ID:-"an12345"}
+export DEVICE_NAME=${DEVICE_NAME:-"anaxdev1"}
+export USER=${USER:-"anax1"}
+export PASS=${PASS:-"anax1pw"}
+export TOKEN=${TOKEN:-"Abcdefghijklmno1"}
+export EXCH="${EXCH_APP_HOST}"
 
 # Set common exports
 function set_exports {

@@ -5,6 +5,7 @@
 
 # Source test framework
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PARENT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 source "${SCRIPT_DIR}/test_config.sh"
 source "${SCRIPT_DIR}/test_utils.sh"
 
@@ -50,10 +51,10 @@ capture_metrics "${TEST_NAME}_start"
 # Run the policy change test
 log_message INFO "Running policy change test"
 if [ "$TEST_RETRY_ENABLED" == "1" ]; then
-    retry_command $TEST_MAX_RETRIES $TEST_RETRY_DELAY "${SCRIPT_DIR}/policy_change.sh"
+    retry_command $TEST_MAX_RETRIES $TEST_RETRY_DELAY "${PARENT_DIR}/policy_change.sh"
     result=$?
 else
-    "${SCRIPT_DIR}/policy_change.sh"
+    "${PARENT_DIR}/policy_change.sh"
     result=$?
 fi
 

@@ -5,6 +5,7 @@
 
 # Source test framework
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PARENT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 source "${SCRIPT_DIR}/test_config.sh"
 source "${SCRIPT_DIR}/test_utils.sh"
 
@@ -41,10 +42,10 @@ capture_metrics "${TEST_NAME}_start"
 # Run the surfaced error verification test
 log_message INFO "Running surfaced error verification test"
 if [ "$TEST_RETRY_ENABLED" == "1" ]; then
-    retry_command $TEST_MAX_RETRIES $TEST_RETRY_DELAY "${SCRIPT_DIR}/verify_surfaced_error.sh"
+    retry_command $TEST_MAX_RETRIES $TEST_RETRY_DELAY "${PARENT_DIR}/verify_surfaced_error.sh"
     result=$?
 else
-    "${SCRIPT_DIR}/verify_surfaced_error.sh"
+    "${PARENT_DIR}/verify_surfaced_error.sh"
     result=$?
 fi
 
