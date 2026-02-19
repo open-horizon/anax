@@ -3,7 +3,7 @@ copyright: Contributors to the Open Horizon project
 years: 2022 - 2026
 title: Removing the agent from an edge cluster
 description: Documentation for Removing the agent from an edge cluster
-lastupdated: 2026-02-18
+lastupdated: 2026-02-19
 nav_order: 22
 parent: Agent (anax)
 ---
@@ -34,6 +34,7 @@ To unregister an edge cluster and remove the {{site.data.keyword.ieam}} agent fr
    export HZN_ORG_ID=<your-exchange-organization>
    export HZN_EXCHANGE_USER_AUTH=<authentication string>
    export HZN_EXCHANGE_URL= # example http://open-horizon.lfedge.iol.unh.edu:3090/v1
+   export HZN_FSS_CSSURL= # example http://open-horizon.lfedge.iol.unh.edu:9443
    ```
    {: codeblock}
 
