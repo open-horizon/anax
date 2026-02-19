@@ -118,7 +118,7 @@ UNIX_SOCKET_FILE_PERMISSIONS ?= "0777"
 # css
 DOCKER_CSS_CNAME ?= css-api
 DOCKER_CSS_INAME ?= docker.io/openhorizon/$(arch)_cloud-sync-service
-DOCKER_CSS_TAG ?= e2edev
+DOCKER_CSS_TAG ?= latest
 CSS_INTERNAL_PORT ?= 8080
 CSS_LOG_LEVEL ?= DEBUG
 CSS_TRACE_LEVEL ?= DEBUG
@@ -407,8 +407,6 @@ get-css-image:
 	if [[ "$(DOCKER_CSS_TAG)" == "e2edev" ]]; then \
 		if [[ "$(shell docker images -q $(DOCKER_CSS_INAME):$(DOCKER_CSS_TAG) 2>/dev/null)" == "" ]]; then \
 	    	echo -e "Building css image $(DOCKER_CSS_INAME):$(DOCKER_CSS_TAG)"; \
-			cd $(ANAX_SOURCE) && make css-docker-image; \
-			docker tag $(DOCKER_CSS_INAME):testing $(DOCKER_CSS_INAME):e2edev; \
 			docker images; \
 	    fi \
 	fi
@@ -424,28 +422,37 @@ get-vault-image:
 run-mgmthub: get-agbot-image get-css-image get-vault-image get-anax-images
 	@echo "Starting all-in-one management hub"
 	echo "\nHZN_LISTEN_IP is $(E2EDEV_HOST_IP)"; \
-	export EXCHANGE_ROOT_PW=$(EXCH_ROOTPW) \
+	export \
+		EXCHANGE_ROOT_PW=$(EXCH_ROOTPW) \
 		EXCHANGE_IMAGE_TAG=$(DOCKER_EXCH_TAG) \
 		EXCHANGE_LOG_LEVEL=$(EXCHANGE_LOG_LEVEL) \
 		EXCHANGE_DATABASE=$(EXCHDB_NAME); \
-	export EXCHANGE_HUB_ADMIN_PW=$(EXCHANGE_HUB_ADMIN_PW) \
+	export \
+		EXCHANGE_HUB_ADMIN_PW=$(EXCHANGE_HUB_ADMIN_PW) \
 		EXCHANGE_SYSTEM_ADMIN_PW=$(EXCHANGE_SYSTEM_ADMIN_PW); \
-	export AGBOT_ID=$(AGBOT_NAME) \
+	export \
+		AGBOT_ID=$(AGBOT_NAME) \
 		AGBOT_TOKEN=$(AGBOT_TOKEN) \
 		AGBOT_IMAGE_NAME=$(AGBOT_IMAGE_NAME) \
 		AGBOT_IMAGE_TAG=$(AGBOT_IMAGE_TAG); \
-	export CSS_IMAGE_TAG=$(DOCKER_CSS_TAG) \
-		CSS_IMAGE_NAME=$(DOCKER_CSS_INAME) \
+	export \
 		CSS_INTERNAL_PORT=$(CSS_INTERNAL_PORT) \
 		CSS_LOG_LEVEL=$(CSS_LOG_LEVEL) \
 		CSS_TRACE_LEVEL=$(CSS_TRACE_LEVEL) \
 		UNIX_SOCKET_FILE_PERMISSIONS=$(UNIX_SOCKET_FILE_PERMISSIONS); \
 	export MONGO_IMAGE_TAG=$(DOCKER_CSSDB_TAG); \
-	export EXCHANGE_DB_PW=$(EXCHANGE_DB_PW) \
+	export \
+		EXCHANGE_DB_PW=$(EXCHANGE_DB_PW) \
 		POSTGRES_IMAGE_TAG=$(DOCKER_EXCHDB_TAG) \
 		POSTGRES_USER=$(EXCHDB_USER); \
-	export VAULT_IMAGE_TAG=$(DOCKER_VAULT_TAG) VAULT_PORT=$(VAULT_PORT) VAULT_DEV_LISTEN_ADDRESS=$(VAULT_DEV_LISTEN_ADDRESS) VAULT_ROOT_TOKEN=$(VAULT_DEV_ROOT_TOKEN_ID); \
-	export ANAX_SOURCE=$(ANAX_SOURCE) ANAX_LOG_LEVEL=5; \
+	export \
+		VAULT_IMAGE_TAG=$(DOCKER_VAULT_TAG) \
+		VAULT_PORT=$(VAULT_PORT) \
+		VAULT_DEV_LISTEN_ADDRESS=$(VAULT_DEV_LISTEN_ADDRESS) \
+		VAULT_ROOT_TOKEN=$(VAULT_DEV_ROOT_TOKEN_ID); \
+	export \
+		ANAX_SOURCE=$(ANAX_SOURCE) \
+		ANAX_LOG_LEVEL=5; \
 	export HZN_TRANSPORT=$(HZN_TRANSPORT); \
 	export HZN_LISTEN_IP=$(E2EDEV_HOST_IP); \
 	$(TEST_VARS) $(ANAX_SOURCE)/test/gov/start_mgmt_hub.sh
