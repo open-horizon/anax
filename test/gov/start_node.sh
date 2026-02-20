@@ -19,12 +19,12 @@ function create_HA_group {
     E2EDEV_ADMIN_AUTH="e2edev@somecomp.com/e2edevadmin:e2edevadminpw"
     USERDEV_ADMIN_AUTH="userdev/userdevadmin:userdevadminpw"
 
-    if [ $DEVICE_ORG == "userdev" ]; then
+    if [ "$DEVICE_ORG" == "userdev" ]; then
         auth=${USERDEV_ADMIN_AUTH}
     else
         auth=${E2EDEV_ADMIN_AUTH}
     fi
-    read -d '' hagroup <<EOF
+    read -dr '' hagroup <<EOF
 {
     "description": "HA group testing",
     "members": [
@@ -33,7 +33,7 @@ function create_HA_group {
     ]
 }
 EOF
-    echo "$hagroup" | hzn exchange hagroup add -f- group1 -o $DEVICE_ORG -u $auth
+    echo "$hagroup" | hzn exchange hagroup add -f- group1 -o "$DEVICE_ORG" -u $auth
 
 }
 
@@ -43,7 +43,7 @@ nohup ./start_anax_loop.sh 1 &>/dev/null &
 sleep 5
 
 # Make sure org is null
-DST=$(curl -sSL $ANAX_API/node | jq -r '.')
+DST=$(curl -sSL "$ANAX_API"/node | jq -r '.')
 THEORG=$(echo "$DST" | jq -r '.organization')
 if [ "$THEORG" != "null" ]
 then
@@ -57,9 +57,7 @@ then
     # create an HA group
     create_HA_group
 
-    ./apireg.sh
-
-    if [ $? -ne 0 ]
+    if ! ./apireg.sh
     then
         echo "HA registration failed"
         TESTFAIL="1"
@@ -79,8 +77,7 @@ then
 
         sleep 5
 
-        ./apireg.sh
-        if [ $? -ne 0 ]
+        if ! ./apireg.sh
         then
             TESTFAIL="1"
             exit 2
@@ -88,8 +85,7 @@ then
     fi
 
 else
-    ./apireg.sh
-    if [ $? -ne 0 ]
+    if ! ./apireg.sh
     then
         TESTFAIL="1"
         exit 2

@@ -73,7 +73,7 @@ if [ "${3}" == "IBM" ]; then
     then
         echo -e "$resmeta \nPUT returned:"
         echo $ADDM
-        exit -1
+        exit 255
     fi
 
     ADDF=$(curl -sLX PUT -w "%{http_code}" $CERT_VAR -u root/root:${EXCH_ROOTPW} --header 'Content-Type:application/octet-stream' "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}/data" --data-binary @${1})
@@ -84,7 +84,7 @@ if [ "${3}" == "IBM" ]; then
     else
         echo -e "Data file PUT returned:"
         echo $ADDF
-        exit -1
+        exit 255
     fi
 
 else
@@ -102,7 +102,7 @@ echo -e "echo \"$resmeta\" | curl -sLX PUT -w \"%{http_code}\" $CERT_VAR -u ${3}
   then
     echo -e "$resmeta \nPUT returned:"
     echo $ADDM
-    exit -1
+    exit 255
   fi
   
   ADDF=$(curl -sLX PUT -w "%{http_code}" $CERT_VAR -u ${3}/${admin_user}:${admin_pw} --header 'Content-Type:application/octet-stream' "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}/data" --data-binary @${1})
@@ -113,7 +113,7 @@ echo -e "echo \"$resmeta\" | curl -sLX PUT -w \"%{http_code}\" $CERT_VAR -u ${3}
   else
     echo -e "Data file PUT returned:"
     echo $ADDF
-    exit -1
+    exit 255
   fi
 
 fi

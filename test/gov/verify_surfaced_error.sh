@@ -1,4 +1,7 @@
 CPU_IMAGE_NAME="${DOCKER_CPU_INAME}"
+#!/bin/bash
+
+
 CPU_IMAGE_TAG="${DOCKER_CPU_TAG}"
 
 echo "Testing node error surfacing to exchange"

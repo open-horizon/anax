@@ -4,7 +4,7 @@
 echo "Building resource packages."
 
 EXEC_DIR=$PWD
-cd /root/resources/private
+cd /root/resources/private || { echo "Error: resource_package.sh - ln 7 - Failure to change directories"; error 1; }
 
 RESOURCE_ORG1=e2edev@somecomp.com
 RESOURCE_ORG2=userdev
@@ -15,48 +15,45 @@ for dir in */; do
 	# Remove the trailing slash from the directory name
 	justDirName=${dir%"/"}
 	echo "Making resource tarball for ${justDirName}"
-	cd $justDirName
+	cd "$justDirName" || { echo "Error: resource_package.sh - ln 18 - Failure to change directories"; error 1; }
 	# Find all the files in the directory, excluding the . directory and any gzipped tarball
 	# that might be there. This allows us to run the script over and over without causing damaged tarballs.
 	res=$(find . -not -name "*.tgz" -not -path ".")
-	tar -czvf $justDirName.tgz $res
+	tar -czvf "$justDirName".tgz "$res"
 
 	echo "Installing resource package ${justDirName}.tgz."
 
 	if [ "${TEST_PATTERNS}" != "" ]
 	then
-		$EXEC_DIR/deploy_file.sh /root/resources/private/${dir}${justDirName}.tgz 1.0.0 ${RESOURCE_ORG1} ${RESOURCE_TYPE} none none none false
-		if [ $? -ne 0 ]
+		if ! "$EXEC_DIR"/deploy_file.sh /root/resources/private/"${dir}""${justDirName}".tgz 1.0.0 "${RESOURCE_ORG1}" "${RESOURCE_TYPE}" none none none false
 		then
-			exit -1
+			exit 255
 		fi
 
-		$EXEC_DIR/deploy_file.sh /root/resources/private/${dir}${justDirName}.tgz 1.0.0 ${RESOURCE_ORG2} ${RESOURCE_TYPE} none none none false
-		if [ $? -ne 0 ]
+		if ! "$EXEC_DIR"/deploy_file.sh /root/resources/private/"${dir}""${justDirName}".tgz 1.0.0 "${RESOURCE_ORG2}" "${RESOURCE_TYPE}" none none none false
 		then
-			exit -1
+			exit 255
 		fi
 	else
 		# Create policy files from templates by passing current ARCH to them
 		for in_file in /root/objects/*.policy
 		do
-			sed -i -e "s#__ARCH__#${ARCH}#g" $in_file
-			if [ $? -ne 0 ]
+			if ! sed -i -e "s#__ARCH__#${ARCH}#g" "$in_file"
 			then
-				exit -1
+				exit 255
 			fi
 		done
 
-		$EXEC_DIR/deploy_file.sh /root/resources/private/${dir}${justDirName}.tgz 1.0.0 ${RESOURCE_ORG1} ${RESOURCE_TYPE} none none "$(cat /root/objects/${justDirName}.policy)" false
-		if [ $? -ne 0 ]
+
+		if ! "$EXEC_DIR"/deploy_file.sh /root/resources/private/"${dir}""${justDirName}".tgz 1.0.0 "${RESOURCE_ORG1}" "${RESOURCE_TYPE}" none none "$(cat /root/objects/"${justDirName}".policy)" false
 		then
-			exit -1
+			exit 255
 		fi
 
-		$EXEC_DIR/deploy_file.sh /root/resources/private/${dir}${justDirName}.tgz 1.0.0 ${RESOURCE_ORG2} ${RESOURCE_TYPE} none none "$(cat /root/objects/${justDirName}.policy)" false
-		if [ $? -ne 0 ]
+
+		if ! "$EXEC_DIR"/deploy_file.sh /root/resources/private/"${dir}""${justDirName}".tgz 1.0.0 "${RESOURCE_ORG2}" "${RESOURCE_TYPE}" none none "$(cat /root/objects/"${justDirName}".policy)" false
 		then
-			exit -1
+			exit 255
 		fi
 	fi
 
@@ -64,17 +61,16 @@ for dir in */; do
 done
 
 echo "Making resource tarball for public resource"
-cd /root/resources/public
+cd /root/resources/public || { echo "Error: resource_package.sh - ln 64 - Failure to change directories"; error 1; }
 RESOURCE_ORG=IBM
 RESOURCE_TYPE=public
 
 res=$(find . -not -name "*.tgz" -not -path ".")
-tar -czvf public.tgz $res
+tar -czvf public.tgz "$res"
 
 echo "Installing resource package public.tgz. in ${RESOURCE_ORG} org"
 ls /root/resources/public
-$EXEC_DIR/deploy_file.sh /root/resources/public/public.tgz 1.0.0 ${RESOURCE_ORG} ${RESOURCE_TYPE} none none none true
-if [ $? -ne 0 ]
+if [ "$("$EXEC_DIR"/deploy_file.sh /root/resources/public/public.tgz 1.0.0 "${RESOURCE_ORG}" "${RESOURCE_TYPE}" none none none true)" -ne 0 ]
 then
-	exit -1
+	exit 255
 fi

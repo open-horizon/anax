@@ -82,7 +82,7 @@ function checkAgreementForPolicy() {
   local namespace="$5"
 
   checkArchivedAgreementForPolicy $policyName $anax_api $kubecmd $pod_id $namespace
-  if [ $? -ne 0]; then 
+  if [ $? -ne 0 ]; then 
     checkAndWaitForActiveAgreementForPolicy $policyName $anax_api $kubecmd $pod_id $namespace
     if [ $? -ne 0 ]; then return $?; fi
   fi 

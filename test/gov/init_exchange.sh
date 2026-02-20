@@ -224,7 +224,7 @@ fi
 if [ $? -ne 0 ]
 then
   echo -e "Resource registration failure."
-  exit -1
+  exit 255
 fi
 
 # Start the API Key tests if it has been set
@@ -234,7 +234,7 @@ if [ ${API_KEY} != "0" ]; then
   if [ $? -ne 0 ]
   then
     echo -e "API Key test failure."
-    exit -1
+    exit 255
   fi
 fi
 
@@ -243,7 +243,7 @@ echo "Register services"
 if [ $? -ne 0 ]
 then
   echo -e "Service registration failure."
-  exit -1
+  exit 255
 else
   echo "Register services SUCCESSFUL"
 fi

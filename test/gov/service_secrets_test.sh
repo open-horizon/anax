@@ -18,7 +18,7 @@ function get_container_id {
     timeout=$1
     # get the instance id of the specified service with quotes removed
  	inst=$(curl -s $ANAX_API/service | jq -r --arg SVC_URL "$SVC_URL" --arg SVC_ORG "$SVC_ORG" '.instances.active[] | select (.ref_url==$SVC_URL and .organization==$SVC_ORG and .containers[].State=="running")')
-    while [ $timeout -gt 0 ] && [[ $inst == "" ]]; do
+    while [ "$timeout" -gt 0 ] && [[ $inst == "" ]]; do
         let timeout=$timeout-1
         echo "Waiting for netspeed service to start."
         sleep 5s
@@ -26,23 +26,23 @@ function get_container_id {
     done 
     if [ $? -ne 0 ]; then
         echo -e "${PREFIX} failed to get $SVC_ORG/$SVC_URL service instace."
-        exit -1
+        exit 255
     fi
     inst_id=$(echo "$inst" | jq '.instance_id')
     inst_id="${inst_id%\"}"
     inst_id="${inst_id#\"}"
 
     # get the cpu service container for the main agent
-    container=$(docker ps |grep $inst_id)
+    container=$(docker ps |grep "$inst_id")
     if [ $? -ne 0 ]; then
         echo -e "${PREFIX} cannot not find $SVC_ORG/$SVC_URL container."
-        exit -1
+        exit 255
     fi
 
     docker_id=$(echo "$container" | cut -d ' ' -f1)
     if [ $? -ne 0 ]; then
         echo -e "${PREFIX} failed to get the $SVC_ORG/$SVC_URL container id."
-        exit -1
+        exit 255
     fi
 
 	CONTAINER_ID=${docker_id}
@@ -55,10 +55,10 @@ function get_container_id {
 # fifth parameter (true) indicate it is value only format
 function check_container_secret {
     # get the contents of the secret file
-    secret_file_content=$(docker exec $CONTAINER_ID sh -c "cat /open-horizon-secrets/$1")
+    secret_file_content=$(docker exec "$CONTAINER_ID" sh -c "cat /open-horizon-secrets/$1")
     if [ $? -ne 0 ]; then 
         echo -e "${PREFIX} failed to find secret file in container $CONTAINER_ID for service $SVC_ORG/$SVC_URL for service secret $1."
-        exit -1
+        exit 255
     fi
 
     is_value_only=$5
@@ -68,7 +68,7 @@ function check_container_secret {
         secret_key=$(echo $secret_file_content | jq -r '.key')
         if [ $? -ne 0 ]; then 
             echo -e "${PREFIX} failed to find secret key in secret file $1 in container $CONTAINER_ID for service $SVC_ORG/$SVC_URL."
-            exit -1
+            exit 255
         fi
 
         timeout=$4
@@ -80,18 +80,18 @@ function check_container_secret {
             secret_file_content=$(docker exec $CONTAINER_ID sh -c "cat /open-horizon-secrets/$1")
             if [ $? -ne 0 ]; then 
                 echo -e "${PREFIX} failed to find secret file in container $CONTAINER_ID for service $SVC_ORG/$SVC_URL for service secret $1."
-                exit -1
+                exit 255
             fi
             export secret_key=$(echo $secret_file_content | jq -r '.key')
             if [ $? -ne 0 ]; then 
                 echo -e "${PREFIX} failed to find secret key in secret file $1 in container $CONTAINER_ID for service $SVC_ORG/$SVC_URL."
-                exit -1
+                exit 255
             fi
         done
 
         if [[ $secret_key != $2 ]]; then 
             echo -e "${PREFIX} expected secret $1 in container $CONTAINER_ID for service $SVC_ORG/$SVC_URL to have key \"$2\". Found key \"$secret_key\"."
-            exit -1
+            exit 255
         fi
 
         secret_value=$(echo $secret_file_content | jq -r '.value')
@@ -102,11 +102,11 @@ function check_container_secret {
 
     if [ $? -ne 0 ]; then 
         echo -e "${PREFIX} failed to find secret value in secret file $1 in container $CONTAINER_ID for service $SVC_ORG/$SVC_URL."
-        exit -1
+        exit 255
     fi
     if [[ $secret_value != $3 ]]; then 
         echo -e "${PREFIX} expected secret $1 in container $CONTAINER_ID for service $SVC_ORG/$SVC_URL to have value \"$3\". Found value \"$secret_value\"."
-        exit -1
+        exit 255
     fi
     echo $secret_value
 }
@@ -120,7 +120,7 @@ function update_secret {
     hzn secretsmanager secret add "$1" --secretKey="$2" --secretDetail="$3" -u "$4" -o "$5" -O
     if [ $? -ne 0 ]; then
         echo -e "${PREFIX} failed to update service secret $1."
-        exit -1
+        exit 255
     fi
 }
 
@@ -130,7 +130,7 @@ function unregister_node {
     CURRENT_NODE_INFO=$(hzn node list)
     if [ $? -ne 0 ]; then 
         echo -e "${PREFIX} 'hzn node list' returned non-zero exit code."
-        exit -1
+        exit 255
     fi
     CURRENT_PATTERN=$(echo $CURRENT_NODE_INFO | jq -r '.pattern')
     if [[ $CURRENT_PATTERN != "" ]]; then
@@ -145,20 +145,20 @@ function unregister_node {
     REREG_POLICY=$(hzn policy list)
     if [ $? -ne 0 ]; then 
         echo -e "${PREFIX} failed to find the node's current policy."
-        exit -1
+        exit 255
     fi
 
     #get the userinput the node is registered with
     USER_INPUTS=$(hzn userinput list)
     if [ $? -ne 0 ]; then 
         echo -e "${PREFIX} failed to find the node's current userinputs."
-        exit -1
+        exit 255
     fi
 
     hzn unregister -f
     if [ $? -ne 0 ]; then 
         echo -e "${PREFIX} failed to unregister the node."
-        exit -1
+        exit 255
     fi
 }
 
@@ -168,7 +168,7 @@ function reregister_node {
     echo $REREG_POLICY | hzn register -n "an12345" -u $REREG_AUTH -o $REREG_ORG $REREG_PATTERN --policy /dev/stdin -f ./userinput.json
     if [ $? -ne 0 ]; then 
         echo -e "${PREFIX} failed to reregister the node."
-        exit -1
+        exit 255
     fi
     rm ./userinput.json
 }
@@ -181,7 +181,7 @@ function suspend_service {
     hzn service configstate suspend $2 $1 $3 -f
     if [ $? -ne 0 ]; then 
         echo -e "${PREFIX} failed to suspend service $2/$1:$3"
-        exit -1
+        exit 255
     fi
 }
 
@@ -193,7 +193,7 @@ function resume_service {
     hzn service configstate resume $2 $1 $3
     if [ $? -ne 0 ]; then 
         echo -e "${PREFIX} failed to resume service $2/$1:$3"
-        exit -1
+        exit 255
     fi
 }
 
@@ -201,7 +201,7 @@ function get_auth_for_tests {
     CURRENT_NODE_INFO=$(hzn node list)
     if [ $? -ne 0 ]; then 
         echo -e "${PREFIX} 'hzn node list' returned non-zero exit code."
-        exit -1
+        exit 255
     fi
 
     export USE_ORG=$(echo $CURRENT_NODE_INFO | jq -r '.organization')
@@ -253,7 +253,7 @@ while [ $ag_num -gt 4 ] && [ $timeout -gt 0 ]; do
 done 
 if [ $ag_num -gt 4 ]; then
     echo "Timed out waiting for the location agreement to be removed."
-    exit -1
+    exit 255
 fi 
 
 # Check that the secret for the shared singleton is not removed
@@ -278,7 +278,7 @@ while [ "$(ls -A /root/tmp)" ] && [ $timeout -gt 0 ]; do
 done
 if [ "$(ls -A /root/tmp)" ]; then
     echo "Timed out waiting for the secret files to be removed from the agent filesystem."
-    exit -1
+    exit 255
 fi 
 
 # Return the node to it's previous registered state
