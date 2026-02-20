@@ -45,7 +45,7 @@ then
 fi
 
 # Setup the file sync service object metadata, based on the input parameters.
-read -dr something resmeta <<EOF
+resmeta=$(cat <<EOF
 {
   "data": [],
   "meta": {
@@ -60,8 +60,10 @@ read -dr something resmeta <<EOF
   }
 }
 EOF
+)
 
-echo -e "\nsomething: $something\n"
+echo -e "\n$resmeta\n"
+
 
 if [ "${3}" == "IBM" ]; then
   # deploy public object to IBM using exchange root credentials
