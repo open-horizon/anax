@@ -44,15 +44,8 @@ then
   FILENAME=policy-${FILENAME}
 fi
 
-IS_PUBLIC_OBJ=false
-if [ "${3}" == "IBM" ]; then
-  IS_PUBLIC_OBJ=true
-fi
-
-echo "organization: ${3} , public: ${8}"
-
 # Setup the file sync service object metadata, based on the input parameters.
-read -dr '' resmeta <<EOF
+read -dr something resmeta <<EOF
 {
   "data": [],
   "meta": {
@@ -67,6 +60,8 @@ read -dr '' resmeta <<EOF
   }
 }
 EOF
+
+echo -e "\nsomething: $something\n"
 
 if [ "${3}" == "IBM" ]; then
   # deploy public object to IBM using exchange root credentials
