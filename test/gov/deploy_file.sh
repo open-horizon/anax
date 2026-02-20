@@ -37,7 +37,7 @@ fi
 echo "Deploying file ${1} version ${2} into ${3} as type ${4}, targetting nodes of type ${5} or node id ${6}, using policy:"
 echo "${7}"
 
-FILENAME=$(basename "${1}")
+FILENAME=$(basename "${1}" .tgz)
 
 if [ "${OBJ_POLICY}" != "null" ]
 then
