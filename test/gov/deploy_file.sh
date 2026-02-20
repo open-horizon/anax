@@ -34,7 +34,8 @@ then
   OBJ_POLICY="null"
 fi
 
-echo "Deploying file ${1} version ${2} into ${3} as type ${4}, targetting nodes of type ${5} or node id ${6}, using policy ${7}"
+echo "Deploying file ${1} version ${2} into ${3} as type ${4}, targetting nodes of type ${5} or node id ${6}, using policy:"
+echo "${7}"
 
 FILENAME=$(basename "${1}")
 
@@ -66,46 +67,17 @@ read -d '' resmeta <<EOF
 EOF
 
 if [ "${3}" == "IBM" ]; then
-    # deploy public object to IBM using exchange root credentials
-    ADDM=$(echo "$resmeta" | curl -o /dev/null -sLX PUT -w "%{http_code}" "$CERT_VAR" -u "root/root:${EXCH_ROOTPW}" "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}" --data @-)
-
-    if [ "$ADDM" != "204" ]
-    then
-        echo -e "$resmeta \nPUT returned:"
-        echo "$ADDM"
-        exit -1
-    fi
-
-    ADDF=$(curl -o /dev/null -sLX PUT -w "%{http_code}" "$CERT_VAR" -u "root/root:${EXCH_ROOTPW}" --header 'Content-Type:application/octet-stream' "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}/data" --data-binary @"${1}")
-
-    if [ "$ADDF" == "204" ]
-    then
-        echo -e "Data file ${1} added successfully"
-    else
-        echo -e "Data file PUT returned:"
-        echo "$ADDF"
-        exit -1
-    fi
-
-else
-    admin_user="${3}admin"
-    admin_pw="${3}adminpw"
-    if [ "${3}" == "e2edev@somecomp.com" ]; then
-        admin_user="e2edevadmin"
-        admin_pw="e2edevadminpw"
-    fi
-
-echo -e "echo \"$resmeta\" | curl -sLX PUT -w \"%{http_code}\" $CERT_VAR -u ${3}/${admin_user}:${admin_pw} \"${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}\" --data @-"
-  ADDM=$(echo "$resmeta" | curl -o /dev/null -sLX PUT -w "%{http_code}" "$CERT_VAR" -u "${3}/${admin_user}:${admin_pw}" "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}" --data @-)
+  # deploy public object to IBM using exchange root credentials
+  ADDM=$(curl -sLX PUT -w "%{http_code}" "$CERT_VAR" -u "root/root:${EXCH_ROOTPW}" "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}" --data "$resmeta")
 
   if [ "$ADDM" != "204" ]
   then
     echo -e "$resmeta \nPUT returned:"
     echo "$ADDM"
-    exit -1
+    exit 255
   fi
-  
-  ADDF=$(curl -o /dev/null -sLX PUT -w "%{http_code}" "$CERT_VAR" -u "${3}/${admin_user}:${admin_pw}" --header 'Content-Type:application/octet-stream' "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}/data" --data-binary @"${1}")
+
+  ADDF=$(curl -sLX PUT -w "%{http_code}" "$CERT_VAR" -u "root/root:${EXCH_ROOTPW}" --header 'Content-Type:application/octet-stream' "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}/data" --data-binary @"${1}")
 
   if [ "$ADDF" == "204" ]
   then
@@ -113,7 +85,37 @@ echo -e "echo \"$resmeta\" | curl -sLX PUT -w \"%{http_code}\" $CERT_VAR -u ${3}
   else
     echo -e "Data file PUT returned:"
     echo "$ADDF"
-    exit -1
+    exit 255
+  fi
+
+else
+  admin_user="${3}admin"
+  admin_pw="${3}adminpw"
+  if [ "${3}" == "e2edev@somecomp.com" ]; then
+    admin_user="e2edevadmin"
+    admin_pw="e2edevadminpw"
+  fi
+
+  #echo -e "echo \"$resmeta\" | curl -sLX PUT -w \"%{http_code}\" $CERT_VAR -u \"${3}/${admin_user}:${admin_pw}\" \"${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}\" --data @-"
+  #echo ""
+  ADDM=$(curl -sLX PUT -w "%{http_code}" "$CERT_VAR" -u "${3}/${admin_user}:${admin_pw}" "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}" --data "$resmeta")
+
+  if [ "$ADDM" != "204" ]
+  then
+    echo -e "$resmeta \nPUT returned:"
+    echo "$ADDM"
+    exit 255
+  fi
+  
+  ADDF=$(curl -sLX PUT -w "%{http_code}" "$CERT_VAR" -u "${3}/${admin_user}:${admin_pw}" --header 'Content-Type:application/octet-stream' "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}/data" --data-binary @"${1}")
+
+  if [ "$ADDF" == "204" ]
+  then
+    echo -e "Data file ${1} added successfully"
+  else
+    echo -e "Data file PUT returned:"
+    echo "$ADDF"
+    exit 255
   fi
 
 fi
