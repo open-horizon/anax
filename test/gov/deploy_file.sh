@@ -62,21 +62,20 @@ resmeta=$(cat <<EOF
 EOF
 )
 
-echo -e "\n$resmeta\n"
+# echo -e "\n$resmeta\n"
 
-
-if [ "${3}" == "IBM" ]; then
+if [ "${3}" == "IBM" ];
+then
   # deploy public object to IBM using exchange root credentials
-  ADDM=$(curl -fsSLvX PUT -w "%{http_code}" "$CERT_VAR" -u "root/root:${EXCH_ROOTPW}" "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}" --data "$resmeta")
+  ADDM=$(curl -fsSLvX PUT -w "%{http_code}" "$CERT_VAR" -u "root/root:${EXCH_ROOTPW}" --header "Accept:application/json" "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}" --data "$resmeta")
 
   if [ "$ADDM" != "204" ]
   then
-    echo -e "$resmeta \nPUT returned:"
-    echo "$ADDM"
+    echo -e "PUT returned: '$ADDM'"
     exit 255
   fi
 
-  ADDF=$(curl -fsSLvX PUT -w "%{http_code}" "$CERT_VAR" -u "root/root:${EXCH_ROOTPW}" --header 'Content-Type:application/octet-stream' "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}/data" --data-binary @"${1}")
+  ADDF=$(curl -fsSLvX PUT -w "%{http_code}" "$CERT_VAR" -u "root/root:${EXCH_ROOTPW}" --header 'Accept:application/octet-stream' "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}/data" --data-binary @"${1}")
 
   if [ "$ADDF" == "204" ]
   then
@@ -86,7 +85,6 @@ if [ "${3}" == "IBM" ]; then
     echo "$ADDF"
     exit 255
   fi
-
 else
   admin_user="${3}admin"
   admin_pw="${3}adminpw"
@@ -97,23 +95,21 @@ else
 
   #echo -e "echo \"$resmeta\" | curl -sLX PUT -w \"%{http_code}\" $CERT_VAR -u \"${3}/${admin_user}:${admin_pw}\" \"${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}\" --data @-"
   #echo ""
-  ADDM=$(curl -fsSLvX PUT -w "%{http_code}" "$CERT_VAR" -u "${3}/${admin_user}:${admin_pw}" "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}" --data "$resmeta")
+  ADDM=$(curl -fsSLvX PUT -w "%{http_code}" "$CERT_VAR" -u "${3}/${admin_user}:${admin_pw}" --header "Accept:application/json" "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}" --data "$resmeta")
 
   if [ "$ADDM" != "204" ]
   then
-    echo -e "PUT returned:"
-    echo "$ADDM"
+    echo -e "PUT returned: '$ADDM'"
     exit 255
   fi
   
-  ADDF=$(curl -fsSLvX PUT -w "%{http_code}" "$CERT_VAR" -u "${3}/${admin_user}:${admin_pw}" --header 'Content-Type:application/octet-stream' "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}/data" --data-binary @"${1}")
+  ADDF=$(curl -fsSLvX PUT -w "%{http_code}" "$CERT_VAR" -u "${3}/${admin_user}:${admin_pw}" --header 'Accept:application/octet-stream' "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}/data" --data-binary @"${1}")
 
   if [ "$ADDF" == "204" ]
   then
     echo -e "Data file ${1} added successfully"
   else
-    echo -e "Data file PUT returned:"
-    echo "$ADDF"
+    echo -e "Data file PUT returned: '$ADDF'"
     exit 255
   fi
 
