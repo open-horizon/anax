@@ -73,10 +73,10 @@ if [ "${3}" == "IBM" ]; then
     then
         echo -e "$resmeta \nPUT returned:"
         echo "$ADDM"
-        exit 255
+        exit -1
     fi
 
-    ADDF=$(curl -sLX PUT -w "%{http_code}" "$CERT_VAR" -u "root/root:${EXCH_ROOTPW}" --header 'Content-Type:application/octet-stream' "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}/data" --data-binary @"${1}")
+    ADDF=$(curl -o /dev/null -sLX PUT -w "%{http_code}" "$CERT_VAR" -u "root/root:${EXCH_ROOTPW}" --header 'Content-Type:application/octet-stream' "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}/data" --data-binary @"${1}")
 
     if [ "$ADDF" == "204" ]
     then
@@ -84,7 +84,7 @@ if [ "${3}" == "IBM" ]; then
     else
         echo -e "Data file PUT returned:"
         echo "$ADDF"
-        exit 255
+        exit -1
     fi
 
 else
@@ -96,16 +96,16 @@ else
     fi
 
 echo -e "echo \"$resmeta\" | curl -sLX PUT -w \"%{http_code}\" $CERT_VAR -u ${3}/${admin_user}:${admin_pw} \"${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}\" --data @-"
-  ADDM=$(echo "$resmeta" | curl curl -o /dev/null -sLX PUT -w "%{http_code}" "$CERT_VAR" -u "${3}/${admin_user}:${admin_pw}" "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}" --data @-)
+  ADDM=$(echo "$resmeta" | curl -o /dev/null -sLX PUT -w "%{http_code}" "$CERT_VAR" -u "${3}/${admin_user}:${admin_pw}" "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}" --data @-)
 
   if [ "$ADDM" != "204" ]
   then
     echo -e "$resmeta \nPUT returned:"
     echo "$ADDM"
-    exit 255
+    exit -1
   fi
   
-  ADDF=$(curl curl -o /dev/null -sLX PUT -w "%{http_code}" "$CERT_VAR" -u "${3}/${admin_user}:${admin_pw}" --header 'Content-Type:application/octet-stream' "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}/data" --data-binary @"${1}")
+  ADDF=$(curl -o /dev/null -sLX PUT -w "%{http_code}" "$CERT_VAR" -u "${3}/${admin_user}:${admin_pw}" --header 'Content-Type:application/octet-stream' "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}/data" --data-binary @"${1}")
 
   if [ "$ADDF" == "204" ]
   then
@@ -113,7 +113,7 @@ echo -e "echo \"$resmeta\" | curl -sLX PUT -w \"%{http_code}\" $CERT_VAR -u ${3}
   else
     echo -e "Data file PUT returned:"
     echo "$ADDF"
-    exit 255
+    exit -1
   fi
 
 fi
