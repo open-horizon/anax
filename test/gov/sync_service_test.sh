@@ -959,37 +959,37 @@ read -dr '' resmeta <<EOF
 {
   "data": [],
   "meta": {
-  	"objectID": "${6}",
-  	"objectType": "${5}",
-  	"destinationID": "",
-  	"destinationType": "",
-  	"version": "2.0.0",
+    "objectID": "${6}",
+    "objectType": "${5}",
+    "destinationID": "",
+    "destinationType": "",
+    "version": "2.0.0",
     "description": "test update public object",
     "public": true
   }
 }
 EOF
 
-    ADDM=$(echo "$resmeta" | curl -sLX PUT -w "%{http_code}" "$CERT_VAR" -u "${1}/${2}:${3}" "${CSS_URL}/api/v1/objects/${4}/${5}/${6}" --data @-)
+    ADDM=$(echo "$resmeta" | curl -o /dev/null -sLX PUT -w "%{http_code}" "$CERT_VAR" -u "${1}/${2}:${3}" "${CSS_URL}/api/v1/objects/${4}/${5}/${6}" --data @-)
     echo "PUT_OBJ_CODE: $ADDM"
     if [ "$ADDM" == "204" ]
     then
         echo -e "$resmeta \nPUT returned:"
         echo "$ADDM"
         echo -e "Public object should not be updated by user $2 in org $1"
-        exit 255
+        exit -1
     fi
 
     DATA=/tmp/data.txt
 
-    ADDM=$(echo "$resmeta" | curl -sLX PUT -w "%{http_code}" "$CERT_VAR" -u "${1}"/"${2}":"${3}" "${CSS_URL}/api/v1/objects/${4}/${5}/${6}/data" --data-binary @${DATA})
+    ADDM=$(echo "$resmeta" | curl -o /dev/null -sLX PUT -w "%{http_code}" "$CERT_VAR" -u "${1}"/"${2}":"${3}" "${CSS_URL}/api/v1/objects/${4}/${5}/${6}/data" --data-binary @${DATA})
     echo "PUT_OBJ_DATA_CODE: $ADDM"
     if [ "$ADDM" == "204" ]
     then
         echo -e "$resmeta \nPUT returned:"
         echo "$ADDM"
         echo -e "Public object data should not be updated by user $2 in org $1"
-        exit 255
+        exit -1
     fi
 }
 
