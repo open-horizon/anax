@@ -4,7 +4,7 @@ echo -e "Pattern is set to $PATTERN"
 
 if [ "$PATTERN" == "spws" ] || [ "$PATTERN" == "sall" ] || [ "$PATTERN" == "" ]
 then
-  read -d '' nodeui <<EOF
+  read -dr '' nodeui <<EOF
 [
     {
       "serviceOrgid": "e2edev@somecomp.com",

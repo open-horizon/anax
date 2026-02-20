@@ -54,18 +54,16 @@ fi
 
 echo -e "${PREFIX} START_SECOND_AGBOT setting is ${START_SECOND_AGBOT}."
 
-cd /tmp
+cd /tmp || { echo "Error: start_mgmt_hub.sh - ln 57 - Failure to change directories."; exit 1; }
 rm -f deploy-mgmt-hub.sh
-wget https://raw.githubusercontent.com/open-horizon/devops/refs/heads/master/mgmt-hub/deploy-mgmt-hub.sh
-if [ $? -ne 0 ]; then
+if ! wget https://raw.githubusercontent.com/open-horizon/devops/refs/heads/master/mgmt-hub/deploy-mgmt-hub.sh; then
   echo -e "${PREFIX} Failed to download deploy-mgmt-hub.sh file."
   exit 1
 fi
 chmod +x /tmp/deploy-mgmt-hub.sh
 
 # run the management hub deployment script
-sudo -sE /tmp/deploy-mgmt-hub.sh -A -E
-if [ $? -ne 0 ]; then
+if ! sudo -sE /tmp/deploy-mgmt-hub.sh -A -E; then
   echo -e "${PREFIX} Failed deploy."
   exit 1
 fi

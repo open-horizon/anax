@@ -20,7 +20,7 @@ if [[ "$PATTERN" != "" ]]; then
 fi
 
 
-read -d '' newhzndevice <<EOF
+read -dr '' newhzndevice <<EOF
 {
   "id": "$DEVICE_ID",
   "token": "$TOKEN",
@@ -98,7 +98,7 @@ else
     constraint3="NOAGENTAUTO==false"
 fi
 
-read -d '' newhznpolicy <<EOF
+read -dr '' newhznpolicy <<EOF
 {
   "deployment": {
     "properties": [

@@ -17,7 +17,7 @@ function set_exports {
     export HZN_AGENT_PORT=8510
     export ANAX_API="http://localhost:${HZN_AGENT_PORT}"
     export EXCH="${EXCH_APP_HOST}"
-    if [ ${CERT_LOC} -eq "1" ]; then
+    if [ "${CERT_LOC}" -eq "1" ]; then
       export HZN_MGMT_HUB_CERT_PATH="/certs/css.crt"
     fi
 
@@ -59,18 +59,14 @@ function run_delete_loops {
     if [ "${PATTERN}" == "sall" ] || [ "${PATTERN}" == "sloc" ] || [ "${PATTERN}" == "sns" ] || [ "${PATTERN}" == "sgps" ] || [ "${PATTERN}" == "spws" ] || [ "${PATTERN}" == "susehello" ] || [ "${PATTERN}" == "shelm" ]; then
       echo -e "Starting service pattern verification scripts"
       if [ "$NOLOOP" == "1" ]; then
-        ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh
-        if [ $? -ne 0 ]; then echo "Verify agreement failure."; exit 1; fi
+        if ! ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh; then echo "Verify agreement failure."; exit 1; fi
          echo -e "No cancellation setting is $NOCANCEL"
         if [ "$NOCANCEL" != "1" ]; then
-          ./del_loop.sh
-          if [ $? -ne 0 ]; then echo "Agreement deletion failure."; exit 1; fi
+          if ! ./del_loop.sh; then echo "Agreement deletion failure."; exit 1; fi
           echo -e "Sleeping for 30s between device and agbot agreement deletion"
           sleep 30
-          ./agbot_del_loop.sh
-          if [ $? -ne 0 ]; then echo "Agbot agreement deletion failure."; exit 1; fi
-          ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh
-          if [ $? -ne 0 ]; then echo "Agreement restart failure."; exit 1; fi
+          if ! ./agbot_del_loop.sh; then echo "Agbot agreement deletion failure."; exit 1; fi
+          if ! ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh; then echo "Agreement restart failure."; exit 1; fi
         else
           echo -e "Cancellation tests are disabled"
         fi
@@ -85,23 +81,19 @@ function run_delete_loops {
           echo "Skipping agreement verification"
           sleep 30
         else
-          ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh
-          if [ $? -ne 0 ]; then echo "Verify agreement failure."; exit 1; fi
+          if ! ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh; then echo "Verify agreement failure."; exit 1; fi
         fi
-        ./del_loop.sh
-        if [ $? -ne 0 ]; then echo "Agreement deletion failure."; exit 1; fi
+        if ! ./del_loop.sh; then echo "Agreement deletion failure."; exit 1; fi
         echo -e "Sleeping for 30s between device and agbot agreement deletion"
         sleep 30
-        ./agbot_del_loop.sh
-        if [ $? -ne 0 ]; then echo "Agbot agreement deletion failure."; exit 1; fi
+        if ! ./agbot_del_loop.sh; then echo "Agbot agreement deletion failure."; exit 1; fi
       else
         echo -e "Cancellation tests are disabled"
       fi
       if [ "$NONS" == "1" ] || [ "$NOPWS" == "1" ] || [ "$NOLOC" == "1" ] || [ "$NOGPS" == "1" ] || [ "$NOHELLO" == "1" ] || [ "$NOK8S" == "1" ]; then
         echo "Skipping agreement verification"
       else
-        ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh
-        if [ $? -ne 0 ]; then echo "Verify agreement failure."; exit 1; fi
+        if ! ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh; then echo "Verify agreement failure."; exit 1; fi
       fi
     fi
   fi
@@ -125,24 +117,23 @@ echo -e "REMOTE_HUB is set to ${REMOTE_HUB}."
 if [ "$ICP_HOST_IP" != "0" ]
 then
   echo "Updating hosts file."
-  HOST_NAME_ICP=`echo $EXCH_URL | awk -F/ '{print $3}' | sed 's/:.*//g'`
-  HOST_NAME=`echo $EXCH_URL | awk -F/ '{print $3}' | sed 's/:.*//g' | sed 's/\.icp*//g'`
+  HOST_NAME_ICP=$(echo "$EXCH_URL" | awk -F/ '{print $3}' | sed 's/:.*//g')
+  HOST_NAME=$(echo "$EXCH_URL" | awk -F/ '{print $3}' | sed 's/:.*//g' | sed 's/\.icp*//g')
   echo "$ICP_HOST_IP $HOST_NAME_ICP $HOST_NAME"
   echo "$ICP_HOST_IP $HOST_NAME_ICP $HOST_NAME" >> /etc/hosts
 fi
 
-cd /root
+cd /root || { echo "Error: gov-combined.sh - ln 134 - Failure to change directories."; exit 1; }
 
 # Build an old anax if we need it
 if [ "$OLDANAX" == "1" ]; then
-  ./build_old_anax.sh
-  if [ $? -ne 0 ]; then
+  if ! ./build_old_anax.sh; then
     exit 255
   fi
 fi
 
 #--cacert /certs/css.crt
-if [ ${CERT_LOC} -eq "1" ]; then
+if [ "${CERT_LOC}" -eq "1" ]; then
   CERT_VAR="--cacert /certs/css.crt"
 else
   CERT_VAR=""
@@ -262,8 +253,7 @@ then
   set_exports
   export PATTERN=""
 
-  ./start_node.sh
-  if [ $? -ne 0 ]
+  if ! ./start_node.sh
   then
     echo "Node start failure."
     TESTFAIL="1"
@@ -287,10 +277,10 @@ then
 
 elif [ "$TESTFAIL" != "1" ]; then
   # make agreements based on patterns
-  last_pattern="$(echo $TEST_PATTERNS |sed -e 's/^.*,//')"
+  last_pattern="$(echo "$TEST_PATTERNS" |sed -e 's/^.*,//')"
   echo -e "Last pattern is $last_pattern"
 
-  for pat in $(echo $TEST_PATTERNS | tr "," " "); do
+  for pat in $(echo "$TEST_PATTERNS" | tr "," " "); do
     export PATTERN=$pat
     echo -e "***************************"
     echo -e "Start testing pattern $PATTERN..."
@@ -310,8 +300,7 @@ elif [ "$TESTFAIL" != "1" ]; then
     set_exports "$pat"
 
     # start main agent
-    ./start_node.sh
-    if [ $? -ne 0 ]
+    if ! ./start_node.sh
     then
       echo "Node start failure."
       TESTFAIL="1"
@@ -322,8 +311,7 @@ elif [ "$TESTFAIL" != "1" ]; then
     source ./multiple_agents.sh
     if [ -n "$MULTIAGENTS" ] && [ "$MULTIAGENTS" != "0" ]; then
       echo "Starting multiple agents with pattern ${ma_pattern} ..."
-      PATTERN=${ma_pattern} startMultiAgents
-      if [ $? -ne 0 ]; then
+      if ! PATTERN=${ma_pattern} startMultiAgents; then
         echo "Multiple agent startup failure."
         TESTFAIL="1"
         break
@@ -340,8 +328,7 @@ elif [ "$TESTFAIL" != "1" ]; then
 
     if [ -n "$MULTIAGENTS" ] && [ "$MULTIAGENTS" != "0" ]; then
       echo "Checking multiple agents..."
-      PATTERN=${ma_pattern} verifyMultiAgentsAgreements
-      if [ $? -ne 0 ]; then
+      if ! PATTERN=${ma_pattern} verifyMultiAgentsAgreements; then
         echo "Multiple agent agreement varification failure."
         TESTFAIL="1"
         break
@@ -349,8 +336,7 @@ elif [ "$TESTFAIL" != "1" ]; then
     fi
 
     if [ "$NORETRY" != "1" ]; then
-      ./service_retry_test.sh
-      if [ $? -ne 0 ]
+      if ! ./service_retry_test.sh
       then
         echo "Service retry failure."
         TESTFAIL="1"
@@ -373,11 +359,10 @@ elif [ "$TESTFAIL" != "1" ]; then
     if [ "$pat" != "$last_pattern" ]; then
       # Save off the existing log file, in case the next test fails and we need to look back to see how this
       # instance of anax actually ended.
-      mv /tmp/anax.log /tmp/anax_$pat.log
+      mv /tmp/anax.log "/tmp/anax_$pat.log"
 
       echo -e "Unregister the node. Anax will be shutdown."
-      ./unregister.sh
-      if [ $? -eq 0 ]; then
+      if ! ./unregister.sh; then
         sleep 10
       else
         exit 1

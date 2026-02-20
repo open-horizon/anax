@@ -8,7 +8,7 @@ function results {
   fi
 }
 
-if [ ${CERT_LOC} -eq "1" ]; then
+if [ "${CERT_LOC}" -eq "1" ]; then
   CERT_VAR="--cacert /certs/css.crt"
 else
   CERT_VAR=""
@@ -26,18 +26,17 @@ fi
 export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
 
 # Register services via the hzn dev exchange commands
-./hzn_dev_services.sh ${HZN_EXCHANGE_URL} ${MAIN_AUTH} 1
-if [ $? -ne 0 ]
+
+if ! ./hzn_dev_services.sh "${HZN_EXCHANGE_URL}" "${MAIN_AUTH}" 1
 then
     echo -e "hzn service and pattern registration with hzn dev failed."
     exit 1
 fi
 
 hzn exchange node remove -f -n "$HZN_EXCHANGE_NODE_AUTH" -o "$ORG_ID" -u "$MAIN_AUTH" "$NODE_NAME"
-hzn exchange service remove -u $MAIN_AUTH -o $ORG_ID -f $ORG_ID/bluehorizon.network-service-cpu_1.0_${ARCH}
+hzn exchange service remove -u "$MAIN_AUTH" -o "$ORG_ID" -f "$ORG_ID/bluehorizon.network-service-cpu_1.0_${ARCH}"
 
-hzn exchange node create -n "$HZN_EXCHANGE_NODE_AUTH" -m "$NODE_NAME" -o "$ORG_ID" -u "$MAIN_AUTH"
-if [ $? -ne 0 ]
+if ! hzn exchange node create -n "$HZN_EXCHANGE_NODE_AUTH" -m "$NODE_NAME" -o "$ORG_ID" -u "$MAIN_AUTH"
 then
     echo -e "hzn exchange node create failed for $ORG_ID."
     unset HZN_EXCHANGE_URL
@@ -47,15 +46,13 @@ fi
 KEY_TEST_DIR="/tmp/keytest"
 mkdir -p $KEY_TEST_DIR
 
-cd $KEY_TEST_DIR
-ls *.key &> /dev/null
-if [ $? -eq 0 ]
+cd $KEY_TEST_DIR || { echo "Error: api_key.sh - ln 50 - Failure to change directories."; error 1; }
+if ! ls "*".key &> /dev/null
 then
     echo -e "Using existing key"
 else
   echo -e "Generate new signing keys:"
-  hzn key create -l 4096 "$ORG_ID" "$ORG_ID@gmail.com" -d .
-  if [ $? -ne 0 ]
+  if ! hzn key create -l 4096 "$ORG_ID" "$ORG_ID@gmail.com" -d .
   then
     echo -e "hzn key create failed."
     exit 2
@@ -93,40 +90,35 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
 EOF
 
 echo -e "Register $ORG_ID/cpu service $VERS:"
-hzn exchange service publish -I -u $MAIN_AUTH -o $ORG_ID -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
-if [ $? -ne 0 ]
+if ! hzn exchange service publish -I -u "$MAIN_AUTH" -o "$ORG_ID" -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 then
     echo -e "hzn exchange service publish failed for $ORG_ID/cpu."
     exit 2
 fi
 
 echo "Display IBM Org Pattern List"
-hzn exchange pattern list -n "$HZN_EXCHANGE_NODE_AUTH" -o "$ORG_ID" -u "$MAIN_AUTH" IBM/*
-if [ $? -ne 0 ]
+if ! hzn exchange pattern list -n "$HZN_EXCHANGE_NODE_AUTH" -o "$ORG_ID" -u "$MAIN_AUTH" IBM/*
 then
     echo -e "hzn exchange pattern list failed for IBM Org."
     exit 2
 fi
 
 echo "Display $ORG_ID User List"
-hzn exchange user list -o "$ORG_ID" -u "$MAIN_AUTH"
-if [ $? -ne 0 ]
+if ! hzn exchange user list -o "$ORG_ID" -u "$MAIN_AUTH"
 then
     echo -e "hzn exchange user list failed."
     exit 2
 fi
 
 echo -e "Delete $ORG_ID/cpu service $VERS:"
-hzn exchange service remove -u $MAIN_AUTH -o $ORG_ID -f $ORG_ID/bluehorizon.network-service-cpu_1.0_${ARCH}
-if [ $? -ne 0 ]
+if ! hzn exchange service remove -u "$MAIN_AUTH" -o "$ORG_ID" -f "$ORG_ID/bluehorizon.network-service-cpu_1.0_${ARCH}"
 then
     echo -e "hzn exchange service publish failed for $ORG_ID/cpu."
     exit 2
 fi
 
 echo -e "Delete node $HZN_EXCHANGE_NODE_AUTH"
-hzn exchange node remove -f -n "$HZN_EXCHANGE_NODE_AUTH" -o "$ORG_ID" -u "$MAIN_AUTH" "$NODE_NAME"
-if [ $? -ne 0 ]
+if ! hzn exchange node remove -f -n "$HZN_EXCHANGE_NODE_AUTH" -o "$ORG_ID" -u "$MAIN_AUTH" "$NODE_NAME"
 then
     echo -e "hzn exchange node delete failed for $ORG_ID."
     unset HZN_EXCHANGE_URL

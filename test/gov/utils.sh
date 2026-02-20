@@ -9,7 +9,7 @@ function check_api_result {
   output="${2::-3}"
 
   # check http code
-  if [ "$rc" != $1 ]
+  if [ "$rc" != "$1" ]
   then
     echo -e "Error: $(echo "$output" | jq -r '.')\n"
     exit 2
@@ -38,14 +38,13 @@ function WaitForService() {
 
   while [[ $TIMEOUT -le $MAX_ITERATION ]]
   do
-    if [ "${3}" == "" ]; then
+    if ! if [ "${3}" == "" ]; then
         echo -e "Waiting for service $2/$1 with any version."
-        svc_inst=$(curl -s $ANAX_API/service | jq -r ".instances.active[] | select (.ref_url == \"$1\") | select (.organization == \"$2\")")
+        svc_inst=$(curl -s "$ANAX_API/service" | jq -r ".instances.active[] | select (.ref_url == \"$1\") | select (.organization == \"$2\")")
     else
         echo -e "Waiting for service $2/$1 with version $3."
-        svc_inst=$(curl -s $ANAX_API/service | jq -r ".instances.active[] | select (.ref_url == \"$1\") | select (.organization == \"$2\") | select (.version == \"$3\")")
-    fi
-    if [ $? -ne 0 ]; then
+        svc_inst=$(curl -s "$ANAX_API/service" | jq -r ".instances.active[] | select (.ref_url == \"$1\") | select (.organization == \"$2\") | select (.version == \"$3\")")
+    fi; then
         echo -e "Failed to get $1 service instace. ${svc_inst}"
         exit 2
     fi
@@ -66,6 +65,6 @@ function WaitForService() {
         break
     fi
 
-    if [[ $TIMEOUT == `expr $MAX_ITERATION + 1` ]]; then echo -e "Timeout waiting for service $1 to start"; exit 2; fi
+    if [[ $TIMEOUT == $(("$MAX_ITERATION" + 1)) ]]; then echo -e "Timeout waiting for service $1 to start"; exit 2; fi
   done
 }

@@ -4,7 +4,7 @@
 # Begin testing metering properties
 
 # missing perTimeUnit field
-read -d '' netspeedservice <<EOF
+read -dr '' netspeedservice <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -45,7 +45,7 @@ else
 fi
 
 # missing token field
-read -d '' netspeedservice <<EOF
+read -dr '' netspeedservice <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -86,7 +86,7 @@ else
 fi
 
 # missing tokens and perTimeUnit fields
-read -d '' netspeedservice <<EOF
+read -dr '' netspeedservice <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -127,7 +127,7 @@ else
 fi
 
 # tokens must be non-zero
-read -d '' netspeedservice <<EOF
+read -dr '' netspeedservice <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -169,7 +169,7 @@ else
 fi
 
 # perTimeUnit must be non-blank
-read -d '' netspeedservice <<EOF
+read -dr '' netspeedservice <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -211,7 +211,7 @@ else
 fi
 
 # tokens must be a valid number
-read -d '' netspeedservice <<EOF
+read -dr '' netspeedservice <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -254,7 +254,7 @@ else
 fi
 
 # perTimeUnit must be a string
-read -d '' netspeedservice <<EOF
+read -dr '' netspeedservice <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -297,7 +297,7 @@ else
 fi
 
 # notification interval must be a number
-read -d '' netspeedservice <<EOF
+read -dr '' netspeedservice <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -340,7 +340,7 @@ else
 fi
 
 # notificationInterval cannot be specified without tokens perTimeUnit
-read -d '' netspeedservice <<EOF
+read -dr '' netspeedservice <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",

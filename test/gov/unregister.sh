@@ -42,7 +42,7 @@ do
     if [[ "$PATTERN" != "" ]]; then
       pat="e2edev@somecomp.com/$PATTERN"
     fi
-    read -d '' newhzndevice <<EOF
+    read -dr '' newhzndevice <<EOF
 {
   "id": "$DEVICE_ID",
   "token": "$TOKEN",

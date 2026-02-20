@@ -6,7 +6,7 @@
 # transition from configuring to configuring
 echo "Testing Configstate API"
 
-read -d '' newhzndevice <<EOF
+read -dr '' newhzndevice <<EOF
 {
   "state": "configuring"
 }
@@ -21,7 +21,7 @@ then
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "$ERR" != "null" ]
 then
   echo -e "$newhzndevice \nresulted in incorrect response: $RES"
@@ -35,7 +35,7 @@ fi
 
 echo "Testing Configstate API"
 
-read -d '' newhzndevice <<EOF
+read -dr '' newhzndevice <<EOF
 {
   "state": "configured"
 }
@@ -55,7 +55,7 @@ fi
 if [ "$PATTERN" == "gps" ] || [ "$PATTERN" == "sgps" ] || [ "$PATTERN" == "" ]
 then
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "$ERR" != "null" ]
 then
   echo -e "$newhzndevice \nresulted in incorrect response: $RES"
@@ -67,7 +67,7 @@ fi
 # check for the error when running everything else
 else
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "$ERR" == "null" ]
 then
   echo -e "$newhzndevice \nresulted in incorrect response: $RES"
@@ -82,7 +82,7 @@ fi
 # transition from configured to configuring
 echo "Testing Configstate API"
 
-read -d '' newhzndevice <<EOF
+read -dr '' newhzndevice <<EOF
 {
   "state": "configuring"
 }
@@ -102,7 +102,7 @@ fi
 if [ "$PATTERN" == "gps" ] || [ "$PATTERN" == "sgps" ] || [ "$PATTERN" == "" ]
 then
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "${ERR:0:62}" != "Transition from 'configured' to 'configuring' is not supported" ]
 then
   echo -e "$newhzndevice \nresulted in incorrect response: $RES"
@@ -113,7 +113,7 @@ fi
 
 else
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "$ERR" != "null" ]
 then
   echo -e "$newhzndevice \nresulted in incorrect response: $RES"

@@ -74,7 +74,7 @@ function publish_new_netspeed_service {
 
 function update_sns_pattern {
     echo -e "\n${PREFIX} updating pattern sns with netspeed service 2.4.0..."
-    read -d '' sns <<EOF
+    read -dr '' sns <<EOF
 {
     "label": "Netspeed",
     "description": "a netspeed service based pattern",
@@ -214,7 +214,7 @@ EOF
 
 function update_ns_policy {
     echo -e "\n${PREFIX} updating deployment policy bp_netspeed with netspeed service 2.4.0..."
-    read -d '' bp_ns <<EOF
+    read -dr '' bp_ns <<EOF
 {
     "label": "business policy for netspeed",
     "description": "for netspeed",

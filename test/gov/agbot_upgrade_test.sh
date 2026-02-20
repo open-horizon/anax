@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # test 1 ================================================
-read -d '' upgradetest <<EOF
+read -dr '' upgradetest <<EOF
 {
   "agreementId": "1234567890"
 }
@@ -22,7 +22,7 @@ else
 fi
 
 # test 2 ================================================
-read -d '' upgradetest <<EOF
+read -dr '' upgradetest <<EOF
 EOF
 
 echo -e "\n\n[D] test payload: $upgradetest"
@@ -40,7 +40,7 @@ else
 fi
 
 # test 3 ================================================
-read -d '' upgradetest <<EOF
+read -dr '' upgradetest <<EOF
 EOF
 
 echo -e "\n\n[D] test payload: $upgradetest"
@@ -58,7 +58,7 @@ else
 fi
 
 # test 4 ================================================
-read -d '' upgradetest <<EOF
+read -dr '' upgradetest <<EOF
 {}
 EOF
 
@@ -77,7 +77,7 @@ else
 fi
 
 # test 5 ================================================
-read -d '' upgradetest <<EOF
+read -dr '' upgradetest <<EOF
 {
     "fred": 4
 }
@@ -98,7 +98,7 @@ else
 fi
 
 # test 6 ================================================
-read -d '' upgradetest <<EOF
+read -dr '' upgradetest <<EOF
 {
     "agreementId": "1234567890"
 }
@@ -119,7 +119,7 @@ else
 fi
 
 # test 7 ================================================
-read -d '' upgradetest <<EOF
+read -dr '' upgradetest <<EOF
 {
     "device": "abcdef"
 }
@@ -140,7 +140,7 @@ else
 fi
 
 # test 8 ================================================
-read -d '' upgradetest <<EOF
+read -dr '' upgradetest <<EOF
 {
     "device": "abcdef"
 }
@@ -173,7 +173,7 @@ do
     sleep 10
 done
 
-read -d '' upgradetest <<EOF
+read -dr '' upgradetest <<EOF
 {
     "agreementId": "$AGID"
 }
@@ -194,7 +194,7 @@ else
 fi
 
 # test 10 ================================================
-read -d '' upgradetest <<EOF
+read -dr '' upgradetest <<EOF
 {
     "agreementId": "$AGID"
 }
@@ -215,7 +215,7 @@ else
 fi
 
 # test 11 ================================================
-read -d '' upgradetest <<EOF
+read -dr '' upgradetest <<EOF
 {
     "agreementId": "$AGID",
     "device": "abcdef"

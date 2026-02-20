@@ -3,7 +3,7 @@
 # Complete configuration, transition from configuring to configured
 echo "Testing Configstate API"
 
-read -d '' newhzndevice <<EOF
+read -dr '' newhzndevice <<EOF
 {
   "state": "configured"
 }
@@ -18,7 +18,7 @@ then
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "$ERR" != "null" ]
 then
   echo -e "$newhzndevice \nresulted in incorrect response: $RES"

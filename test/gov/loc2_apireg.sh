@@ -10,7 +10,7 @@ if [ "$PATTERN" == "" ]
 then
 
 # and then configure by service API to opt into the node side services.
-read -d '' slocservice <<EOF
+read -dr '' slocservice <<EOF
 {
   "url": "https://bluehorizon.network/services/locgps",
   "name": "gps",
@@ -45,7 +45,7 @@ if [ "$ERR" != "null" ]; then
   exit 2
 fi
 
-read -d '' slocservice <<EOF
+read -dr '' slocservice <<EOF
 {
     "url": "https://bluehorizon.network/service-cpu",
     "name": "cpu",
@@ -77,7 +77,7 @@ if [ "$ERR" != "null" ]; then
     fi 
 fi
 
-read -d '' slocservice <<EOF
+read -dr '' slocservice <<EOF
 {
   "url": "https://bluehorizon.network/services/network2",
   "name": "gps",
@@ -102,7 +102,7 @@ fi
 elif [ "$PATTERN" == "sall" ] || [ "$PATTERN" == "sloc" ]; then
 
 # and then configure by service API
-read -d '' slocservice <<EOF
+read -dr '' slocservice <<EOF
 {
   "url": "https://bluehorizon.network/services/locgps",
   "name": "gps",

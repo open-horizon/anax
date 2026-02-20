@@ -68,7 +68,7 @@ fi
 
 
 # test service amd64
-read -d '' sdef <<EOF
+read -dr '' sdef <<EOF
 {
   "label":"Test service",
   "description":"Test service",
@@ -89,7 +89,7 @@ echo -e "Register amd64 test service:"
 results "$RES"
 
 # test service arm64
-read -d '' sdef <<EOF
+read -dr '' sdef <<EOF
 {
   "label":"Test service",
   "description":"Test service",
@@ -111,7 +111,7 @@ echo -e "Register arm64 test service:"
 results "$RES"
 
 # test service arm
-read -d '' sdef <<EOF
+read -dr '' sdef <<EOF
 {
   "label":"Test service",
   "description":"Test service",
@@ -133,7 +133,7 @@ echo -e "Register arm test service:"
 results "$RES"
 
 # test service ppc64le
-read -d '' sdef <<EOF
+read -dr '' sdef <<EOF
 {
   "label":"Test service",
   "description":"Test service",
@@ -200,7 +200,7 @@ fi
 
 # A no-op network service used by the netspeed service as a dependency.
 VERS="1.5.0"
-read -d '' sdef <<EOF
+read -dr '' sdef <<EOF
 {
   "label":"Network for ${ARCH}",
   "description":"Network service",
@@ -229,7 +229,7 @@ results "$RES"
 
 
 VERS="1.5.0"
-read -d '' sdef <<EOF
+read -dr '' sdef <<EOF
 {
   "label":"Network for ${ARCH}",
   "description":"Network service",
@@ -857,7 +857,7 @@ else
 fi
 
 VERS="1.0.0"
-read -d '' sdef <<EOF
+read -dr '' sdef <<EOF
 {
   "label": "GPS Test",
   "description": "a GPS Test pattern",
@@ -906,7 +906,7 @@ results "$RES"
 # fi
 
 # VERS="1.0.0"
-# read -d '' sdef <<EOF
+# read -dr '' sdef <<EOF
 # {
 #   "label": "Helm Test",
 #   "description": "a Helm Test pattern",
@@ -959,7 +959,7 @@ else
 fi
 
 VERS="1.0.0"
-read -d '' sdef <<EOF
+read -dr '' sdef <<EOF
 {
   "label": "UseHello",
   "description": "Multi-dependency Service pattern",
@@ -1044,7 +1044,7 @@ else
   CAS=600
 fi
 VERS="1.5.0"
-read -d '' sdef <<EOF
+read -dr '' sdef <<EOF
 {
   "label": "Weather",
   "description": "a weather pattern",
@@ -1122,7 +1122,7 @@ else
   CAS=600
 fi
 K8SVERS="1.0.0"
-read -d '' sdef <<EOF
+read -dr '' sdef <<EOF
 {
   "label": "K8s",
   "description": "a k8s pattern",
@@ -1158,7 +1158,7 @@ results "$RES"
 
 # k8s pattern with cluster namespace
 K8SVERS="1.0.0"
-read -d '' sdef <<EOF
+read -dr '' sdef <<EOF
 {
   "label": "K8s",
   "description": "a k8s pattern",
@@ -1195,7 +1195,7 @@ results "$RES"
 
 # k8s pattern with service has embedded ns
 K8SVERS="1.0.0"
-read -d '' sdef <<EOF
+read -dr '' sdef <<EOF
 {
   "label": "K8s",
   "description": "k8s pattern with service that has embedded ns",
@@ -1337,7 +1337,7 @@ RES=$(cat $KEY_TEST_DIR/policy_location.json | curl -sLX POST $CERT_VAR --header
 results "$RES"
 
 # gpstest policy
-read -d '' bpgpstestdef <<EOF
+read -dr '' bpgpstestdef <<EOF
 {
   "label": "business policy for gpstest",
   "description": "for gpstest",
@@ -1380,7 +1380,7 @@ echo -e "Register business policy for gpstest:"
 
 results "$RES"
 
-read -d '' bppwsdef <<EOF
+read -dr '' bppwsdef <<EOF
 {
   "label": "business policy for personal weather station",
   "description": "for pws",
@@ -1474,7 +1474,7 @@ if [ "${NOHZNDEV}" == "1" ] && [ "${NOHELLO}" == "1" ] && [ "${TEST_PATTERNS}" !
     echo -e "Skipping usehello policy creation"
 else
 
-read -d '' bphellodef <<EOF
+read -dr '' bphellodef <<EOF
 {
   "label": "business policy for usehello",
   "description": "for usehello",
@@ -1521,7 +1521,7 @@ results "$RES"
 
 fi
 
-read -d '' bpk8ssvc1def <<EOF
+read -dr '' bpk8ssvc1def <<EOF
 {
   "label": "business policy for k8s-service1",
   "description": "for gpstest",
@@ -1562,7 +1562,7 @@ echo -e "Register business policy bp_k8s for k8s-service1:"
 
 results "$RES"
 
-read -d '' bpk8swithembeddednsdef <<EOF
+read -dr '' bpk8swithembeddednsdef <<EOF
 {
   "label": "business policy for k8s-service-embedded-ns",
   "description": "for k8s embedded namespace test",
@@ -1604,7 +1604,7 @@ echo -e "Register business policy bp_k8s_embedded_ns for k8s-service-embedded-ns
 results "$RES"
 
 if [ "${NOVAULT}" != "1" ]; then
-read -d '' bpk8ssvc1def <<EOF
+read -dr '' bpk8ssvc1def <<EOF
 {
   "label": "business policy for k8s-hello-secret",
   "description": "Deployment Policy for k8s-hello-secret using a secret",
@@ -1668,7 +1668,7 @@ echo -e "Register business policy bp_k8s_secret for k8s-hello-secret:"
 results "$RES"
 fi
 
-read -d '' bpk8smmsdef <<EOF
+read -dr '' bpk8smmsdef <<EOF
 {
   "label": "business policy for k8s-hello-mms",
   "description": "Deployment Policy for k8s-hello-mms",
@@ -1712,7 +1712,7 @@ results "$RES"
 
 
 # ======================= Service Policies that use top level services ======================
-read -d '' nspoldef <<EOF
+read -dr '' nspoldef <<EOF
 {
   "properties": [
       {
@@ -1735,7 +1735,7 @@ echo -e "Register service policy for netspeed:"
 
 results "$RES"
 
-read -d '' gpstestpoldef <<EOF
+read -dr '' gpstestpoldef <<EOF
 {
   "properties": [
       {
@@ -1758,7 +1758,7 @@ echo -e "Register service policy for gpstest:"
 
 results "$RES"
 
-read -d '' locpoldef <<EOF
+read -dr '' locpoldef <<EOF
 {
   "properties": [
       {

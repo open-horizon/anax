@@ -28,7 +28,7 @@ function verifyAgreements() {
 
   # Look for agreements to appear.
   AG_LOOP_CNT=0
-  while [ $AG_LOOP_CNT -le $(expr $(expr 48 + 12 \* $TARGET_NUM_AG) \* $TIMEOUT_MUL) ]; do
+  while [ $AG_LOOP_CNT -le "$(expr "$(expr 48 + 12 \* $TARGET_NUM_AG)" \* $TIMEOUT_MUL)" ]; do
     echo -e "${PREFIX} waiting for ${TARGET_NUM_AG} agreement(s)"
 
     AGS=$(curl -sSL "$ANAX_API"/agreement | jq -r '.agreements.active')
@@ -54,7 +54,7 @@ function verifyAgreements() {
 function agreementExists() {
   echo -e "agreementExists(): line 55"
 
-  STILL_EXIST=$(echo $1 | jq -r '.[] | select (.current_agreement_id == "'$2'")')
+  STILL_EXIST=$(echo "$1" | jq -r '.[] | select (.current_agreement_id == "'$2'")')
   if [ "${STILL_EXIST}" == "" ]; then
     echo -e "${PREFIX} agreement $2 no longer exists"
     AAGS=$(curl -sSL "$ANAX_API"/agreement | jq -r '.agreements.archived')
@@ -334,8 +334,7 @@ verifyServices
 echo -e "line 334"
 
 # Verify exchange node status
-checkNodeStatus true
-if [ $? != 0 ]; then
+if ! checkNodeStatus true; then
   echo "Node status verification failed"
   exit 1
 fi

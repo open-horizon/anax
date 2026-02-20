@@ -49,7 +49,7 @@ if [ "${3}" == "IBM" ]; then
 fi
 
 # Setup the file sync service object metadata, based on the input parameters.
-read -d '' resmeta <<EOF
+read -dr '' resmeta <<EOF
 {
   "data": [],
   "meta": {

@@ -28,23 +28,22 @@ function checkNodeStatus {
 
     echo -e "Checking node status in the exchange..."
 
-    NST=$(hzn exchange node liststatus ${nodeId} -o ${org} -u ${creds})
-    if [ $? -ne 0 ]; then 
+    if ! NST=$(hzn exchange node liststatus "${nodeId}" -o "${org}" -u "${creds}"); then
        echo -e "Error getting node status from the exchange for node ${org}/${nodeId}: $NTS" 
        return 1
     fi
 
     # check if we got expected response
-    respContains=$(echo $NST | grep "services")
+    respContains=$(echo "$NST" | grep "services")
     if [ "${respContains}" == "" ]; then
         echo -e "\nERROR: Unexpected node status response:"
         echo -e "$NST"
         return 1
     fi
 
-    if [ $nonEmptyRunningSvcCheckEnabled == "true" ]; then
+    if [ "$nonEmptyRunningSvcCheckEnabled" == "true" ]; then
         # check if there is any renning services
-        runningService=$(echo $NST | jq -r ".runningServices")
+        runningService=$(echo "$NST" | jq -r ".runningServices")
         if [ "${runningService}" == "" ] || [ "${runningService}" == "|" ]; then
             echo -e "\nERROR: No services are running on the node"
             return 1
@@ -53,7 +52,7 @@ function checkNodeStatus {
 
     if [ "${svcUrl}" != "" ]; then
         # check if we got expected service running on node
-        runningService=$(echo $NST | jq -r ".runningServices" | grep $svcUrl)
+        runningService=$(echo "$NST" | jq -r ".runningServices" | grep "$svcUrl")
         if [ "${runningService}" == "" ]; then
             echo -e "\nERROR: Expected service '${svcUrl}' is not running on the node"
             return 1
@@ -77,7 +76,7 @@ function checkNodeStatus {
     done < <(echo "$NST" | jq -c '.services[]')
 
     if [ "${2}" != "" ]; then
-        if [ $svcCount != $2 ]; then
+        if [ $svcCount != "$2" ]; then
             echo -e "\nERROR: Expected ${2} running services, but got ${svcCount}"
             return 1
         fi

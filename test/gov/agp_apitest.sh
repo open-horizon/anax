@@ -4,7 +4,7 @@
 # Begin testing global agreement protocol attributes
 
 # missing protocol definition
-read -d '' agreementprotocolattribute <<EOF
+read -dr '' agreementprotocolattribute <<EOF
 {
   "type": "AgreementProtocolAttributes",
   "label": "Agreement Protocols",
@@ -35,7 +35,7 @@ else
 fi
 
 # no protocols specified
-read -d '' agreementprotocolattribute <<EOF
+read -dr '' agreementprotocolattribute <<EOF
 {
   "type": "AgreementProtocolAttributes",
   "label": "Agreement Protocols",
@@ -68,7 +68,7 @@ else
 fi
 
 # protocol is not a number
-read -d '' agreementprotocolattribute <<EOF
+read -dr '' agreementprotocolattribute <<EOF
 {
   "type": "AgreementProtocolAttributes",
   "label": "Agreement Protocols",
@@ -101,7 +101,7 @@ else
 fi
 
 # protocol is not an array of numbers
-read -d '' agreementprotocolattribute <<EOF
+read -dr '' agreementprotocolattribute <<EOF
 {
   "type": "AgreementProtocolAttributes",
   "label": "Agreement Protocols",
@@ -134,7 +134,7 @@ else
 fi
 
 # fred is not one of the supported protocol names
-read -d '' agreementprotocolattribute <<EOF
+read -dr '' agreementprotocolattribute <<EOF
 {
   "type": "AgreementProtocolAttributes",
   "label": "Agreement Protocols",
@@ -171,7 +171,7 @@ else
 fi
 
 # blockchain not specified correctly
-read -d '' agreementprotocolattribute <<EOF
+read -dr '' agreementprotocolattribute <<EOF
 {
   "type": "AgreementProtocolAttributes",
   "label": "Agreement Protocols",
@@ -208,7 +208,7 @@ else
 fi
 
 # blockchain array not specified correctly
-read -d '' agreementprotocolattribute <<EOF
+read -dr '' agreementprotocolattribute <<EOF
 {
   "type": "AgreementProtocolAttributes",
   "label": "Agreement Protocols",
@@ -245,7 +245,7 @@ else
 fi
 
 # blockchain type is not a number
-read -d '' agreementprotocolattribute <<EOF
+read -dr '' agreementprotocolattribute <<EOF
 {
   "type": "AgreementProtocolAttributes",
   "label": "Agreement Protocols",
@@ -287,7 +287,7 @@ else
 fi
 
 # blockchain name is not a number
-read -d '' agreementprotocolattribute <<EOF
+read -dr '' agreementprotocolattribute <<EOF
 {
   "type": "AgreementProtocolAttributes",
   "label": "Agreement Protocols",
@@ -329,7 +329,7 @@ else
 fi
 
 # blockchain type is not one of the supported types for Basic protocol
-read -d '' agreementprotocolattribute <<EOF
+read -dr '' agreementprotocolattribute <<EOF
 {
   "type": "AgreementProtocolAttributes",
   "label": "Agreement Protocols",
@@ -374,7 +374,7 @@ fi
 # Now testing service specific agreement protocol attributes
 
 # missing protocol specification
-read -d '' netspeedservice <<EOF
+read -dr '' netspeedservice <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -413,7 +413,7 @@ else
 fi
 
 # empty protocol array
-read -d '' netspeedservice <<EOF
+read -dr '' netspeedservice <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -454,7 +454,7 @@ else
 fi
 
 # invalid value type for protocol
-read -d '' netspeedservice <<EOF
+read -dr '' netspeedservice <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -495,7 +495,7 @@ else
 fi
 
 # invalid value type for protocol
-read -d '' netspeedservice <<EOF
+read -dr '' netspeedservice <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -536,7 +536,7 @@ else
 fi
 
 # fred is not a known protocol
-read -d '' netspeedservice <<EOF
+read -dr '' netspeedservice <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -581,7 +581,7 @@ else
 fi
 
 # invalid value type for protocol
-read -d '' netspeedservice <<EOF
+read -dr '' netspeedservice <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -626,7 +626,7 @@ else
 fi
 
 # invalid value type for protocol
-read -d '' netspeedservice <<EOF
+read -dr '' netspeedservice <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -671,7 +671,7 @@ else
 fi
 
 # invalid value type for blockchain type
-read -d '' netspeedservice <<EOF
+read -dr '' netspeedservice <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -721,7 +721,7 @@ else
 fi
 
 # invalid value type for blockchain name
-read -d '' netspeedservice <<EOF
+read -dr '' netspeedservice <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -771,7 +771,7 @@ else
 fi
 
 # invalid blockchain type for known protocol
-read -d '' netspeedservice <<EOF
+read -dr '' netspeedservice <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -826,7 +826,7 @@ fi
 if [ "$PATTERN" == "" ]
 then
 
-read -d '' netspeedservice <<EOF
+read -dr '' netspeedservice <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/no-such-service",
   "${SERVICE_NAME}": "no-such",
@@ -865,7 +865,7 @@ fi
 else
 
 # When patterns are in use, the device side cannot set any policy, there should be an error
-read -d '' netspeedservice <<EOF
+read -dr '' netspeedservice <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/no-such-service",
   "${SERVICE_NAME}": "no-such",

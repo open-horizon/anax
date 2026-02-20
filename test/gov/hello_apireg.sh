@@ -7,7 +7,7 @@ echo -e "Pattern is set to $PATTERN"
 if [ "$PATTERN" == "susehello" ] || [ "$PATTERN" == "sall" ]
 then
 
-  read -d '' helloconfig <<EOF
+  read -dr '' helloconfig <<EOF
 [
   {
     "serviceOrgid": "e2edev@somecomp.com",

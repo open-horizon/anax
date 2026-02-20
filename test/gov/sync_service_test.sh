@@ -9,7 +9,7 @@ organizations=( e2edev@somecomp.com userdev IBM Customer1 Customer2 )
 # $2 - expected result
 # $3 - error message
 function verify {
-    respContains=$(echo $1 | grep "$2")
+    respContains=$(echo "$1" | grep "$2")
     if [ "${respContains}" == "" ]; then
         echo -e "\nERROR: $3. Output was:"
         echo -e "$1"
@@ -26,7 +26,7 @@ function checkOrganizationsInMMS {
   found=false
   for (( ix=0; ix<$3; ix++ ))
   do
-    org1=$(echo $2 | jq '.['${ix}']."org-id"' | tr -d '"')
+    org1=$(echo "$2" | jq '.['${ix}']."org-id"' | tr -d '"')
 
     if [ "$org1" == "$1" ]; then
       echo "Find org $1 in CSS"
@@ -41,7 +41,7 @@ function checkOrganizationsInMMS {
   fi
 }
 
-if [ ${CERT_LOC} -eq "1" ]; then
+if [ "${CERT_LOC}" -eq "1" ]; then
   CERT_VAR="--cacert /certs/css.crt"
 else
   CERT_VAR=""
@@ -49,7 +49,7 @@ fi
 
 # Test organization is put in MMS
 echo "Checking Orgs in CSS..."
-GET_ORGS_RESP=$(curl -X GET -w "%{http_code}" $CERT_VAR -u root/root:$EXCH_ROOTPW --header 'Content-Type: application/json' "${CSS_URL}/api/v1/organizations")
+GET_ORGS_RESP=$(curl -X GET -w "%{http_code}" "$CERT_VAR" -u root/root:"$EXCH_ROOTPW" --header 'Content-Type: application/json' "${CSS_URL}/api/v1/organizations")
 RESP_LEN=${#GET_ORGS_RESP}
 GET_ORGS_CODE=${GET_ORGS_RESP: -3}
 echo "GET_ORGS_CODE: $GET_ORGS_CODE"
@@ -62,15 +62,15 @@ then
   exit 255
 fi
 
-NUM_ORGS=$(echo $ORG_RESP | jq length)
+NUM_ORGS=$(echo "$ORG_RESP" | jq length)
 echo "Find $NUM_ORGS orgs in CSS"
-for org in ${organizations[*]}
+for org in "${organizations[@]}"
   do
     checkOrganizationsInMMS "$org" "$ORG_RESP" "$NUM_ORGS"
   done
 
 # Test what happens when an invalid user id format is attempted
-UFORMAT=$(curl -sLX GET -w "%{http_code}" $CERT_VAR -u fred:ethel "${CSS_URL}/api/v1/destinations/userdev")
+UFORMAT=$(curl -sLX GET -w "%{http_code}" "$CERT_VAR" -u fred:ethel "${CSS_URL}/api/v1/destinations/userdev")
 
 if [ "$UFORMAT" != "Unauthorized403" ]
 then
@@ -79,7 +79,7 @@ then
 fi
 
 # Test what happens when an unknown user id is attempted
-UUSER=$(curl -sLX GET -w "%{http_code}" $CERT_VAR -u userdev/ethel:murray "${CSS_URL}/api/v1/destinations/userdev")
+UUSER=$(curl -sLX GET -w "%{http_code}" "$CERT_VAR" -u userdev/ethel:murray "${CSS_URL}/api/v1/destinations/userdev")
 
 if [ "$UUSER" != "Unauthorized403" ]
 then
@@ -88,7 +88,7 @@ then
 fi
 
 # Test what happens when an unknown node is attempted
-UNODE=$(curl -sLX GET -w "%{http_code}" $CERT_VAR -u fred/ethel/murray:ethel "${CSS_URL}/api/v1/destinations/userdev")
+UNODE=$(curl -sLX GET -w "%{http_code}" "$CERT_VAR" -u fred/ethel/murray:ethel "${CSS_URL}/api/v1/destinations/userdev")
 
 if [ "$UNODE" != "Unauthorized403" ]
 then
@@ -97,7 +97,7 @@ then
 fi
 
 # Test what happens when a valid node tries to access an API
-KNODE=$(curl -sLX GET -w "%{http_code}" $CERT_VAR -u userdev/susehello/an12345:Abcdefghijklmno1  "${CSS_URL}/api/v1/destinations/userdev")
+KNODE=$(curl -sLX GET -w "%{http_code}" "$CERT_VAR" -u userdev/susehello/an12345:Abcdefghijklmno1  "${CSS_URL}/api/v1/destinations/userdev")
 
 if [ "$KNODE" != "Unauthorized403" ]
 then
@@ -111,7 +111,7 @@ hzn exchange user list
 echo "Start testing hzn mms object publish"
 
 #setup metadata files
-read -d '' resmeta <<EOF
+read -dr '' resmeta <<EOF
 {
   "objectID": "test1",
   "objectType": "test",
@@ -122,7 +122,7 @@ read -d '' resmeta <<EOF
 EOF
 echo "$resmeta" > /tmp/meta.json
 
-read -d '' resmeta <<EOF
+read -dr '' resmeta <<EOF
 {
   "objectID": "test-medium1",
   "objectType": "test",
@@ -133,7 +133,7 @@ read -d '' resmeta <<EOF
 EOF
 echo "$resmeta" > /tmp/meta-medium.json
 
-read -d '' resmeta <<EOF
+read -dr '' resmeta <<EOF
 {
   "objectID": "test-large1",
   "objectType": "test",
@@ -144,7 +144,7 @@ read -d '' resmeta <<EOF
 EOF
 echo "$resmeta" > /tmp/meta-large.json
 
-read -d '' resmeta <<EOF
+read -dr '' resmeta <<EOF
 {
   "objectID": "test-with-streaming-upload",
   "objectType": "test",
@@ -161,7 +161,7 @@ dd if=/dev/zero of=/tmp/data-small.txt count=32 bs=1048576
 dd if=/dev/zero of=/tmp/data-large.txt count=512 bs=1048576
 
 RESOURCE_ORG1=e2edev@somecomp.com
-RESOURCE_TYPE=test
+RESOURCE_TYPE="test"
 
 export HZN_FSS_CSSURL=${CSS_URL}
 
@@ -205,10 +205,10 @@ fi
 echo "Testing uploaded object has values in publicKey and signature fields, and has correct object size"
 OBJS_CMD=$(hzn mms object list --objectType=test --objectId=test-large1 -l | awk '{if(NR>1)print}')
 EXPECTED_OBJECT_SIZE=536870912
-if [ "$(echo ${OBJS_CMD} | jq -r '.[0].publicKey')" == "" ] || [ "$(echo ${OBJS_CMD} | jq -r '.[0].signature')" == "" ]; then
+if [ "$(echo "${OBJS_CMD}" | jq -r '.[0].publicKey')" == "" ] || [ "$(echo "${OBJS_CMD}" | jq -r '.[0].signature')" == "" ]; then
   echo -e "publicKey or signature should be set by default"
   exit 1
-elif [ $(echo ${OBJS_CMD} | jq -r '.[0].objectSize') != "${EXPECTED_OBJECT_SIZE}" ]; then
+elif [ "$(echo "${OBJS_CMD}" | jq -r '.[0].objectSize')" != "${EXPECTED_OBJECT_SIZE}" ]; then
   echo -e "object size is not equal to expected object size: ${EXPECTED_OBJECT_SIZE}"
   exit 1
 else
@@ -218,7 +218,7 @@ fi
 # object has values in "publicKey" and "signature" fields
 echo "Testing object has values in publicKey and signature fields"
 OBJS_CMD=$(hzn mms object list --objectType=test --objectId=test-medium1 -l | awk '{if(NR>1)print}')
-if [ "$(echo ${OBJS_CMD} | jq -r '.[0].publicKey')" == "" ] || [ "$(echo ${OBJS_CMD} | jq -r '.[0].signature')" == "" ]; then
+if [ "$(echo "${OBJS_CMD}" | jq -r '.[0].publicKey')" == "" ] || [ "$(echo "${OBJS_CMD}" | jq -r '.[0].signature')" == "" ]; then
   echo -e "publicKey or signature should be set by default"
   exit 1
 else
@@ -257,7 +257,7 @@ fi
 # object has empty value in "hashAlgorithm", "publicKey" and "signature" fields
 echo "Testing object has empty values for hashAlgorithm, publicKey and signature fields"
 OBJS_CMD=$(hzn mms object list --objectType=test --objectId=test1 -l | awk '{if(NR>1)print}')
-if [ "$(echo ${OBJS_CMD} | jq -r '.[0].publicKey')" != "" ] || [ "$(echo ${OBJS_CMD} | jq -r '.[0].signature')" != "" ] || [ "$(echo ${OBJS_CMD} | jq -r '.[0].hashAlgorithm')" != "" ]; then
+if [ "$(echo "${OBJS_CMD}" | jq -r '.[0].publicKey')" != "" ] || [ "$(echo "${OBJS_CMD}" | jq -r '.[0].signature')" != "" ] || [ "$(echo "${OBJS_CMD}" | jq -r '.[0].hashAlgorithm')" != "" ]; then
   echo -e "publicKey or signature should not be set if publish with --noIntegrity flag"
   exit 1
 else
@@ -267,7 +267,7 @@ fi
 # Test object publish with --hash and -a
 echo "Testing object publish with --hash and -a flags"
 SHA1_HASH=$(sha1sum /tmp/data-small.txt | awk '{print $1;}')
-hzn mms object publish -m /tmp/meta.json -f /tmp/data-small.txt --hash $SHA1_HASH -a SHA1 >/dev/null
+hzn mms object publish -m /tmp/meta.json -f /tmp/data-small.txt --hash "$SHA1_HASH" -a SHA1 >/dev/null
 RC=$?
 if [ $RC -ne 0 ]
 then
@@ -280,7 +280,7 @@ fi
 # object has values in "hashAlgorithm", "publicKey" and "signature" fields
 echo "Testing object has values in hashAlgorithm, publicKey and signature fields"
 OBJS_CMD=$(hzn mms object list --objectType=test --objectId=test1 -l | awk '{if(NR>1)print}')
-if [ "$(echo ${OBJS_CMD} | jq -r '.[0].publicKey')" == "" ] || [ "$(echo ${OBJS_CMD} | jq -r '.[0].signature')" == "" ] || [ "$(echo ${OBJS_CMD} | jq -r '.[0].hashAlgorithm')" == "" ]; then
+if [ "$(echo "${OBJS_CMD}" | jq -r '.[0].publicKey')" == "" ] || [ "$(echo "${OBJS_CMD}" | jq -r '.[0].signature')" == "" ] || [ "$(echo "${OBJS_CMD}" | jq -r '.[0].hashAlgorithm')" == "" ]; then
   echo -e "publicKey or signature should be set if publish with --hash flag"
   exit 1
 else
@@ -290,7 +290,7 @@ fi
 # Test object publish signing with SHA256
 echo "Testing object publish signing with SHA256"
 SHA256_HASH=$(sha256sum /tmp/data-small.txt | awk '{print $1;}')
-hzn mms object publish -m /tmp/meta.json -f /tmp/data-small.txt --hash $SHA256_HASH >/dev/null
+hzn mms object publish -m /tmp/meta.json -f /tmp/data-small.txt --hash "$SHA256_HASH" >/dev/null
 RC=$?
 if [ $RC -ne 0 ]
 then
@@ -303,7 +303,7 @@ fi
 # object has values in "hashAlgorithm", "publicKey" and "signature" fields
 echo "Testing object has values in hashAlgorithm, publicKey and signature fields"
 OBJS_CMD=$(hzn mms object list --objectType=test --objectId=test1 -l | awk '{if(NR>1)print}')
-if [ "$(echo ${OBJS_CMD} | jq -r '.[0].publicKey')" == "" ] || [ "$(echo ${OBJS_CMD} | jq -r '.[0].signature')" == "" ] || [ "$(echo ${OBJS_CMD} | jq -r '.[0].hashAlgorithm')" == "" ]; then
+if [ "$(echo "${OBJS_CMD}" | jq -r '.[0].publicKey')" == "" ] || [ "$(echo "${OBJS_CMD}" | jq -r '.[0].signature')" == "" ] || [ "$(echo "${OBJS_CMD}" | jq -r '.[0].hashAlgorithm')" == "" ]; then
   echo -e "publicKey or signature should be set if publish with -s and -a flag"
   exit 1
 else
@@ -312,7 +312,7 @@ fi
 
 # Object publish should fail if --hash (hash value) is inconsistent with -a (hash algorithm) 
 echo "Testing object publish should fail if --hash (hash value) is inconsistent with -a (hash algorithm) "
-hzn mms object publish -m /tmp/meta.json -f /tmp/data-small.txt --hash $SHA1_HASH -a SHA256 >/dev/null
+hzn mms object publish -m /tmp/meta.json -f /tmp/data-small.txt --hash "$SHA1_HASH" -a SHA256 >/dev/null
 RC=$?
 if [ $RC -eq 0 ]
 then
@@ -349,10 +349,10 @@ fi
 # object has correct "publicKey" field
 echo "Testing object is stored with publicKey field that was generated from given private key file"
 OBJS_CMD=$(hzn mms object list --objectType=test --objectId=test1 -l | awk '{if(NR>1)print}')
-if [ "$(echo ${OBJS_CMD} | jq -r '.[0].publicKey')" = "" ]; then
+if [ "$(echo "${OBJS_CMD}" | jq -r '.[0].publicKey')" = "" ]; then
   echo -e "publicKey should be set if publish with -k flag"
   exit 1
-elif [ "$(echo ${OBJS_CMD} | jq -r '.[0].publicKey')" != "$(cat /tmp/mms.public.key | sed '1d;$d' | awk '{ printf "%s", $0 }')" ]; then
+elif [ "$(echo "${OBJS_CMD}" | jq -r '.[0].publicKey')" != "$(cat /tmp/mms.public.key | sed '1d;$d' | awk '{ printf "%s", $0 }')" ]; then
   echo -e "publicKey does not correspond to given private key file using -k flag"
   exit 1
 else
@@ -375,10 +375,10 @@ fi
 # object has correct "publicKey" field
 echo "Testing object is stored with publicKey field that was generated from env variable HZN_PRIVATE_KEY_FILE"
 OBJS_CMD=$(hzn mms object list --objectType=test --objectId=test1 -l | awk '{if(NR>1)print}')
-if [ "$(echo ${OBJS_CMD} | jq -r '.[0].publicKey')" = "" ]; then
+if [ "$(echo "${OBJS_CMD}" | jq -r '.[0].publicKey')" = "" ]; then
   echo -e "publicKey should be set if publish when HZN_PRIVATE_KEY_FILE is set"
   exit 1
-elif [ "$(echo ${OBJS_CMD} | jq -r '.[0].publicKey')" != "$(cat /tmp/env.public.key | sed '1d;$d' | awk '{ printf "%s", $0 }')" ]; then
+elif [ "$(echo "${OBJS_CMD}" | jq -r '.[0].publicKey')" != "$(cat /tmp/env.public.key | sed '1d;$d' | awk '{ printf "%s", $0 }')" ]; then
   echo -e "publicKey does not correspond private key file using HZN_PRIVATE_KEY_FILE env variable"
   exit 1
 else
@@ -401,10 +401,10 @@ fi
 # object has correct "publicKey" field
 echo "Testing object is stored with publicKey field that is stored in default path (~/.hzn/keys/service.private.key)"
 OBJS_CMD=$(hzn mms object list --objectType=test --objectId=test1 -l | awk '{if(NR>1)print}')
-if [ "$(echo ${OBJS_CMD} | jq -r '.[0].publicKey')" = "" ]; then
+if [ "$(echo "${OBJS_CMD}" | jq -r '.[0].publicKey')" = "" ]; then
   echo -e "publicKey should be set if publish without -k flag or HZN_PRIVATE_KEY_FILE set"
   exit 1
-elif [ "$(echo ${OBJS_CMD} | jq -r '.[0].publicKey')" != "$(openssl x509 -in ~/.hzn/keys/service.public.pem -pubkey -nocert | sed '1d;$d' | awk '{ printf "%s", $0 }')" ]; then
+elif [ "$(echo "${OBJS_CMD}" | jq -r '.[0].publicKey')" != "$(openssl x509 -in ~/.hzn/keys/service.public.pem -pubkey -nocert | sed '1d;$d' | awk '{ printf "%s", $0 }')" ]; then
   echo -e "publicKey does not match default public key file stored at ~/.hzn/keys/service.public.pem"
   exit 1
 else
@@ -416,7 +416,7 @@ rm /tmp/mms.private.key
 rm /tmp/mms.public.key
 rm /tmp/env.private.key
 rm /tmp/env.public.key
-if [ MADE_DEFAULT_KEYS = 1 ]
+if [ $MADE_DEFAULT_KEYS = 1 ]
 then
   rm ~/.hzn/keys/service.private.key
   rm ~/.hzn/keys/service.public.pem
@@ -426,7 +426,7 @@ fi
 echo "Start testing hzn mms object list"
 
 # Adding objects
-read -d '' resmeta <<EOF
+read -dr '' resmeta <<EOF
 {
   "objectID": "test2",
   "objectType": "test",
@@ -448,7 +448,7 @@ then
   exit 255
 fi
 
-read -d '' resmeta <<EOF
+read -dr '' resmeta <<EOF
 {
   "objectID": "test3",
   "objectType": "test",
@@ -472,7 +472,7 @@ then
 fi
 
 # adding an object with data for MMS access testing
-read -d '' resmeta <<EOF
+read -dr '' resmeta <<EOF
 {
   "objectID": "test_user_access",
   "objectType": "test",
@@ -509,9 +509,9 @@ else
   echo "Completed"
 fi
 
-for (( ix=0; ix<$NUM_OBJS; ix++ ))
+for (( ix=0; ix<"$NUM_OBJS"; ix++ ))
 do
-  if [ $(echo $OBJS_CMD | jq -r '.['${ix}'].instanceID') != null ]; then
+  if [ "$(echo "$OBJS_CMD" | jq -r '.['${ix}'].instanceID')" != null ]; then
     echo -e "Got unexpected field listing without -l"
     exit 1
   fi
@@ -520,16 +520,16 @@ done
 # -l
 TARGET_NUM_OBJS=9
 OBJS_CMD=$(hzn mms object list -l | awk '{if(NR>1)print}')
-NUM_OBJS=$(echo $OBJS_CMD | jq '. | length')
+NUM_OBJS=$(echo "$OBJS_CMD" | jq '. | length')
 if [ "${TARGET_NUM_OBJS}" != "${NUM_OBJS}" ]
 then
   echo -e "Expected ${TARGET_NUM_OBJS} objects but object list -l returned ${NUM_OBJS} objects"
   exit 1
 fi
 
-for (( ix=0; ix<$NUM_OBJS; ix++ ))
+for (( ix=0; ix<"$NUM_OBJS"; ix++ ))
 do
-  if [ $(echo $OBJS_CMD | jq -r '.['${ix}'].instanceID') == null ]; then
+  if [ "$(echo "$OBJS_CMD" | jq -r '.['${ix}'].instanceID')" == null ]; then
     echo -e "Got unexpected field listing with -l"
     exit 1
   fi
@@ -538,16 +538,16 @@ done
 # -d
 TARGET_NUM_OBJS=9
 OBJS_CMD=$(hzn mms object list -d | awk '{if(NR>1)print}')
-NUM_OBJS=$(echo $OBJS_CMD | jq '. | length')
+NUM_OBJS=$(echo "$OBJS_CMD" | jq '. | length')
 if [ "${TARGET_NUM_OBJS}" != "${NUM_OBJS}" ]
 then
   echo -e "Expected ${TARGET_NUM_OBJS} objects but object list -d returned ${NUM_OBJS} objects"
   exit 1
 fi
 
-for (( ix=0; ix<$NUM_OBJS; ix++ ))
+for (( ix=0; ix<"$NUM_OBJS"; ix++ ))
 do
-  if [ $(echo $OBJS_CMD | jq -r '.['${ix}'].objectStatus') == null ]; then
+  if [ "$(echo "$OBJS_CMD" | jq -r '.['${ix}'].objectStatus')" == null ]; then
     echo -e "Got unexpected field listing with -l"
     exit 1
   fi
@@ -566,7 +566,7 @@ WRONG_OBJECT_ID=test1
 # --objectType
 TARGET_NUM_OBJS=2
 OBJS_CMD=$(hzn mms object list --objectType=${OBJECT_TYPE} | awk '{if(NR>1)print}')
-NUM_OBJS=$(echo $OBJS_CMD | jq '. | length')
+NUM_OBJS=$(echo "$OBJS_CMD" | jq '. | length')
 if [ "${TARGET_NUM_OBJS}" != "${NUM_OBJS}" ]
 then
   echo -e "Expected ${TARGET_NUM_OBJS} objects but object list --objectType=${OBJECT_TYPE} returned ${NUM_OBJS} objects"
@@ -576,7 +576,7 @@ fi
 # --objectType --objectId
 TARGET_NUM_OBJS=1
 OBJS_CMD=$(hzn mms object list --objectType=${OBJECT_TYPE} --objectId=${OBJECT_ID} | awk '{if(NR>1)print}')
-NUM_OBJS=$(echo $OBJS_CMD | jq '. | length')
+NUM_OBJS=$(echo "$OBJS_CMD" | jq '. | length')
 if [ "${TARGET_NUM_OBJS}" != "${NUM_OBJS}" ]; then
   echo "Expected ${TARGET_NUM_OBJS} objects but object list --objectType=${OBJECT_TYPE} --objectId=${OBJECT_ID} returned ${NUM_OBJS} objects"
   exit 1
@@ -613,7 +613,7 @@ then
   # --destinationType --destinationId
   TARGET_NUM_OBJS=1
   OBJS_CMD=$(hzn mms object list --destinationType=${DEST_TYPE} --destinationId=${DEST_ID} | awk '{if(NR>1)print}')
-  NUM_OBJS=$(echo $OBJS_CMD | jq '. | length')
+  NUM_OBJS=$(echo "$OBJS_CMD" | jq '. | length')
   if [ "${TARGET_NUM_OBJS}" != "${NUM_OBJS}" ]; then
     echo -e "Expected ${TARGET_NUM_OBJS} objects but object list  --destinationType=${DEST_TYPE} --destinationId=${DEST_ID} returned ${NUM_OBJS} objects"
     exit 1
@@ -759,7 +759,7 @@ if [ "${TARGET_NUM_OBJS}" != "${NUM_OBJS}" ]; then
   exit 1
 fi
 
-if [ $(echo $OBJS_CMD | jq -r '.[0].objectID') != ${RESULT_OBJ_ID} ]; then
+if [ "$(echo "$OBJS_CMD" | jq -r '.[0].objectID')" != ${RESULT_OBJ_ID} ]; then
   echo -e "Got unexpected objects listing with --data=false"
   exit 1
 fi
@@ -776,7 +776,7 @@ fi
 
 for (( ix=0; ix<"$NUM_OBJS"; ix++ ))
 do
-  if [ $(echo $OBJS_CMD | jq -r '.['${ix}'].objectID') == ${RESULT_OBJ_ID} ]; then
+  if [ "$(echo "$OBJS_CMD" | jq -r '.['${ix}'].objectID')" == ${RESULT_OBJ_ID} ]; then
     echo -e "Got unexpected object listing with --data=true"
     exit 1
   fi
@@ -793,14 +793,13 @@ if [ "${TARGET_NUM_OBJS}" != "${NUM_OBJS}" ]; then
   exit 1
 fi
 
-if [ $(echo $OBJS_CMD | jq -r '.[0].objectID') != ${RESULT_OBJ_ID} ]; then
+if [ "$(echo "$OBJS_CMD" | jq -r '.[0].objectID')" != ${RESULT_OBJ_ID} ]; then
   echo -e "Got unexpected objects listing with --expirationTime"
   exit 1
 fi
 
 WRONGFMT_EXP_TIME_BEFORE="20301002T150000Z"
-hzn mms object list --expirationTime=${WRONGFMT_EXP_TIME_BEFORE}
-if [ $? -eq 0 ]; then
+if ! hzn mms object list --expirationTime=${WRONGFMT_EXP_TIME_BEFORE}; then
     echo -e "Should return error message when list with --expirationTime in wrong format"
     exit 1
 fi
@@ -841,8 +840,7 @@ function testUserHaveAccessToALLObjects {
     DOWNLOADED_FILE="${5}_${6}"
     if [ -f "$DOWNLOADED_FILE" ]; then
         echo "$DOWNLOADED_FILE already exists. Deleted before downloading..."
-        rm -f "$DOWNLOADED_FILE"
-        if [ $? -ne 0 ]; then
+        if ! rm -f "$DOWNLOADED_FILE"; then
             echo -e "Failed to remove $DOWNLOADED_FILE"
             exit 255
         fi
@@ -858,7 +856,7 @@ function testUserHaveAccessToALLObjects {
 
     # publish
     # have access to update object in user's org
-    read -d '' resmeta <<EOF
+    read -dr '' resmeta <<EOF
     {
       "objectID": "${8}",
       "objectType": "${7}",
@@ -910,7 +908,7 @@ function testUserNotHaveAccessToPrivateObjects {
 
      # don't have access to update private object
     echo "user ${2} is publishing object: ${5} ${6}"
-    read -d '' resmeta <<EOF
+    read -dr '' resmeta <<EOF
     {
       "objectID": "${6}",
       "objectType": "${5}",
@@ -957,7 +955,7 @@ function verifyUserAccessForPublicObject {
 
     echo "Verify user $1/$2 doesn't have WRITE access to public object in $4 org"
     # user can't update object metadata or object data
-read -d '' resmeta <<EOF
+read -dr '' resmeta <<EOF
 {
   "data": [],
   "meta": {
@@ -1008,7 +1006,7 @@ function verifyAdminUserCanCreatePublicObject {
     export HZN_ORG_ID=${1}
 
     # hub admin can create public object in anyorg
-read -d '' resmeta <<EOF
+read -dr '' resmeta <<EOF
 {
   "objectID": "public_obj",
   "objectType": "public",

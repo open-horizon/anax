@@ -12,7 +12,7 @@ ORG="e2edev@somecomp.com"
 # missing org
 echo "Testing node API"
 
-read -d '' newhzndevice <<EOF
+read -dr '' newhzndevice <<EOF
 {
   "id": "$DEVICE_ID",
   "name": "$DEVICE_NAME",
@@ -39,7 +39,7 @@ else
 fi
 
 # undefined org
-read -d '' newhzndevice <<EOF
+read -dr '' newhzndevice <<EOF
 {
   "id": "$DEVICE_ID",
   "name": "$DEVICE_NAME",
@@ -67,7 +67,7 @@ else
 fi
 
 # undefined pattern
-read -d '' newhzndevice <<EOF
+read -dr '' newhzndevice <<EOF
 {
   "id": "$DEVICE_ID",
   "name": "$DEVICE_NAME",
@@ -101,7 +101,7 @@ fi
 # node not registered yet
 echo "Testing Configstate API"
 
-read -d '' newhzndevice <<EOF
+read -dr '' newhzndevice <<EOF
 {
   "state": "configuring"
 }
@@ -168,7 +168,7 @@ else
 fi
 
 # Incorrect input (not demarshallable) on POST
-read -d '' newhznpolicy <<EOF
+read -dr '' newhznpolicy <<EOF
 {
   "properties": [{name":"prop1"}],
   "constraints": ""
@@ -194,7 +194,7 @@ else
 fi
 
 # Incorrect input (wrong field types) on PUT
-read -d '' newhznpolicy <<EOF
+read -dr '' newhznpolicy <<EOF
 {
   "properties": 11,
   "constraints": 0
@@ -246,7 +246,7 @@ echo "Calling node API"
 curl -sS -H "Content-Type: application/json" "$ANAX_API/node" | jq -er '. | .account.id' > /dev/null
 
 if [[ $? -eq 0 ]]; then
-  read -d '' updatehzntoken <<EOF
+  read -dr '' updatehzntoken <<EOF
 {
   "token": "$TOKEN",
   "id": "$DEVICE_ID",
@@ -263,7 +263,7 @@ EOF
 
 else
 
-  read -d '' newhzndevice <<EOF
+  read -dr '' newhzndevice <<EOF
 {
   "id": "$DEVICE_ID",
   "name": "$DEVICE_NAME",

@@ -7,7 +7,7 @@ EMAIL="foo@goo.com"
 curl -sS -H "Content-Type: application/json" "$ANAX_API/node" | jq -er '. | .account.id' > /dev/null
 
 if [[ $? -eq 0 ]]; then
-  read -d '' updatehzntoken <<EOF
+  read -dr '' updatehzntoken <<EOF
 {
   "account": {
     "id": "$USER"
@@ -24,7 +24,7 @@ EOF
 
 else
 
-  read -d '' newhzndevice <<EOF
+  read -dr '' newhzndevice <<EOF
 {
   "account": {
     "id": "$USER",
@@ -43,7 +43,7 @@ EOF
   echo "$newhzndevice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/node"
 fi
 
-read -d '' gpstestservice <<EOF
+read -dr '' gpstestservice <<EOF
 {
   "sensor_url": "https://bluehorizon.network/documentation/gpstest-device-api",
   "sensor_name": "gpstest",
@@ -68,7 +68,7 @@ echo "Registering gpstest service"
 
 echo "$gpstestservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/microservice/config"
 
-read -d '' location2service <<EOF
+read -dr '' location2service <<EOF
 {
   "sensor_url": "https://bluehorizon.network/documentation/location2-device-api",
   "sensor_name": "location2",

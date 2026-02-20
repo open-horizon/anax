@@ -160,7 +160,7 @@ if [ $? -ne 0 ]; then
 fi
 
 echo -e "${PREFIX} suspending the e2edev@somecomp.com/location service..."
-read -d '' sconfig <<EOF
+read -dr '' sconfig <<EOF
 {
    "url":         "https://bluehorizon.network/services/location",
    "org":          "e2edev@somecomp.com",
@@ -247,7 +247,7 @@ if [ $? -ne 0 ]; then
     exit 2
 fi
 echo -e "${PREFIX} resuming e2edev@somecomp.com/location service..."
-read -d '' sconfig <<EOF
+read -dr '' sconfig <<EOF
 {
    "url":         "https://bluehorizon.network/services/location",
    "org":          "e2edev@somecomp.com",

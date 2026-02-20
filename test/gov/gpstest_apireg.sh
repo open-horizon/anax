@@ -8,7 +8,7 @@ then
 echo -e "Pattern is set to $PATTERN"
 
   # add user input with /node/userinput api
-  read -d '' nodeui <<EOF
+  read -dr '' nodeui <<EOF
 [
     {
       "serviceOrgid": "IBM",
@@ -56,7 +56,7 @@ EOF
 # blockchain is in use
 else
 
-read -d '' splitgpsservice <<EOF
+read -dr '' splitgpsservice <<EOF
 {
   "sensor_url": "https://bluehorizon.network/microservices/gps",
   "sensor_name": "gps",
