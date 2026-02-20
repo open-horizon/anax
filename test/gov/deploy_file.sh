@@ -49,8 +49,10 @@ if [ "${3}" == "IBM" ]; then
   IS_PUBLIC_OBJ=true
 fi
 
+echo "organization: ${3} , public: ${8}"
+
 # Setup the file sync service object metadata, based on the input parameters.
-read -d '' resmeta <<EOF
+read -dr '' resmeta <<EOF
 {
   "data": [],
   "meta": {
@@ -68,7 +70,7 @@ EOF
 
 if [ "${3}" == "IBM" ]; then
   # deploy public object to IBM using exchange root credentials
-  ADDM=$(curl -sLX PUT -w "%{http_code}" "$CERT_VAR" -u "root/root:${EXCH_ROOTPW}" "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}" --data "$resmeta")
+  ADDM=$(curl -fsSLvX PUT -w "%{http_code}" "$CERT_VAR" -u "root/root:${EXCH_ROOTPW}" "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}" --data "$resmeta")
 
   if [ "$ADDM" != "204" ]
   then
@@ -77,7 +79,7 @@ if [ "${3}" == "IBM" ]; then
     exit 255
   fi
 
-  ADDF=$(curl -sLX PUT -w "%{http_code}" "$CERT_VAR" -u "root/root:${EXCH_ROOTPW}" --header 'Content-Type:application/octet-stream' "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}/data" --data-binary @"${1}")
+  ADDF=$(curl -fsSLvX PUT -w "%{http_code}" "$CERT_VAR" -u "root/root:${EXCH_ROOTPW}" --header 'Content-Type:application/octet-stream' "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}/data" --data-binary @"${1}")
 
   if [ "$ADDF" == "204" ]
   then
@@ -98,16 +100,16 @@ else
 
   #echo -e "echo \"$resmeta\" | curl -sLX PUT -w \"%{http_code}\" $CERT_VAR -u \"${3}/${admin_user}:${admin_pw}\" \"${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}\" --data @-"
   #echo ""
-  ADDM=$(curl -sLX PUT -w "%{http_code}" "$CERT_VAR" -u "${3}/${admin_user}:${admin_pw}" "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}" --data "$resmeta")
+  ADDM=$(curl -fsSLvX PUT -w "%{http_code}" "$CERT_VAR" -u "${3}/${admin_user}:${admin_pw}" "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}" --data "$resmeta")
 
   if [ "$ADDM" != "204" ]
   then
-    echo -e "$resmeta \nPUT returned:"
+    echo -e "PUT returned:"
     echo "$ADDM"
     exit 255
   fi
   
-  ADDF=$(curl -sLX PUT -w "%{http_code}" "$CERT_VAR" -u "${3}/${admin_user}:${admin_pw}" --header 'Content-Type:application/octet-stream' "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}/data" --data-binary @"${1}")
+  ADDF=$(curl -fsSLvX PUT -w "%{http_code}" "$CERT_VAR" -u "${3}/${admin_user}:${admin_pw}" --header 'Content-Type:application/octet-stream' "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}/data" --data-binary @"${1}")
 
   if [ "$ADDF" == "204" ]
   then

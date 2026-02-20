@@ -34,10 +34,11 @@ DOCKER_DEV_OPTS :=  --rm --no-cache --build-arg ARCH=$(arch)
 E2EDEVTEST_TEMPFS := $(CURDIR)/docker/tempfs/e2edevtest
 CERT_LOC ?= 0
 
-HZN_TRANSPORT=https
 ifeq ($(CERT_LOC),0)
 	HZN_TRANSPORT=http
-endif	
+else
+	HZN_TRANSPORT=https
+endif
 
 # anax
 DOCKER_ANAX_INAME := openhorizon/$(arch)_anax:testing
