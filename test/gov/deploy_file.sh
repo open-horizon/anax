@@ -67,7 +67,7 @@ EOF
 if [ "${3}" == "IBM" ];
 then
   # deploy public object to IBM using exchange root credentials
-  ADDM=$(curl -fsSLvX PUT -w "%{http_code}" "$CERT_VAR" -u "root/root:${EXCH_ROOTPW}" --header "Accept:application/json" --header "Content-Type:application/json" "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}" --data "$resmeta")
+  ADDM=$(curl -fsSLvX PUT -w "%{http_code}" "$CERT_VAR" -u "root/root:${EXCH_ROOTPW}" --header "Accept:application/json" --header "Content-Type:application/json" "${CSS_URL}/api/v1/objects/$(echo  "${3}/${4}/${FILENAME}" | jq -srR @uri)" --data "$resmeta")
 
   if [ "$ADDM" != "204" ]
   then
@@ -75,7 +75,7 @@ then
     exit 255
   fi
 
-  ADDF=$(curl -fsSLvX PUT -w "%{http_code}" "$CERT_VAR" -u "root/root:${EXCH_ROOTPW}" --header 'Accept:application/json' --header "Content-Type:octet-stream" "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}/data" --data-binary @"${1}")
+  ADDF=$(curl -fsSLvX PUT -w "%{http_code}" "$CERT_VAR" -u "root/root:${EXCH_ROOTPW}" --header 'Accept:application/json' --header "Content-Type:octet-stream" "${CSS_URL}/api/v1/objects/$(echo  "${3}/${4}/${FILENAME}" | jq -srR @uri)/data" --data-binary @"${1}")
 
   if [ "$ADDF" == "204" ]
   then
@@ -95,7 +95,7 @@ else
 
   #echo -e "echo \"$resmeta\" | curl -sLX PUT -w \"%{http_code}\" $CERT_VAR -u \"${3}/${admin_user}:${admin_pw}\" \"${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}\" --data @-"
   #echo ""
-  ADDM=$(curl -fsSLvX PUT -w "%{http_code}" "$CERT_VAR" -u "${3}/${admin_user}:${admin_pw}" --header "Accept:application/json" --header "Content-Type:application/json" "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}" --data "$resmeta")
+  ADDM=$(curl -fsSLvX PUT -w "%{http_code}" "$CERT_VAR" -u "${3}/${admin_user}:${admin_pw}" --header "Accept:application/json" --header "Content-Type:application/json" "${CSS_URL}/api/v1/objects/$(echo  "${3}/${4}/${FILENAME}" | jq -srR @uri)" --data "$resmeta")
 
   if [ "$ADDM" != "204" ]
   then
@@ -103,7 +103,7 @@ else
     exit 255
   fi
   
-  ADDF=$(curl -fsSLvX PUT -w "%{http_code}" "$CERT_VAR" -u "${3}/${admin_user}:${admin_pw}" --header 'Accept:application/json' --header "Content-Type:octet-stream" "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}/data" --data-binary @"${1}")
+  ADDF=$(curl -fsSLvX PUT -w "%{http_code}" "$CERT_VAR" -u "${3}/${admin_user}:${admin_pw}" --header 'Accept:application/json' --header "Content-Type:octet-stream" "${CSS_URL}/api/v1/objects/$(echo  "${3}/${4}/${FILENAME}" | jq -srR @uri)/data" --data-binary @"${1}")
 
   if [ "$ADDF" == "204" ]
   then
