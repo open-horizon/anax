@@ -65,7 +65,7 @@ EOF
 # echo -e "\n$resmeta\n"
 echo -e "\n${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}\n"
 
-URL_ENCODED_3=$(echo "${3}" | jq -rRs @uri)
+URL_ENCODED_3=$(echo -n "${3}" | jq -rRs @uri)
 
 if [ "${3}" == "IBM" ];
 then
