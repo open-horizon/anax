@@ -15,7 +15,7 @@ else
 fi
 
 # ensure the agbot API URL is set
-if [ -z ${AGBOT_SAPI_URL} ]; then
+if [ -z "${AGBOT_SAPI_URL}" ]; then
   echo -e "Envvar AGBOT_SAPI_URL must be set.\n"
   exit 1
 fi
@@ -47,10 +47,10 @@ export HZN_AGBOT_URL=${AGBOT_SAPI_URL}
 echo -e "Create netspeed secret1"
 CMD="hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE1} ${CREATE_ORG_SECRET1} -O"
 echo "$CMD"
-RES=$(hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE1} ${CREATE_ORG_SECRET1} -O) 
 
 # check for erroneous return 
-if [ $? -ne 0 ]; then 
+if ! RES=$(hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE1} ${CREATE_ORG_SECRET1} -O)
+then
   echo -e "Error: the creation command resulted in an error when it should not have: \n"
   exit 2
 fi
@@ -60,10 +60,11 @@ echo "$RES"
 echo -e "Create netspeed secret2"
 CMD="hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE2} ${CREATE_ORG_SECRET2} -O"
 echo "$CMD"
-RES=$(hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE2} ${CREATE_ORG_SECRET2} -O)
+
 
 # check for erroneous return 
-if [ $? -ne 0 ]; then 
+if ! RES=$(hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE2} ${CREATE_ORG_SECRET2} -O)
+then
   echo -e "Error: the creation command resulted in an error when it should not have: \n"
   exit 2
 fi
@@ -89,10 +90,10 @@ RES=$(hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} -
 echo -e "Create org secret sqltoken"
 CMD="hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey sqltoken -d mysqltoken ${CREATE_ORG_SECRET4} -O"
 echo "$CMD"
-RES=$(hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey sqltoken -d mysqltoken ${CREATE_ORG_SECRET4} -O)
 
 # check for erroneous return 
-if [ $? -ne 0 ]; then 
+if ! RES=$(hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey sqltoken -d mysqltoken ${CREATE_ORG_SECRET4} -O)
+then
   echo -e "Error: the creation command resulted in an error when it should not have: \n"
   exit 2
 fi
@@ -112,10 +113,10 @@ RES=$(hzn secretsmanager secret add -o ${E2EDEV_ORG} -u ${E2EDEV_ADMIN_AUTH} --s
 echo -e "Create user secret aitoken"
 CMD="hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey aitoken -d myaitoken ${CREATE_USER_SECRET5} -O"
 echo "$CMD"
-RES=$(hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey aitoken -d myaitoken  ${CREATE_USER_SECRET5} -O)
 
 # check for erroneous return 
-if [ $? -ne 0 ]; then 
+if ! RES=$(hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey aitoken -d myaitoken  ${CREATE_USER_SECRET5} -O)
+then
   echo -e "Error: the creation command resulted in an error when it should not have: \n"
   exit 2
 fi
@@ -125,10 +126,10 @@ echo "$RES"
 echo -e "Create netspeed secret2"
 CMD="hzn secretsmanager secret add -o ${E2EDEV_ORG} -u ${E2EDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE2} ${CREATE_ORG_SECRET2} -O"
 echo "$CMD"
-RES=$(hzn secretsmanager secret add -o ${E2EDEV_ORG} -u ${E2EDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE2} ${CREATE_ORG_SECRET2} -O)
 
 # check for erroneous return
-if [ $? -ne 0 ]; then
+if ! RES=$(hzn secretsmanager secret add -o ${E2EDEV_ORG} -u ${E2EDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE2} ${CREATE_ORG_SECRET2} -O)
+then
   echo -e "Error: the creation command resulted in an error when it should not have: \n"
   exit 2
 fi
@@ -138,10 +139,10 @@ echo "$RES"
 echo -e "Create netspeed secret3"
 CMD="hzn secretsmanager secret add -o ${E2EDEV_ORG} -u ${E2EDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE2} ${CREATE_ORG_SECRET3} -O"
 echo "$CMD"
-RES=$(hzn secretsmanager secret add -o ${E2EDEV_ORG} -u ${E2EDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE2} ${CREATE_ORG_SECRET3} -O)
 
 # check for erroneous return
-if [ $? -ne 0 ]; then
+if ! RES=$(hzn secretsmanager secret add -o ${E2EDEV_ORG} -u ${E2EDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE2} ${CREATE_ORG_SECRET3} -O)
+then
   echo -e "Error: the creation command resulted in an error when it should not have: \n"
   exit 2
 fi

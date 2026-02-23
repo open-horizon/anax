@@ -45,13 +45,13 @@ for dir in */; do
 		done
 
 
-		if ! "${EXEC_DIR}/gov/deploy_file.sh" "${EXEC_DIR}/docker/fs/resources/private/${dir}${justDirName}.tgz" 1.0.0 "${RESOURCE_ORG1}" "${RESOURCE_TYPE}" none none "$(cat /root/objects/"${justDirName}".policy)" false
+		if ! "${EXEC_DIR}/gov/deploy_file.sh" "${EXEC_DIR}/docker/fs/resources/private/${dir}${justDirName}.tgz" 1.0.0 "${RESOURCE_ORG1}" "${RESOURCE_TYPE}" none none "$(cat "${EXEC_DIR}/docker/fs/objects/${justDirName}".policy)" false
 		then
 			exit 255
 		fi
 
 
-		if ! "${EXEC_DIR}/gov/deploy_file.sh" "${EXEC_DIR}/docker/fs/resources/private/${dir}${justDirName}.tgz" 1.0.0 "${RESOURCE_ORG2}" "${RESOURCE_TYPE}" none none "$(cat /root/objects/"${justDirName}".policy)" false
+		if ! "${EXEC_DIR}/gov/deploy_file.sh" "${EXEC_DIR}/docker/fs/resources/private/${dir}${justDirName}.tgz" 1.0.0 "${RESOURCE_ORG2}" "${RESOURCE_TYPE}" none none "$(cat "${EXEC_DIR}/docker/fs/objects/${justDirName}".policy)" false
 		then
 			exit 255
 		fi
