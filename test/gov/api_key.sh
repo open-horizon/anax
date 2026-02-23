@@ -27,7 +27,7 @@ export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
 
 # Register services via the hzn dev exchange commands
 
-if ! ./hzn_dev_services.sh "${HZN_EXCHANGE_URL}" "${MAIN_AUTH}" 1
+if ! ./gov/hzn_dev_services.sh "${HZN_EXCHANGE_URL}" "${MAIN_AUTH}" 1
 then
     echo -e "hzn service and pattern registration with hzn dev failed."
     exit 1

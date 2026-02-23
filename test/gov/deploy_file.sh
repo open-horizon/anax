@@ -98,7 +98,7 @@ else
 
   #echo -e "echo \"$resmeta\" | curl -sLX PUT -w \"%{http_code}\" $CERT_VAR -u \"${3}/${admin_user}:${admin_pw}\" \"${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}\" --data @-"
   #echo ""
-  ADDM=$(curl -fsSLvX PUT -w "%{http_code}" "$CERT_VAR" -u "e2edev/${admin_user}:${admin_pw}" --header "Accept:application/json" --header "Content-Type:application/json" "http://css-api:9443/api/v1/objects/e2edev/model/policy-basicres" --data "$resmeta")
+  ADDM=$(curl -fsSLvX PUT -w "%{http_code}" "$CERT_VAR" -u "e2edev/${admin_user}:${admin_pw}" --header "Accept:application/json" --header "Content-Type:application/json" "${CSS_URL}/api/v1/objects/e2edev/model/policy-basicres" --data "$resmeta")
 
   if [ "$ADDM" != "204" ]
   then
