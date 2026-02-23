@@ -6,9 +6,9 @@ echo "Building resource packages."
 EXEC_DIR=$PWD
 cd /root/resources/private || { echo "Error: resource_package.sh - ln 7 - Failure to change directories"; error 1; }
 
-RESOURCE_ORG1=e2edev@somecomp.com
-RESOURCE_ORG2=userdev
-RESOURCE_TYPE=model
+RESOURCE_ORG1="e2edev@somecomp.com"
+RESOURCE_ORG2="userdev"
+RESOURCE_TYPE="model"
 
 # For each directory in the resources folder, make zipped tarball of directory contents and then register the resources in the Cloud side sync service (CSS).
 for dir in */; do
