@@ -3,6 +3,7 @@
 TEST_DIFF_ORG=${TEST_DIFF_ORG:-1}
 
 export ARCH=${ARCH}
+export CSS_URL=${CSS_URL:-http://127.0.0.1:9443}
 
 function set_exports {
   if [ "$NOANAX" != "1" ]
