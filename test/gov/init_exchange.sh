@@ -37,9 +37,6 @@ fi
   DL8ORG=$(curl -sSL -X DELETE "${CERT_VAR[@]}" --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/$(echo -n "e2edev@somecomp.com" | jq -rRs @uri)" | jq -r '.code, .msg')
   echo "$DL8ORG"
 
-  DL8ORGLESSDOT=$(curl -sSL -X DELETE "${CERT_VAR[@]}" --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/$(echo -n "e2edev@somecompcom" | jq -rRs @uri)" | jq -r '.code, .msg')
-  echo "$DL8ORGLESSDOT"
-
   echo "Delete userdev organization..."
   DL8UORG=$(curl -sSL -X DELETE "${CERT_VAR[@]}" --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/userdev" | jq -r '.code, .msg')
   echo "$DL8UORG"

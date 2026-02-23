@@ -44,12 +44,12 @@ function checkOrganizationsInMMS {
 if [ "${CERT_LOC}" -eq 1 ]; then
   CERT_VAR="--cacert /certs/css.crt"
 else
-  CERT_VAR=()
+  CERT_VAR=(--silent)
 fi
 
 # Test organization is put in MMS
 echo "Checking Orgs in CSS..."
-GET_ORGS_RESP=$(curl -X GET -w "%{http_code}" "$CERT_VAR" -u root/root:"$EXCH_ROOTPW" --header 'Content-Type: application/json' "${CSS_URL}/api/v1/organizations")
+GET_ORGS_RESP=$(curl -X GET -w "%{http_code}" "${CERT_VAR[@]}" -u root/root:"$EXCH_ROOTPW" --header 'Content-Type: application/json' "${CSS_URL}/api/v1/organizations")
 RESP_LEN=${#GET_ORGS_RESP}
 GET_ORGS_CODE=${GET_ORGS_RESP: -3}
 echo "GET_ORGS_CODE: $GET_ORGS_CODE"
@@ -70,7 +70,7 @@ for org in "${organizations[@]}"
   done
 
 # Test what happens when an invalid user id format is attempted
-UFORMAT=$(curl -sLX GET -w "%{http_code}" "$CERT_VAR" -u fred:ethel "${CSS_URL}/api/v1/destinations/userdev")
+UFORMAT=$(curl -sLX GET -w "%{http_code}" "${CERT_VAR[@]}" -u fred:ethel "${CSS_URL}/api/v1/destinations/userdev")
 
 if [ "$UFORMAT" != "Unauthorized403" ]
 then
@@ -79,7 +79,7 @@ then
 fi
 
 # Test what happens when an unknown user id is attempted
-UUSER=$(curl -sLX GET -w "%{http_code}" "$CERT_VAR" -u userdev/ethel:murray "${CSS_URL}/api/v1/destinations/userdev")
+UUSER=$(curl -sLX GET -w "%{http_code}" "${CERT_VAR[@]}" -u userdev/ethel:murray "${CSS_URL}/api/v1/destinations/userdev")
 
 if [ "$UUSER" != "Unauthorized403" ]
 then
@@ -88,7 +88,7 @@ then
 fi
 
 # Test what happens when an unknown node is attempted
-UNODE=$(curl -sLX GET -w "%{http_code}" "$CERT_VAR" -u fred/ethel/murray:ethel "${CSS_URL}/api/v1/destinations/userdev")
+UNODE=$(curl -sLX GET -w "%{http_code}" "${CERT_VAR[@]}" -u fred/ethel/murray:ethel "${CSS_URL}/api/v1/destinations/userdev")
 
 if [ "$UNODE" != "Unauthorized403" ]
 then
@@ -97,7 +97,7 @@ then
 fi
 
 # Test what happens when a valid node tries to access an API
-KNODE=$(curl -sLX GET -w "%{http_code}" "$CERT_VAR" -u userdev/susehello/an12345:Abcdefghijklmno1  "${CSS_URL}/api/v1/destinations/userdev")
+KNODE=$(curl -sLX GET -w "%{http_code}" "${CERT_VAR[@]}" -u userdev/susehello/an12345:Abcdefghijklmno1  "${CSS_URL}/api/v1/destinations/userdev")
 
 if [ "$KNODE" != "Unauthorized403" ]
 then
@@ -937,7 +937,7 @@ function verifyUserAccessForPublicObject {
 
     # user can get object metadata and object data
     # Test what happens when an unknown user id is attempted
-    GET_OBJ_CODE=$(curl -o -IL -s -X GET -w "%{http_code}" "$CERT_VAR" -u "${1}/${2}:${3}" --header 'Content-Type: application/json' "${CSS_URL}/api/v1/objects/${4}/${5}/${6}")
+    GET_OBJ_CODE=$(curl -o -IL -s -X GET -w "%{http_code}" "${CERT_VAR[@]}" -u "${1}/${2}:${3}" --header 'Content-Type: application/json' "${CSS_URL}/api/v1/objects/${4}/${5}/${6}")
     echo "GET_OBJ_CODE: $GET_OBJ_CODE"
     if [ "$GET_OBJ_CODE" != "200" ]
     then
@@ -945,7 +945,7 @@ function verifyUserAccessForPublicObject {
         exit 255
     fi
 
-    GET_OBJ_DATA_CODE=$(curl -o -IL -s -X GET -w "%{http_code}" "$CERT_VAR" -u "${1}/${2}:${3}" --header 'Content-Type:application/octet-stream' "${CSS_URL}/api/v1/objects/${4}/${5}/${6}/data")
+    GET_OBJ_DATA_CODE=$(curl -o -IL -s -X GET -w "%{http_code}" "${CERT_VAR[@]}" -u "${1}/${2}:${3}" --header 'Content-Type:application/octet-stream' "${CSS_URL}/api/v1/objects/${4}/${5}/${6}/data")
     echo "GET_OBJ_DATA_CODE: $GET_OBJ_DATA_CODE"
     if [ "$GET_OBJ_DATA_CODE" != "200" ]
     then
@@ -970,7 +970,7 @@ read -dr '' resmeta <<EOF
 }
 EOF
 
-    ADDM=$(echo "$resmeta" | curl -o /dev/null -sLX PUT -w "%{http_code}" "$CERT_VAR" -u "${1}/${2}:${3}" "${CSS_URL}/api/v1/objects/${4}/${5}/${6}" --data @-)
+    ADDM=$(echo "$resmeta" | curl -o /dev/null -sLX PUT -w "%{http_code}" "${CERT_VAR[@]}" -u "${1}/${2}:${3}" "${CSS_URL}/api/v1/objects/${4}/${5}/${6}" --data @-)
     echo "PUT_OBJ_CODE: $ADDM"
     if [ "$ADDM" == "204" ]
     then
@@ -982,7 +982,7 @@ EOF
 
     DATA=/tmp/data.txt
 
-    ADDM=$(echo "$resmeta" | curl -o /dev/null -sLX PUT -w "%{http_code}" "$CERT_VAR" -u "${1}"/"${2}":"${3}" "${CSS_URL}/api/v1/objects/${4}/${5}/${6}/data" --data-binary @${DATA})
+    ADDM=$(echo "$resmeta" | curl -o /dev/null -sLX PUT -w "%{http_code}" "${CERT_VAR[@]}" -u "${1}"/"${2}":"${3}" "${CSS_URL}/api/v1/objects/${4}/${5}/${6}/data" --data-binary @${DATA})
     echo "PUT_OBJ_DATA_CODE: $ADDM"
     if [ "$ADDM" == "204" ]
     then

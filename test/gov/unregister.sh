@@ -16,7 +16,7 @@ hzn unregister -f
 if [ ${CERT_LOC} -eq 1 ]; then
   CERT_VAR="--cacert /certs/css.crt"
 else
-  CERT_VAR=()
+  CERT_VAR=(--silent)
 fi
 
 if [ $? -ne 0 ]
@@ -84,7 +84,7 @@ done
 # Following the API call, the node's entry in the exchange should have some changes in it. The messaging key should be empty,
 # and the list of registered microservices should be empty.
 echo -e "Checking node status in the exchange."
-NST=$(curl -sSL $CERT_VAR --header 'Accept: application/json' -u "e2edev@somecomp.com/e2edevadmin:e2edevadminpw" "${EXCH_URL}/orgs/e2edev@somecomp.com/nodes/an12345" | jq -r '.')
+NST=$(curl -sSL "${CERT_VAR[@]}" --header 'Accept: application/json' -u "e2edev@somecomp.com/e2edevadmin:e2edevadminpw" "${EXCH_URL}/orgs/e2edev@somecomp.com/nodes/an12345" | jq -r '.')
 PK=$(echo "$NST" | jq -r '.publicKey')
 if [ "$PK" != "null" ]
 then

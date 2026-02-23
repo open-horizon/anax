@@ -299,7 +299,7 @@ function checkNodePattern {
 if [ "${CERT_LOC}" -eq 1 ]; then
   CERT_VAR="--cacert /certs/css.crt"
 else
-  CERT_VAR=()
+  CERT_VAR=(--silent)
 fi
 
 # get the node org, it can be userdev or e2edev@somecomp.com
@@ -324,7 +324,7 @@ if ! ret=$(hzn userinput add -f /tmp/userinput_for_sns.json); then
 fi
 
 echo -e "${PREFIX} change node pattern on the exchange to sns"
-RES=$(curl -sLX PATCH "$CERT_VAR" --header 'Content-Type: application/json' --header 'Accept: application/json'  -u $auth  -d  '{"pattern":"e2edev@somecomp.com/sns"}' "${HZN_EXCHANGE_URL}/orgs/$org/nodes/an12345")
+RES=$(curl -sLX PATCH "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json'  -u $auth  -d  '{"pattern":"e2edev@somecomp.com/sns"}' "${HZN_EXCHANGE_URL}/orgs/$org/nodes/an12345")
 results "$RES"
 
 echo "Sleeping 90 seconds..."
@@ -336,7 +336,7 @@ verify_agreements "e2edev@somecomp.com" "e2edevadmin:e2edevadminpw"
 
 # now change the pattern to sall, this will fail because there is not enough user input
 echo -e "${PREFIX} change node pattern back on the exchange to sall"
-RES=$(curl -sLX PATCH "$CERT_VAR" --header 'Content-Type: application/json' --header 'Accept: application/json'  -u $auth  -d  '{"pattern":"e2edev@somecomp.com/sall"}' "${HZN_EXCHANGE_URL}/orgs/$org/nodes/an12345")
+RES=$(curl -sLX PATCH "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json'  -u $auth  -d  '{"pattern":"e2edev@somecomp.com/sall"}' "${HZN_EXCHANGE_URL}/orgs/$org/nodes/an12345")
 results "$RES"
 
 echo "Sleeping 30 seconds..."

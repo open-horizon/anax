@@ -11,7 +11,7 @@ USERDEV_ADMIN_AUTH="userdev/userdevadmin:userdevadminpw"
 if [ ${CERT_LOC} -eq 1 ]; then
   CERT_VAR="--cacert /certs/css.crt"
 else
-  CERT_VAR=()
+  CERT_VAR=(--silent)
 fi
 
 # check the result of http call
@@ -167,7 +167,7 @@ read -dr '' sconfig <<EOF
    "configState": "suspended"
 }
 EOF
-out=$(echo "$sconfig" | curl -sLX POST $CERT_VAR -u $USERDEV_ADMIN_AUTH -H "Content-Type: application/json" -H "Accept: application/json" --data @- ${EXCH_URL}/orgs/userdev/nodes/an12345/services_configstate | jq -r '.')
+out=$(echo "$sconfig" | curl -sLX POST "${CERT_VAR[@]}" -u $USERDEV_ADMIN_AUTH -H "Content-Type: application/json" -H "Accept: application/json" --data @- ${EXCH_URL}/orgs/userdev/nodes/an12345/services_configstate | jq -r '.')
 results "$out"
 
 # make sure the service configstate for netspeed is suspended
@@ -254,7 +254,7 @@ read -dr '' sconfig <<EOF
    "configState": "active"
 }
 EOF
-out=$(echo "$sconfig" | curl -sLX POST $CERT_VAR -u $USERDEV_ADMIN_AUTH -H "Content-Type: application/json" -H "Accept: application/json" --data @- ${EXCH_URL}/orgs/userdev/nodes/an12345/services_configstate | jq -r '.')
+out=$(echo "$sconfig" | curl -sLX POST "${CERT_VAR[@]}" -u $USERDEV_ADMIN_AUTH -H "Content-Type: application/json" -H "Accept: application/json" --data @- ${EXCH_URL}/orgs/userdev/nodes/an12345/services_configstate | jq -r '.')
 results "$out"
 
 # make sure the new configstate is set for netspeed

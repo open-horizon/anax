@@ -136,7 +136,7 @@ fi
 if [ "${CERT_LOC}" -eq 1 ]; then
   CERT_VAR="--cacert /certs/css.crt"
 else
-  CERT_VAR=()
+  CERT_VAR=(--silent)
 fi
 
 # Start the API Key tests if it has been set
@@ -483,61 +483,61 @@ fi
 if [ ${REMOTE_HUB} -eq 1 ]; then
   echo "Clean up remote environment"
   echo "Delete e2edev@somecomp.com..."
-  DL8ORG=$(curl -X DELETE "$CERT_VAR" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"label":"E2EDev","description":"E2EDevTest","orgType":"IBM"}' "${EXCH_URL}/orgs/e2edev@somecomp.com" | jq -r '.msg')
+  DL8ORG=$(curl -X DELETE "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"label":"E2EDev","description":"E2EDevTest","orgType":"IBM"}' "${EXCH_URL}/orgs/e2edev@somecomp.com" | jq -r '.msg')
   echo "$DL8ORG"
 
   echo "Delete userdev organization..."
-  DL8UORG=$(curl -X DELETE "$CERT_VAR" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"label":"UserDev","description":"UserDevTest"}' "${EXCH_URL}/orgs/userdev" | jq -r '.msg')
+  DL8UORG=$(curl -X DELETE "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"label":"UserDev","description":"UserDevTest"}' "${EXCH_URL}/orgs/userdev" | jq -r '.msg')
   echo "$DL8UORG"
 
   echo "Delete Customer1 organization..."
-  DL8C1ORG=$(curl -X DELETE "$CERT_VAR" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"label":"Customer1","description":"The Customer1 org"}' "${EXCH_URL}/orgs/Customer1" | jq -r '.msg')
+  DL8C1ORG=$(curl -X DELETE "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"label":"Customer1","description":"The Customer1 org"}' "${EXCH_URL}/orgs/Customer1" | jq -r '.msg')
   echo "$DL8C1ORG"
 
   echo "Delete Customer2 organization..."
-  DL8C2ORG=$(curl -X DELETE "$CERT_VAR" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"label":"Customer2","description":"The Customer2 org"}' "${EXCH_URL}/orgs/Customer2" | jq -r '.msg')
+  DL8C2ORG=$(curl -X DELETE "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"label":"Customer2","description":"The Customer2 org"}' "${EXCH_URL}/orgs/Customer2" | jq -r '.msg')
   echo "$DL8C2ORG"
 
   # Delete an IBM admin user in the exchange
   echo "Delete an admin user for IBM org..."
-  DL8IBM=$(curl -X DELETE "$CERT_VAR" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"password":"ibmadminpw","email":"ibmadmin%40ibm.com","admin":true}' "${EXCH_URL}/orgs/IBM/users/ibmadmin" | jq -r '.msg')
+  DL8IBM=$(curl -X DELETE "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"password":"ibmadminpw","email":"ibmadmin%40ibm.com","admin":true}' "${EXCH_URL}/orgs/IBM/users/ibmadmin" | jq -r '.msg')
   echo "$DL8IBM"
 
   # Delete agreement bot user in the exchange
   echo "Delete Agbot user..."
-  DL8AGBOT=$(curl -X DELETE "$CERT_VAR" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"password":"agbot1pw","email":"me%40gmail.com","admin":false}' "${EXCH_URL}/orgs/IBM/users/agbot1" | jq -r '.msg')
+  DL8AGBOT=$(curl -X DELETE "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"password":"agbot1pw","email":"me%40gmail.com","admin":false}' "${EXCH_URL}/orgs/IBM/users/agbot1" | jq -r '.msg')
   echo "$DL8AGBOT"
 
   echo "Delete network_1.5.0 ..."
-  DLHELM100=$(curl -X DELETE "$CERT_VAR"  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/bluehorizon.network-services-network_1.5.0_${ARCH}")
+  DLHELM100=$(curl -X DELETE "${CERT_VAR[@]}"  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/bluehorizon.network-services-network_1.5.0_${ARCH}")
   echo "$DL150"
 
   echo "Delete network2_1.5.0 ..."
-  DLHELM100=$(curl -X DELETE "$CERT_VAR"  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/bluehorizon.network-services-network2_1.5.0_${ARCH}")
+  DLHELM100=$(curl -X DELETE "${CERT_VAR[@]}"  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/bluehorizon.network-services-network2_1.5.0_${ARCH}")
   echo "$DL2150"
 
   echo "Delete helm-service_1.0.0 ..."
-  DLHELM100=$(curl -X DELETE "$CERT_VAR"  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/my.company.com-services-helm-service_1.0.0_${ARCH}")
+  DLHELM100=$(curl -X DELETE "${CERT_VAR[@]}"  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/my.company.com-services-helm-service_1.0.0_${ARCH}")
   echo "$DLHELM100"
 
   echo "Delete Userdev Org Definition ..."
-  DL8USERDEVDEF=$(curl -X DELETE "$CERT_VAR"  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/${AGBOT_NAME}/businesspols/userdev_*_userdev")
+  DL8USERDEVDEF=$(curl -X DELETE "${CERT_VAR[@]}"  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/${AGBOT_NAME}/businesspols/userdev_*_userdev")
   echo "$DL8USERDEVDEF"
 
   echo "Delete E2E Org Definition ..."
-  DL8E2EDEF=$(curl -X DELETE "$CERT_VAR"  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/${AGBOT_NAME}/businesspols/e2edev@somecomp.com_*_e2edev@somecomp.com")
+  DL8E2EDEF=$(curl -X DELETE "${CERT_VAR[@]}"  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/${AGBOT_NAME}/businesspols/e2edev@somecomp.com_*_e2edev@somecomp.com")
   echo "$DL8E2EDEF"
 
   echo "Delete Pattern Definition E2E ..."
-  DL8PATTERNDEFE2E=$(curl -X DELETE "$CERT_VAR"  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/${AGBOT_NAME}/patterns/e2edev@somecomp.com_*_e2edev@somecomp.com")
+  DL8PATTERNDEFE2E=$(curl -X DELETE "${CERT_VAR[@]}"  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/${AGBOT_NAME}/patterns/e2edev@somecomp.com_*_e2edev@somecomp.com")
   echo "$DL8PATTERNDEFE2E"
 
   echo "Delete Pattern Definition UserDev ..."
-  DL8PATTERNDUSERDEV=$(curl -X DELETE "$CERT_VAR"  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/${AGBOT_NAME}/patterns/e2edev@somecomp.com_*_userdev")
+  DL8PATTERNDUSERDEV=$(curl -X DELETE "${CERT_VAR[@]}"  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/${AGBOT_NAME}/patterns/e2edev@somecomp.com_*_userdev")
   echo "$DL8PATTERNDUSERDEV"
 
   echo "Delete Pattern Definition SNS ..."
-  DL8PATTERNSNS=$(curl -X DELETE "$CERT_VAR"  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/${AGBOT_NAME}/patterns/e2edev@somecomp.com_sns_e2edev@somecomp.com")
+  DL8PATTERNSNS=$(curl -X DELETE "${CERT_VAR[@]}"  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/${AGBOT_NAME}/patterns/e2edev@somecomp.com_sns_e2edev@somecomp.com")
   echo "$DL8PATTERNSNS"
 fi
 

@@ -11,7 +11,7 @@ fi
 if [ "${CERT_LOC}" -eq 1 ]; then
   CERT_VAR="--cacert /certs/agbotapi.crt"
 else
-  CERT_VAR=()
+  CERT_VAR=(--silent)
 fi
 
 # ensure the agbot API URL is set

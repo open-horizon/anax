@@ -13,7 +13,7 @@
 if [ "${CERT_LOC}" -eq 1 ]; then
   CERT_VAR="--cacert /certs/css.crt"
 else
-  CERT_VAR=()
+  CERT_VAR=(--silent)
 fi
 
 DEST_TYPE=${5}
@@ -70,7 +70,7 @@ URL_ENCODED_3=$(echo -n "${3}" | jq -rRs @uri)
 if [ "${3}" == "IBM" ];
 then
   # deploy public object to IBM using exchange root credentials
-  ADDM=$(curl -fsSLvX PUT -w "%{http_code}" "$CERT_VAR" -u "root/root:${EXCH_ROOTPW}" --header "Accept:application/json" --header "Content-Type:application/json" "${CSS_URL}/api/v1/objects/e2edev/model/policy-basicres" --data "$resmeta")
+  ADDM=$(curl -fsSLvX PUT -w "%{http_code}" "${CERT_VAR[@]}" -u "root/root:${EXCH_ROOTPW}" --header "Accept:application/json" --header "Content-Type:application/json" "${CSS_URL}/api/v1/objects/e2edev/model/policy-basicres" --data "$resmeta")
 
   if [ "$ADDM" != "204" ]
   then
@@ -78,7 +78,7 @@ then
     exit 255
   fi
 
-  ADDF=$(curl -fsSLvX PUT -w "%{http_code}" "$CERT_VAR" -u "root/root:${EXCH_ROOTPW}" --header 'Accept:application/json' --header "Content-Type:application/octet-stream" "${CSS_URL}/api/v1/objects/${URL_ENCODED_3}/${4}/${FILENAME}/data" --data-binary @"${1}")
+  ADDF=$(curl -fsSLvX PUT -w "%{http_code}" "${CERT_VAR[@]}" -u "root/root:${EXCH_ROOTPW}" --header 'Accept:application/json' --header "Content-Type:application/octet-stream" "${CSS_URL}/api/v1/objects/${URL_ENCODED_3}/${4}/${FILENAME}/data" --data-binary @"${1}")
 
   if [ "$ADDF" == "204" ]
   then
@@ -96,9 +96,9 @@ else
     admin_pw="e2edevadminpw"
   fi
 
-  #echo -e "echo \"$resmeta\" | curl -sLX PUT -w \"%{http_code}\" $CERT_VAR -u \"${3}/${admin_user}:${admin_pw}\" \"${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}\" --data @-"
+  #echo -e "echo \"$resmeta\" | curl -sLX PUT -w \"%{http_code}\" "${CERT_VAR[@]}" -u \"${3}/${admin_user}:${admin_pw}\" \"${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}\" --data @-"
   #echo ""
-  ADDM=$(curl -fsSLvX PUT -w "%{http_code}" "$CERT_VAR" -u "e2edev/${admin_user}:${admin_pw}" --header "Accept:application/json" --header "Content-Type:application/json" "${CSS_URL}/api/v1/objects/e2edev/model/policy-basicres" --data "$resmeta")
+  ADDM=$(curl -fsSLvX PUT -w "%{http_code}" "${CERT_VAR[@]}" -u "e2edev/${admin_user}:${admin_pw}" --header "Accept:application/json" --header "Content-Type:application/json" "${CSS_URL}/api/v1/objects/e2edev/model/policy-basicres" --data "$resmeta")
 
   if [ "$ADDM" != "204" ]
   then
@@ -106,7 +106,7 @@ else
     exit 255
   fi
   
-  ADDF=$(curl -fsSLvX PUT -w "%{http_code}" "$CERT_VAR" -u "${3}/${admin_user}:${admin_pw}" --header 'Accept:application/json' --header "Content-Type:application/octet-stream" "${CSS_URL}/api/v1/objects/${URL_ENCODED_3}/${4}/${FILENAME}/data" --data-binary @"${1}")
+  ADDF=$(curl -fsSLvX PUT -w "%{http_code}" "${CERT_VAR[@]}" -u "${3}/${admin_user}:${admin_pw}" --header 'Accept:application/json' --header "Content-Type:application/octet-stream" "${CSS_URL}/api/v1/objects/${URL_ENCODED_3}/${4}/${FILENAME}/data" --data-binary @"${1}")
 
   if [ "$ADDF" == "204" ]
   then

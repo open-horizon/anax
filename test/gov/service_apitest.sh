@@ -74,7 +74,7 @@ echo "Start Testing Service APIs"
 if [ ${CERT_LOC} -eq 1 ]; then
   CERT_VAR="--cacert /certs/css.crt"
 else
-  CERT_VAR=()
+  CERT_VAR=(--silent)
 fi
 
 # empty service URL
@@ -281,7 +281,7 @@ read -dr '' service <<EOF
 }
 EOF
 
-WLRES=$(echo "$service" | curl -sS -X POST $CERT_VAR -H "Content-Type: application/json" -H "Accept: application/json" -u "e2edev@somecomp.com/e2edevadmin:e2edevadminpw" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services")
+WLRES=$(echo "$service" | curl -sS -X POST "${CERT_VAR[@]}" -H "Content-Type: application/json" -H "Accept: application/json" -u "e2edev@somecomp.com/e2edevadmin:e2edevadminpw" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services")
 echo -e "Registered testwl: $WLRES"
 MSG=$(echo $WLRES | jq -r ".msg")
 if [ "$MSG" != "service 'e2edev@somecomp.com/bluehorizon.network-services-testservice_1.0.0_${ARCH}' created" ]
