@@ -299,7 +299,7 @@ function checkNodePattern {
 if [ "${CERT_LOC}" -eq 1 ]; then
   CERT_VAR="--cacert /certs/css.crt"
 else
-  CERT_VAR=""
+  CERT_VAR=()
 fi
 
 # get the node org, it can be userdev or e2edev@somecomp.com

@@ -16,7 +16,7 @@ function results {
 if [ ${CERT_LOC} -eq 1 ]; then
   CERT_VAR="--cacert /certs/css.crt"
 else
-  CERT_VAR=""
+  CERT_VAR=()
 fi
 
 # check if the hub is all-in-1 management hub or not

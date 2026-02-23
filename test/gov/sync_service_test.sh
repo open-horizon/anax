@@ -44,7 +44,7 @@ function checkOrganizationsInMMS {
 if [ "${CERT_LOC}" -eq 1 ]; then
   CERT_VAR="--cacert /certs/css.crt"
 else
-  CERT_VAR=""
+  CERT_VAR=()
 fi
 
 # Test organization is put in MMS
