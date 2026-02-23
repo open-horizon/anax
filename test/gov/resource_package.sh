@@ -4,7 +4,7 @@
 echo "Building resource packages."
 
 EXEC_DIR=$PWD
-cd /root/resources/private || { echo "Error: resource_package.sh - ln 7 - Failure to change directories"; error 1; }
+cd "${EXEC_DIR}/docker/fs/resources/private" || { echo "Error: resource_package.sh - ln 7 - Failure to change directories"; error 1; }
 
 RESOURCE_ORG1="e2edev@somecomp.com"
 RESOURCE_ORG2="userdev"
@@ -25,18 +25,18 @@ for dir in */; do
 
 	if [ "${TEST_PATTERNS}" != "" ]
 	then
-		if ! "$EXEC_DIR"/deploy_file.sh "/root/resources/private/${dir}${justDirName}.tgz" 1.0.0 "${RESOURCE_ORG1}" "${RESOURCE_TYPE}" none none none false
+		if ! "${EXEC_DIR}/gov/deploy_file.sh" "${EXEC_DIR}/docker/fs/resources/private/${dir}${justDirName}.tgz" 1.0.0 "${RESOURCE_ORG1}" "${RESOURCE_TYPE}" none none none false
 		then
 			exit 255
 		fi
 
-		if ! "$EXEC_DIR"/deploy_file.sh "/root/resources/private/${dir}${justDirName}.tgz 1.0.0" "${RESOURCE_ORG2}" "${RESOURCE_TYPE}" none none none false
+		if ! "${EXEC_DIR}/gov/deploy_file.sh" "${EXEC_DIR}/docker/fs/resources/private/${dir}${justDirName}.tgz 1.0.0" "${RESOURCE_ORG2}" "${RESOURCE_TYPE}" none none none false
 		then
 			exit 255
 		fi
 	else
 		# Create policy files from templates by passing current ARCH to them
-		for in_file in /root/objects/*.policy
+		for in_file in "${EXEC_DIR}"/docker/fs/objects/*.policy
 		do
 			if ! sed -i -e "s#__ARCH__#${ARCH}#g" "$in_file"
 			then
@@ -45,13 +45,13 @@ for dir in */; do
 		done
 
 
-		if ! "$EXEC_DIR"/deploy_file.sh "/root/resources/private/${dir}${justDirName}.tgz" 1.0.0 "${RESOURCE_ORG1}" "${RESOURCE_TYPE}" none none "$(cat /root/objects/"${justDirName}".policy)" false
+		if ! "${EXEC_DIR}/gov/deploy_file.sh" "${EXEC_DIR}/docker/fs/resources/private/${dir}${justDirName}.tgz" 1.0.0 "${RESOURCE_ORG1}" "${RESOURCE_TYPE}" none none "$(cat /root/objects/"${justDirName}".policy)" false
 		then
 			exit 255
 		fi
 
 
-		if ! "$EXEC_DIR"/deploy_file.sh "/root/resources/private/${dir}${justDirName}.tgz" 1.0.0 "${RESOURCE_ORG2}" "${RESOURCE_TYPE}" none none "$(cat /root/objects/"${justDirName}".policy)" false
+		if ! "${EXEC_DIR}/gov/deploy_file.sh" "${EXEC_DIR}/docker/fs/resources/private/${dir}${justDirName}.tgz" 1.0.0 "${RESOURCE_ORG2}" "${RESOURCE_TYPE}" none none "$(cat /root/objects/"${justDirName}".policy)" false
 		then
 			exit 255
 		fi
@@ -61,7 +61,7 @@ for dir in */; do
 done
 
 echo "Making resource tarball for public resource"
-cd /root/resources/public || { echo "Error: resource_package.sh - ln 64 - Failure to change directories"; error 1; }
+cd "${EXEC_DIR}/docker/fs/resources/public" || { echo "Error: resource_package.sh - ln 64 - Failure to change directories"; error 1; }
 RESOURCE_ORG=IBM
 RESOURCE_TYPE=public
 
@@ -69,8 +69,10 @@ res=$(find . -not -name "*.tgz" -not -path ".")
 tar -czvf public.tgz "$res"
 
 echo "Installing resource package public.tgz. in ${RESOURCE_ORG} org"
-ls /root/resources/public
-if ! "$EXEC_DIR"/deploy_file.sh /root/resources/public/public.tgz 1.0.0 "${RESOURCE_ORG}" "${RESOURCE_TYPE}" none none none true
+ls "${EXEC_DIR}/docker/fs/resources/public"
+if ! "${EXEC_DIR}/gov/deploy_file.sh" "${EXEC_DIR}/docker/fs/resources/public/public.tgz" 1.0.0 "${RESOURCE_ORG}" "${RESOURCE_TYPE}" none none none true
 then
 	exit 255
 fi
+
+cd "${EXEC_DIR}" || { echo "Error: resource_package.sh - ln 78 - Failure to change directories"; error 1; }
