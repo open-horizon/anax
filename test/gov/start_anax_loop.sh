@@ -9,17 +9,17 @@ if [[ "$num" == "1" ]]; then
 fi
 
 while (true) do
-  if [ "$OLDANAX" == "1" ]
+  if [ "$OLDANAX" == 1 ]
   then
       echo "Starting OLD Anax to run workloads."
-      if [ "${CERT_LOC}" -eq "1" ]; then
+      if [ "${CERT_LOC}" -eq 1 ]; then
         /usr/bin/old-anax -v=5 -alsologtostderr=true -config "/etc/colonus/anax-combined${num}.config" > "/tmp/anax${num}.log" 2>&1 > /dev/null
       else
         /usr/bin/old-anax -v=5 -alsologtostderr=true -config "/etc/colonus/anax-combined${num}-no-cert.config" > "/tmp/anax${num}.log" 2>&1  > /dev/null
       fi
   else
       echo "Starting Anax to run workloads."
-      if [ "${CERT_LOC}" -eq "1" ]; then
+      if [ "${CERT_LOC}" -eq 1 ]; then
 	     /usr/local/bin/anax -v=5 -alsologtostderr=true -config "/etc/colonus/anax-combined${num}.config" >> "/tmp/anax${num}.log" 2>&1
       else
 	     /usr/local/bin/anax -v=5 -alsologtostderr=true -config "/etc/colonus/anax-combined${num}-no-cert.config" >> "/tmp/anax${num}.log" 2>&1

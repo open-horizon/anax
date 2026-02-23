@@ -17,7 +17,7 @@ function startMultiAgents {
   echo "$ui" > $UIFILE
 
   # set css certs for the agent container
-  if [ ${CERT_LOC} -eq "1" ]; then
+  if [ ${CERT_LOC} -eq 1 ]; then
     cat /certs/css.crt > /tmp/e2edevtest/css.crt
   fi
 
@@ -34,7 +34,7 @@ function startMultiAgents {
     echo -e "HZN_DEVICE_ID=anaxdevice${device_num}" >> $configfile
     echo -e "HZN_NODE_ID=anaxdevice${device_num}" >> $configfile
     echo -e "HZN_AGENT_PORT=${agent_port}" >> $configfile
-    if [ ${CERT_LOC} -eq "1" ]; then
+    if [ ${CERT_LOC} -eq 1 ]; then
       echo "HZN_MGMT_HUB_CERT_PATH=/tmp/e2edevtest/css.crt" >> $configfile
     fi
 

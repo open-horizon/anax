@@ -25,7 +25,7 @@ docker version
 #fi
 
 #--cacert /certs/css.crt
-if [ "${CERT_LOC}" -eq "1" ]; then
+if [ "${CERT_LOC}" -eq 1 ]; then
   CERT_VAR="--cacert /certs/css.crt"
 else
   CERT_VAR=""
@@ -227,7 +227,7 @@ then
 fi
 
 # Start the API Key tests if it has been set
-if [ ${API_KEY} != "0" ]; then
+if [ "${API_KEY}" != "0" ]; then
   echo -e "Starting API Key test."
   if ! ./gov/api_key.sh
   then

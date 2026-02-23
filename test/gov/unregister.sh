@@ -13,7 +13,7 @@ export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
 echo "Unregister node, non-blocking"
 hzn unregister -f
 
-if [ ${CERT_LOC} -eq "1" ]; then
+if [ ${CERT_LOC} -eq 1 ]; then
   CERT_VAR="--cacert /certs/css.crt"
 else
   CERT_VAR=""

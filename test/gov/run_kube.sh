@@ -90,7 +90,7 @@ sleep 5
 echo "Grab binaries and config files needed inside the container"
 if ! cp "${ANAX_SOURCE}/anax" "${ANAX_SOURCE}/cli/hzn" "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube"; then echo "Failure copying binaries"; exit 1; fi
 
-if [ "${CERT_LOC}" -eq "1" ]; then
+if [ "${CERT_LOC}" -eq 1 ]; then
 	if ! cp "${E2EDEVTEST_TEMPFS}/certs/css.crt" "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/hub.crt"; then echo "Failure copying CSS SSL cert"; exit 1; fi
 fi
 
@@ -111,7 +111,7 @@ fi
 
 if ! EX_IP=${EX_IP} CSS_IP=${CSS_IP} AGBOT_IP=${AGBOT_IP} envsubst < "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/horizon.env" > "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/horizon"; then echo "Failure configuring agent env var file"; exit 1; fi
 
-if [ "${CERT_LOC}" -eq "1" ]; then
+if [ "${CERT_LOC}" -eq 1 ]; then
 	depl_file="${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/deployment.yaml.tmpl"
 else
 	# remove HZN_MGMT_HUB_CERT_PATH from the horizon env file
@@ -200,7 +200,7 @@ then
 fi
 
 # Create a secret based on ${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/hub.crt
-if [ "${CERT_LOC}" -eq "1" ]; then
+if [ "${CERT_LOC}" -eq 1 ]; then
 	echo "Create secret to mount cert file"
 	$cprefix microk8s.kubectl create secret generic ${SECRET_NAME} --from-file="${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/hub.crt" -n ${AGENT_NAME_SPACE}
 	RC=$?

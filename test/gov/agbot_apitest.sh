@@ -104,7 +104,7 @@ function run_and_check {
 }
 
 # get the cert file
-if [ ${CERT_LOC} -eq "1" ]; then
+if [ ${CERT_LOC} -eq 1 ]; then
   CERT_VAR="--cacert /certs/agbotapi.crt"
 else
   CERT_VAR=""

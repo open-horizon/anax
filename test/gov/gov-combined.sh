@@ -17,7 +17,7 @@ function set_exports {
     export HZN_AGENT_PORT=8510
     export ANAX_API="http://localhost:${HZN_AGENT_PORT}"
     export EXCH="${EXCH_APP_HOST}"
-    if [ "${CERT_LOC}" -eq "1" ]; then
+    if [ "${CERT_LOC}" -eq 1 ]; then
       export HZN_MGMT_HUB_CERT_PATH="/certs/css.crt"
     fi
 
@@ -133,7 +133,7 @@ if [ "$OLDANAX" == "1" ]; then
 fi
 
 #--cacert /certs/css.crt
-if [ "${CERT_LOC}" -eq "1" ]; then
+if [ "${CERT_LOC}" -eq 1 ]; then
   CERT_VAR="--cacert /certs/css.crt"
 else
   CERT_VAR=""
@@ -171,7 +171,7 @@ then
   export EXCH="${EXCH_APP_HOST}"
   export TOKEN="Abcdefghijklmno1"
 
-  if [ "${CERT_LOC}" -eq "1" ]; then
+  if [ "${CERT_LOC}" -eq 1 ]; then
     export HZN_MGMT_HUB_CERT_PATH="/certs/css.crt"
   fi
 
@@ -183,7 +183,7 @@ then
 
   # Start Anax
   echo "Starting Anax1 for tests."
-  if [ "${CERT_LOC}" -eq "1" ]; then
+  if [ "${CERT_LOC}" -eq 1 ]; then
     /usr/local/bin/anax -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined.config >/tmp/anax.log 2>&1 &
   else
     /usr/local/bin/anax -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined-no-cert.config >/tmp/anax.log 2>&1 &

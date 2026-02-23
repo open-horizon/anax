@@ -6,7 +6,7 @@
 
 EXCH_URL="${EXCH_APP_HOST}"
 
-if [ ${CERT_LOC} -eq "1" ]; then
+if [ ${CERT_LOC} -eq 1 ]; then
   CERT_VAR="--cacert /certs/css.crt"
 else
   CERT_VAR=""
