@@ -34,19 +34,19 @@ fi
   #cd /root
 
   echo "Delete e2edev@somecomp.com..."
-  DL8ORG=$(curl -fsSL -X DELETE "$CERT_VAR" --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/e2edev@somecomp.com" | jq -r '.code, .msg')
+  DL8ORG=$(curl -sSL -X DELETE "$CERT_VAR" --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/$(echo -n "e2edev@somecomp.com" | jq -rRs @uri)" | jq -r '.code, .msg')
   echo "$DL8ORG"
 
   echo "Delete userdev organization..."
-  DL8UORG=$(curl -fsSL -X DELETE "$CERT_VAR" --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/userdev" | jq -r '.code, .msg')
+  DL8UORG=$(curl -sSL -X DELETE "$CERT_VAR" --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/userdev" | jq -r '.code, .msg')
   echo "$DL8UORG"
 
   echo "Delete Customer1 organization..."
-  DL8C1ORG=$(curl -fsSL -X DELETE "$CERT_VAR" --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/Customer1" | jq -r '.code, .msg')
+  DL8C1ORG=$(curl -sSL -X DELETE "$CERT_VAR" --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/Customer1" | jq -r '.code, .msg')
   echo "$DL8C1ORG"
 
   echo "Delete Customer2 organization..."
-  DL8C2ORG=$(curl -fsSL -X DELETE "$CERT_VAR" --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/Customer2" | jq -r '.code, .msg')
+  DL8C2ORG=$(curl -sSL -X DELETE "$CERT_VAR" --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/Customer2" | jq -r '.code, .msg')
   echo "$DL8C2ORG"
 
   # Delete an IBM admin user in the exchange
