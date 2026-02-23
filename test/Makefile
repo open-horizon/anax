@@ -165,11 +165,10 @@ run-test: test-image e2edevtest-docker-prereqs test-network
 	docker/docker_run.bash "$(DOCKER_TEST_CNAME)" \
 		docker run -d \
 		--privileged \
-		-p 127.0.0.1:8510:8510 \
-		-p 127.0.0.1:8511:8511 \
+		-p 8510:8510 \
+		-p 8511:8511 \
 		--name "$(DOCKER_TEST_CNAME)" \
 		--network "$(DOCKER_TEST_NETWORK)" \
-		--add-host "$(DOCKER_TEST_ADD_HOST)" \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v $(UDS):$(UDS):rw \
 		-v /var/tmp/horizon/:/var/tmp/horizon/:rw \
