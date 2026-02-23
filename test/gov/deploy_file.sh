@@ -63,7 +63,7 @@ EOF
 )
 
 # echo -e "\n$resmeta\n"
-echo -e "\n"${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}\n"
+echo -e "\n${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}\n"
 
 if [ "${3}" == "IBM" ];
 then
