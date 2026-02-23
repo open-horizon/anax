@@ -71,9 +71,9 @@ old_agbot := $(shell echo -e $(TEST_VARS) | grep OLDAGBOT=1)
 ifneq ($(old_agbot),)
 	AGBOT_IMAGE_TAG = latest
 endif
-AGBOT_API ?= http://agbot:8080
+AGBOT_API ?= http://127.0.0.1:3110
 AGBOT2_API ?= http://agbot2:8080
-AGBOT_SAPI_URL ?= $(HZN_TRANSPORT)://agbot:8083
+AGBOT_SAPI_URL ?= $(HZN_TRANSPORT)://127.0.0.1:3110
 AGBOT_NAME ?= agbot
 AGBOT_TOKEN ?= Abcdefghijklmno1
 
@@ -81,7 +81,7 @@ AGBOT_TOKEN ?= Abcdefghijklmno1
 DOCKER_EXCH_CNAME = exchange-api
 DOCKER_EXCH_INAME ?= quay.io/openhorizon/$(arch)_exchange-api
 DOCKER_EXCH_TAG ?= testing
-DOCKER_EXCH ?= $(HZN_TRANSPORT)://exchange-api:8080/v1
+DOCKER_EXCH ?= $(HZN_TRANSPORT)://127.0.0.1:3090/v1
 EXCHANGE_LOG_LEVEL ?= DEBUG
 EXCH_ROOTPW ?= Horizon-Rul3s
 EXCHANGE_HUB_ADMIN_PW ?= hubadminpw
@@ -123,7 +123,7 @@ DOCKER_CSS_TAG ?= latest
 CSS_INTERNAL_PORT ?= 8080
 CSS_LOG_LEVEL ?= DEBUG
 CSS_TRACE_LEVEL ?= DEBUG
-CSS_URL ?= $(HZN_TRANSPORT)://css-api:$(CSS_INTERNAL_PORT)
+CSS_URL ?= $(HZN_TRANSPORT)://127.0.0.1:9443
 
 #css DB
 DOCKER_CSSDB_CNAME := mongo
@@ -484,8 +484,8 @@ run-mgmthub: get-agbot-image get-css-image get-vault-image get-anax-images
 		POSTGRES_USER=$(EXCHDB_USER); \
 	export \
 		VAULT_IMAGE_TAG=$(DOCKER_VAULT_TAG) \
-		VAULT_PORT=$(VAULT_PORT) \
-		VAULT_DEV_LISTEN_ADDRESS=$(VAULT_DEV_LISTEN_ADDRESS) \
+		#VAULT_PORT=$(VAULT_PORT) \
+		#VAULT_DEV_LISTEN_ADDRESS=$(VAULT_DEV_LISTEN_ADDRESS) \
 		VAULT_ROOT_TOKEN=$(VAULT_DEV_ROOT_TOKEN_ID); \
 	export \
 		ANAX_SOURCE=$(ANAX_SOURCE) \
