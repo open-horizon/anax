@@ -72,7 +72,7 @@ URL_ENCODED_3=$(echo -n "${3}" | jq -rRs @uri)
 if [ "${3}" == "IBM" ];
 then
   # deploy public object to IBM using exchange root credentials
-  ADDM=$(curl -sSLv -X PUT -w "%{http_code}" "${CERT_VAR[@]}" -u "root/root:${EXCH_ROOTPW}" --header "Accept:application/json" --header "Content-Type:application/json" "${CSS_URL}/api/v1/objects/${URL_ENCODED_3}/${4}/${FILENAME}" --data "$resmeta")
+  ADDM=$(curl -sLv -X PUT -w "%{http_code}" "${CERT_VAR[@]}" -u "root/root:${EXCH_ROOTPW}" --header "Accept:application/json" --header "Content-Type:application/json" "${CSS_URL}/api/v1/objects/${URL_ENCODED_3}/${4}/${FILENAME}" --data "$resmeta")
 
   if [ "$ADDM" != "204" ]
   then
@@ -80,7 +80,7 @@ then
     exit 255
   fi
 
-  ADDF=$(curl -sSLv -X PUT -w "%{http_code}" "${CERT_VAR[@]}" -u "root/root:${EXCH_ROOTPW}" --header 'Accept:application/json' --header "Content-Type:application/octet-stream" "${CSS_URL}/api/v1/objects/${URL_ENCODED_3}/${4}/${FILENAME}/data" --data-binary @"${1}")
+  ADDF=$(curl -sLv -X PUT -w "%{http_code}" "${CERT_VAR[@]}" -u "root/root:${EXCH_ROOTPW}" --header 'Accept:application/json' --header "Content-Type:application/octet-stream" "${CSS_URL}/api/v1/objects/${URL_ENCODED_3}/${4}/${FILENAME}/data" --data-binary @"${1}")
 
   if [ "$ADDF" == "204" ]
   then
@@ -100,7 +100,7 @@ else
 
   #echo -e "echo \"$resmeta\" | curl -sLX PUT -w \"%{http_code}\" "${CERT_VAR[@]}" -u \"${3}/${admin_user}:${admin_pw}\" \"${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}\" --data @-"
   #echo ""
-  ADDM=$(curl -sSLv -X PUT -w "%{http_code}" "${CERT_VAR[@]}" -u "e2edev/${admin_user}:${admin_pw}" --header "Accept:application/json" --header "Content-Type:application/json" "${CSS_URL}/api/v1/objects/${URL_ENCODED_3}/${4}/${FILENAME}" --data "$resmeta")
+  ADDM=$(curl -sLv -X PUT -w "%{http_code}" "${CERT_VAR[@]}" -u "${URL_ENCODED_3}/${admin_user}:${admin_pw}" --header "Accept:application/json" --header "Content-Type:application/json" "${CSS_URL}/api/v1/objects/${URL_ENCODED_3}/${4}/${FILENAME}" --data "$resmeta")
 
   if [ "$ADDM" != "204" ]
   then
@@ -108,7 +108,7 @@ else
     exit 255
   fi
   
-  ADDF=$(curl -sSLv -X PUT -w "%{http_code}" "${CERT_VAR[@]}" -u "${3}/${admin_user}:${admin_pw}" --header 'Accept:application/json' --header "Content-Type:application/octet-stream" "${CSS_URL}/api/v1/objects/${URL_ENCODED_3}/${4}/${FILENAME}/data" --data-binary @"${1}")
+  ADDF=$(curl -sLv -X PUT -w "%{http_code}" "${CERT_VAR[@]}" -u "${3}/${admin_user}:${admin_pw}" --header 'Accept:application/json' --header "Content-Type:application/octet-stream" "${CSS_URL}/api/v1/objects/${URL_ENCODED_3}/${4}/${FILENAME}/data" --data-binary @"${1}")
 
   if [ "$ADDF" == "204" ]
   then
