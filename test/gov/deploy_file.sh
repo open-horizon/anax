@@ -70,7 +70,7 @@ URL_ENCODED_3=$(echo -n "${3}" | jq -rRs @uri)
 if [ "${3}" == "IBM" ];
 then
   # deploy public object to IBM using exchange root credentials
-  ADDM=$(curl -fsSLvX PUT -w "%{http_code}" "$CERT_VAR" -u "root/root:${EXCH_ROOTPW}" --header "Accept:application/json" --header "Content-Type:application/json" "${CSS_URL}/api/v1/objects/${URL_ENCODED_3}/${4}/${FILENAME}" --data "$resmeta")
+  ADDM=$(curl -fsSLvX PUT -w "%{http_code}" "$CERT_VAR" -u "root/root:${EXCH_ROOTPW}" --header "Accept:application/json" --header "Content-Type:application/json" "${CSS_URL}/api/v1/objects/e2edev/model/policy-basicres" --data "$resmeta")
 
   if [ "$ADDM" != "204" ]
   then
