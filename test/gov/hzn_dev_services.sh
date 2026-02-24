@@ -36,7 +36,7 @@ function verify {
 # $11 - NanoCpus config
 function createProject {
     echo -e "Building $2 service container."
-    cd "$1" || { echo "Error: hzn_dev_services.sh - ${FUNCNAME[1]} ${BASH_LINENO[0]} - Failure to change directories"; exit 1; }
+    cd "$1" || { echo "Error: hzn_dev_services.sh - ln ${LINENO} - Failure to change directories"; exit 1; }
 
     buildOut=$(make ARCH="${ARCH}" 2>&1)
 
@@ -114,7 +114,7 @@ function stopServices {
 # $1 - project directory
 # $2 - project name
 function deploy {
-    cd "$1" || { echo "Error: hzn_dev_services.sh - ${FUNCNAME[1]} ${BASH_LINENO[0]} - Failure to change directories"; exit 1; }
+    cd "$1" || { echo "Error: hzn_dev_services.sh - ln ${LINENO} - Failure to change directories"; exit 1; }
     deploy=$(hzn exchange service publish -v -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem -f ./horizon/service.definition.json 2>&1)
     deploying=$(echo "${deploy}" | grep "HTTP code: 201")
     if [ "${deploying}" == "" ]; then
@@ -131,7 +131,7 @@ function deploy {
 # $2 - project name
 # $3 - service name
 function deployWithPull {
-    cd "$1" || { echo "Error: hzn_dev_services.sh - ${FUNCNAME[1]} ${BASH_LINENO[0]} - Failure to change directories"; exit 1; }
+    cd "$1" || { echo "Error: hzn_dev_services.sh - ln ${LINENO} - Failure to change directories"; exit 1; }
 
     # First remove the existing docker image.
     removeImage=$(docker rmi "localhost:443/${ARCH}_${3}:1.0")
@@ -214,36 +214,36 @@ if ! RES=$(createProject "${LEAF_HOME}" "LEAF" "\"leaf\":" "my.company.com.servi
 then
   exit "${RES}"
 fi
-[ "$(( NUMBER_SERVICES += 1 ))" -ne 0 ] && { echo "Error: hzn_dev_services.sh - ${FUNCNAME[1]} ${BASH_LINENO[0]}- Failed to increment the number of services"; exit 1; }
+[ "$(( NUMBER_SERVICES += 1 ))" -ne 0 ]
 
 if ! RES=$(createProject "${CPU_HOME}" "CPU" "\"cpu\":" "my.company.com.services.cpu2" "singleton" "MY_CPU_VAR" "string" "cpuVarValue" "cpu")
 then
   exit "${RES}"
 fi
-[ "$(( NUMBER_SERVICES += 1 ))" -ne 0 ] && { echo "Error: hzn_dev_services.sh - ${FUNCNAME[1]} ${BASH_LINENO[0]} - Failed to increment the number of services"; exit 1; }
+[ "$(( NUMBER_SERVICES += 1 ))" -ne 0 ]
 
 if ! RES=$(createProject "${HELLO_HOME}" "Hello" "Star Wars" "my.company.com.services.hello2" "multiple" "MY_S_VAR1" "string" "inside" "helloservice")
 then
   exit "${RES}"
 fi
-[ "$(( NUMBER_SERVICES += 1 ))" -ne 0 ] && { echo "Error: hzn_dev_services.sh - ${FUNCNAME[1]} ${BASH_LINENO[0]} - Failed to increment the number of services"; exit 1; }
+[ "$(( NUMBER_SERVICES += 1 ))" -ne 0 ]
 
 
 if ! RES=$(createProject "${USEHELLO_HOME}" "UseHello" "variables verified." "my.company.com.services.usehello2" "singleton" "MY_VAR1" "string" "inside" "usehello" "512" "0.5")
 then
   exit "${RES}"
 fi
-[ "$(( NUMBER_SERVICES += 1 ))" -ne 0 ] && { echo "Error: hzn_dev_services.sh - ${FUNCNAME[1]} ${BASH_LINENO[0]} - Failed to increment the number of services"; exit 1; }
+[ "$(( NUMBER_SERVICES += 1 ))" -ne 0 ]
 
 # ============= Connect dependencies =================================
 
 echo -e "Creating dependencies."
 
-cd "${CPU_HOME}" || { echo "Error: hzn_dev_services.sh - ${FUNCNAME[1]} ${BASH_LINENO[0]} - Failure to change directories"; exit 1; }
+cd "${CPU_HOME}" || { echo "Error: hzn_dev_services.sh - ln ${LINENO} - Failure to change directories"; exit 1; }
 depCreate=$(hzn dev dependency fetch -p ${LEAF_HOME}/horizon -v 2>&1)
 verify "${depCreate}" "New dependency created" "Could not create CPU dependency on leaf."
 
-cd "${HELLO_HOME}" || { echo "Error: hzn_dev_services.sh - ${FUNCNAME[1]} ${BASH_LINENO[0]} - Failure to change directories"; exit 1; }
+cd "${HELLO_HOME}" || { echo "Error: hzn_dev_services.sh - ln ${LINENO} - Failure to change directories"; exit 1; }
 
 depCreate=$(hzn dev dependency fetch -p ${CPU_HOME}/horizon -v 2>&1)
 verify "${depCreate}" "New dependency created" "Could not create hello dependency on CPU."
@@ -259,7 +259,7 @@ then
   exit "${RES}"
 fi
 
-cd "${USEHELLO_HOME}" || { echo "Error: hzn_dev_services.sh - ${FUNCNAME[1]} ${BASH_LINENO[0]} - Failure to change directories"; exit 1; }
+cd "${USEHELLO_HOME}" || { echo "Error: hzn_dev_services.sh - ln ${LINENO} - Failure to change directories"; exit 1; }
 depCreate=$(hzn dev dependency fetch -p ${CPU_HOME}/horizon -v 2>&1)
 verify "${depCreate}" "New dependency created" "Could not create usehello dependency on CPU."
 
@@ -312,7 +312,7 @@ echo -e "Deploying services."
 KEY_TEST_DIR="/tmp/keytest"
 mkdir -p $KEY_TEST_DIR
 
-cd "$KEY_TEST_DIR" || { echo "Error: hzn_dev_services.sh - ${FUNCNAME[1]} ${BASH_LINENO[0]} - Failure to change directories"; exit 1; }
+cd "$KEY_TEST_DIR" || { echo "Error: hzn_dev_services.sh - ln ${LINENO} - Failure to change directories"; exit 1; }
 if ! ls "*.key" &> /dev/null
 then
     echo -e "Using existing key"

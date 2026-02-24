@@ -34,7 +34,7 @@ then
 fi
 
 echo "Deploying file ${1} version ${2} into ${3} as type ${4}, targetting nodes of type ${5} or node id ${6}, using policy:"
-echo "${7}"
+#echo "${7}"
 
 CSS_URL=${CSS_URL:-http://127.0.0.1:9443}
 
@@ -64,8 +64,7 @@ resmeta=$(cat <<EOF
 EOF
 )
 
-# echo -e "\n$resmeta\n"
-echo -e "\n${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}\n"
+echo -e "\n$resmeta\n"
 
 URL_ENCODED_3=$(echo -n "${3}" | jq -rRs @uri)
 
@@ -74,6 +73,8 @@ then
   # deploy public object to IBM using exchange root credentials
   ADDM=$(curl -sL -X PUT -w "%{http_code}\n" "${CERT_VAR[@]}" -u "root/root:${EXCH_ROOTPW}" --header "Accept:application/json" --header "Content-Type:application/json" "${CSS_URL}/api/v1/objects/${URL_ENCODED_3}/${4}/${FILENAME}" --data "$resmeta")
 
+  echo -e "PUT ${CSS_URL}/api/v1/objects/${URL_ENCODED_3}/${4}/${FILENAME} : ${ADDM}"
+
   if [ "$ADDM" != "204" ]
   then
     echo -e "PUT returned: '$ADDM'"
@@ -81,6 +82,8 @@ then
   fi
 
   ADDF=$(curl -sL -X PUT -w "%{http_code}\n" "${CERT_VAR[@]}" -u "root/root:${EXCH_ROOTPW}" --header 'Accept:application/json' --header "Content-Type:application/octet-stream" "${CSS_URL}/api/v1/objects/${URL_ENCODED_3}/${4}/${FILENAME}/data" --data-binary @"${1}")
+
+  echo -e "PUT ${CSS_URL}/api/v1/objects/${URL_ENCODED_3}/${4}/${FILENAME}/data : ${ADDF}"
 
   if [ "$ADDF" == "204" ]
   then
@@ -101,6 +104,8 @@ else
   #echo ""
   ADDM=$(curl -sL -X PUT -w "%{http_code}\n" "${CERT_VAR[@]}" -u "${3}/${admin_user}:${admin_pw}" --header "Accept:application/json" --header "Content-Type:application/json" "${CSS_URL}/api/v1/objects/${URL_ENCODED_3}/${4}/${FILENAME}" --data "$resmeta")
 
+  echo -e "PUT ${CSS_URL}/api/v1/objects/${URL_ENCODED_3}/${4}/${FILENAME} : ${ADDM}"
+
   if [ "$ADDM" != "204" ]
   then
     echo -e "PUT returned: '$ADDM'"
@@ -109,6 +114,8 @@ else
   
   ADDF=$(curl -sL -X PUT -w "%{http_code}\n" "${CERT_VAR[@]}" -u "${3}/${admin_user}:${admin_pw}" --header 'Accept:application/json' --header "Content-Type:application/octet-stream" "${CSS_URL}/api/v1/objects/${URL_ENCODED_3}/${4}/${FILENAME}/data" --data-binary @"${1}")
 
+  echo -e "PUT ${CSS_URL}/api/v1/objects/${URL_ENCODED_3}/${4}/${FILENAME}/data : ${ADDF}"
+
   if [ "$ADDF" == "204" ]
   then
     echo -e "Data file ${1} added successfully"
@@ -116,5 +123,4 @@ else
     echo -e "Data file PUT returned: '$ADDF'"
     exit 255
   fi
-
 fi
