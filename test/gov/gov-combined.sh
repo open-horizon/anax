@@ -2,7 +2,7 @@
 
 TEST_DIFF_ORG=${TEST_DIFF_ORG:-1}
 
-export ARCH=${ARCH}
+export ARCH=${ARCH:-amd64}
 export CSS_URL=${CSS_URL:-http://127.0.0.1:9443}
 
 function set_exports {
