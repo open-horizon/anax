@@ -17,4 +17,4 @@ USER e2edevuser
 ENV UNIX_SOCKET_FILE_PERMISSIONS=0777
 
 WORKDIR /tmp
-CMD ["/tmp/start.sh"]
+CMD [ "/tmp/start.sh" ]
