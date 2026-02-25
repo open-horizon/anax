@@ -16,9 +16,11 @@ build: clean
 run: stop
 	docker run -d --name $(DOCKER_NAME) --network=hzn_horizonnet --publish=8347:8347 --volume `pwd`:/outside $(DOCKER_HUB_ID)/$(DOCKER_NAME):$(DOCKER_TAG)
 
+#contId=$(shell docker ps -aq | head -1)
+#leafip=$(docker inspect --format "{{range .NetworkSettings.Networks }}{{ .Gateway }}{{ end }}" "$${contId}")
 check:
-	#contId=$(shell docker ps -aq | head -1) && \
-	#leafip=$(docker inspect --format "{{range .NetworkSettings.Networks }}{{ .Gateway }}{{ end }}" "$${contId}") && \
+	docker ps -a --filter name=$(DOCKER_NAME); \
+	docker logs $(DOCKER_NAME); \
 	curl -sSL "http://${HZN_DEV_HOST_IP}:8347/v1/cpu" | jq .
 
 stop:
