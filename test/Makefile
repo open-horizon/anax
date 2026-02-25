@@ -52,7 +52,8 @@ DOCKER_TEST_INAME ?= openhorizon/e2edev-test
 DOCKER_TEST_TAG ?= latest
 DOCKER_TEST_NETWORK ?= hzn_horizonnet
 DOCKER_TEST_ADD_HOST ?= "localhost:127.0.0.1"
-E2EDEV_HOST_IP := "127.0.0.1" #$(shell hostname -I | awk '{print $$1}')
+#$(shell hostname -I | awk '{print $$1}')
+E2EDEV_HOST_IP := 127.0.0.1
 UDS ?= /var/run/horizon/
 API_KEY ?= 0
 DOCKER_CPU_TAG := 1.2.7
