@@ -5,7 +5,7 @@ DOCKER_TAG = 1.0
 DOCKER_HUB_ID = localhost:443
 
 HZN_DEV_HOST_IP ?= 127.0.0.1
-leafip := HZN_DEV_HOST_IP
+leafip := $(HZN_DEV_HOST_IP)
 
 default: all
 
