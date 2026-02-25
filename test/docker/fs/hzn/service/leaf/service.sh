@@ -28,9 +28,8 @@ getCpuFromProc() {
 
 # Get the currect CPU consumption, then construct the HTTP response message
 CPU=$(getCpuFromProc)
-HEADERS="Content-Type: text/html; charset=ISO-8859-1"
+HEADERS="Content-Type: application/json; charset=ISO-8859-1"
 BODY="{\"leaf\":${CPU}}"
-HTTP="HTTP/1.1 200 OK\r\n${HEADERS}\r\n\r\n${BODY}\r\n"
 
 # Emit the HTTP response
-printf '%s' "$HTTP"
+printf "HTTP/1.1 200 OK\r\n%s\r\n\r\n%s\r\n" "${HEADERS}" "${BODY}"
