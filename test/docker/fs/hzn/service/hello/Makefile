@@ -21,13 +21,13 @@ horizonstop:
 	hzn -v dev service stop
 
 run: stop build
-	docker run --name $(IMAGE) -e MY_S_VAR1='outside' -e HZN_ARCH=$(ARCH) -p 8000:8000 -d -t $(BASE)/$(IMAGE):$(VER)
+	docker run --name $(IMAGE) -e MY_S_VAR1='outside' -e HZN_ARCH=$(ARCH) -p 8000:8000 -d -t "$(BASE)/$(IMAGE):$(VER)"
 	sleep 3
 
 check:
-	contId=$(shell docker ps -q | head -1) && \
-		helloip=$$(docker inspect --format "{{range .NetworkSettings.Networks }}{{ .Gateway }}{{ end }}" $$contId) && \
-			curl -sSL http://$$helloip:8000/movie
+	contId=$(shell docker ps -aq | head -1) && \
+	helloip=$(docker inspect --format "{{range .NetworkSettings.Networks }}{{ .Gateway }}{{ end }}" "${contId}") && \
+	curl -sSLv "http://${helloip}:8000/movie"
 
 stop:
 	-docker stop $(IMAGE)

@@ -16,8 +16,8 @@ run: stop
 
 check:
 	contId=$(shell docker ps -q | head -1) && \
-		cpuip=$$(docker inspect --format "{{range .NetworkSettings.Networks }}{{ .Gateway }}{{ end }}" $$contId) && \
-			curl -sSL http://$$cpuip:8347/v1/cpu | jq .
+	cpuip=$(docker inspect --format "{{range .NetworkSettings.Networks }}{{ .Gateway }}{{ end }}" "${contId}") && \
+	curl -sSL "http://${cpuip}:8347/v1/cpu" | jq .
 
 stop:
 	-docker rm -f $(DOCKER_NAME) 2> /dev/null || :
