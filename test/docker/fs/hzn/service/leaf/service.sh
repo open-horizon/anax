@@ -19,11 +19,11 @@ getCpuFromProc() {
         cpuu=$(echo "scale=2; 100 * (($total2 - $total1) - ($idle2 - $idle1)) / ($total2 - $total1)" | bc)
         needPrefix=$(echo "${cpuu}<1.0" | bc)
         if [ "${needPrefix}" = "1" ]; then
-                rcpuu="0${cpuu}"
+          rcpuu="0${cpuu}"
         else
-                rcpuu=${cpuu}
+          rcpuu=${cpuu}
         fi
-        echo $rcpuu
+        echo "$rcpuu"
 }
 
 # Get the currect CPU consumption, then construct the HTTP response message
@@ -33,5 +33,4 @@ BODY="{\"leaf\":${CPU}}"
 HTTP="HTTP/1.1 200 OK\r\n${HEADERS}\r\n\r\n${BODY}\r\n"
 
 # Emit the HTTP response
-echo -en $HTTP
-
+printf '%s' "$HTTP"

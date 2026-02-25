@@ -43,11 +43,15 @@ function createProject {
     if ! RES=$(verify "${buildOut}" "Successfully built" "writing image sha256:[0-9A-Za-z\.[:space:]]* done" "$2 container did not build")
     then
       exit "${RES}"
+    else
+      echo "${RES}"
     fi
 
     if ! RES=$(verify "${buildOut}" "$3" "$2 container did not produce output")
     then
       exit "${RES}"
+    else
+      echo "${RES}"
     fi
 
     buildStop=$(make stop ARCH="${ARCH}" 2>&1)
@@ -57,10 +61,12 @@ function createProject {
 
     echo -e "Creating Horizon $2 service project."
 
-    newProject=$(hzn dev service new -s "$4" -V 1.0.0 -i "localhost:443/${ARCH}_$9:1.0" --noImageGen --noPattern 2>&1)
+    newProject=$(hzn dev service new -v -d "$1/horizon" -s "$4" -V 1.0.0 -i "localhost:443/${ARCH}_$9:1.0" --noImageGen --noPattern 2>&1)
     if ! RES=$(verify "${newProject}" "Created horizon metadata" "Horizon project was not created")
     then
       exit "${RES}"
+    else
+      echo "${RES}"
     fi
 
     echo -e "Editing $2 project metadata."
@@ -93,6 +99,8 @@ function createProject {
     if ! RES=$(verify "${verifyProject}" "verified" "Horizon $2 project was not verifiable")
     then
       exit "${RES}"
+    else
+      echo "${RES}"
     fi
 }
 
@@ -165,7 +173,7 @@ function undeploy {
 # $2 - expected MaxMemory
 # $3 - expected NanoCpus
 function checkMemoryAndCpus {
-    echo -e "Checking custom MaxMemory and NanoCpus for $1."
+    echo -e "Checng custom MaxMemory and NanoCpus for $1."
     service_id=$(docker ps -qf "name=$1")
     svc_memory=$(docker inspect "$service_id" | jq -r '.[0].HostConfig.Memory')
     svc_nano_cpus=$(docker inspect "$service_id" | jq -r '.[0].HostConfig.NanoCpus')
@@ -185,9 +193,10 @@ function checkMemoryAndCpus {
 # ============= Main =================================================
 #
 
-if [ "${NOHZNDEV}" == "1" ] && [ "${NOHELLO}" == "1" ] && [ "${TEST_PATTERNS}" != "sall" ] && [ "${TEST_PATTERNS}" != "susehello" ]; then
-    echo -e "Skipping hzn dev tests"
-    exit 0
+if [ "${NOHZNDEV}" == "1" ] && [ "${NOHELLO}" == "1" ] && [ "${TEST_PATTERNS}" != "sall" ] && [ "${TEST_PATTERNS}" != "susehello" ]
+then
+  echo -e "Skipping hzn dev tests"
+  exit 0
 fi
 
 echo -e "Begin hzn dev service testing."

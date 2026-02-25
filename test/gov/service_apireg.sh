@@ -13,7 +13,7 @@ function results {
   fi
 }
 
-if [ ${CERT_LOC} -eq 1 ]; then
+if [ "${CERT_LOC}" -eq 1 ]; then
   CERT_VAR="--cacert /certs/css.crt"
 else
   CERT_VAR=(--silent)
@@ -41,8 +41,7 @@ export CPU_IMAGE_TAG="${DOCKER_CPU_TAG}"
 export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
 
 # Register services via the hzn dev exchange commands
-./hzn_dev_services.sh ${EXCH_URL} ${E2EDEV_ADMIN_AUTH} 0
-if [ $? -ne 0 ]
+if ! ./hzn_dev_services.sh "${EXCH_URL}" ${E2EDEV_ADMIN_AUTH} 0
 then
     echo -e "hzn service and pattern registration with hzn dev failed."
     exit 1
@@ -51,15 +50,13 @@ fi
 KEY_TEST_DIR="/tmp/keytest"
 mkdir -p $KEY_TEST_DIR
 
-cd $KEY_TEST_DIR
-ls *.key &> /dev/null
-if [ $? -eq 0 ]
+cd $KEY_TEST_DIR || { echo "Error: service_apireg.sh - ln ${LINENO} - Failure to change directories"; exit 1; }
+if ! ls "*.key" &> /dev/null
 then
     echo -e "Using existing key"
 else
   echo -e "Generate new signing keys:"
-  hzn key create -l 4096 e2edev@somecomp.com e2edev@gmail.com -d .
-  if [ $? -ne 0 ]
+  if ! hzn key create -l 4096 e2edev@somecomp.com e2edev@gmail.com -d .
   then
     echo -e "hzn key create failed."
     exit 2
@@ -178,8 +175,7 @@ export VERS="1.2.2"
 cat ${CPU_FILE_IBM} | envsubst > $KEY_TEST_DIR/svc_cpu.json
 
 echo -e "Register IBM/cpu service $VERS:"
-hzn exchange service publish -I -u $IBM_ADMIN_AUTH -o IBM -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
-if [ $? -ne 0 ]
+if ! hzn exchange service publish -I -u $IBM_ADMIN_AUTH -o IBM -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 then
     echo -e "hzn exchange service publish failed for IBM/cpu."
     exit 2
@@ -191,8 +187,7 @@ export VERS="1.0"
 cat ${CPU_FILE_E2EDEV} | envsubst > $KEY_TEST_DIR/svc_cpu.json
 
 echo -e "Register e2edev@somecomp.com/cpu service $VERS:"
-hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
-if [ $? -ne 0 ]
+if ! hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 then
     echo -e "hzn exchange service publish failed for e2edev@somecomp.com/cpu."
     exit 2
@@ -289,8 +284,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_gps.json
 }
 EOF
 echo -e "Register GPS service $VERS"
-hzn exchange service publish -I -u $IBM_ADMIN_AUTH  -o IBM -f $KEY_TEST_DIR/svc_gps.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
-if [ $? -ne 0 ]
+if ! hzn exchange service publish -I -u $IBM_ADMIN_AUTH  -o IBM -f $KEY_TEST_DIR/svc_gps.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 then
     echo -e "hzn exchange service publish failed for GPS."
     exit 2
@@ -327,8 +321,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_gps2.json
 }
 EOF
 echo -e "Register GPS service $VERS:"
-hzn exchange service publish -I -u $IBM_ADMIN_AUTH -o IBM -f $KEY_TEST_DIR/svc_gps2.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
-if [ $? -ne 0 ]
+if ! hzn exchange service publish -I -u $IBM_ADMIN_AUTH -o IBM -f $KEY_TEST_DIR/svc_gps2.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 then
     echo -e "hzn exchange service publish failed for GPS."
     exit 2
@@ -374,8 +367,7 @@ if [[ $TEST_DIFF_ORG -eq 1 ]]; then
     sed -i  's/"public":false/"public":true/g' $KEY_TEST_DIR/svc_locgps.json
 fi
 echo -e "Register GPS Loc service $VERS:"
-hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_locgps.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
-if [ $? -ne 0 ]
+if ! hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_locgps.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 then
     echo -e "hzn exchange service publish failed for LocGPS."
     exit 2
@@ -422,8 +414,7 @@ if [[ $TEST_DIFF_ORG -eq 1 ]]; then
     sed -i  's/"public":false/"public":true/g' $KEY_TEST_DIR/svc_locgps2.json
 fi
 echo -e "Register GPS Loc service $VERS:"
-hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_locgps2.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
-if [ $? -ne 0 ]
+if ! hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_locgps2.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 then
     echo -e "hzn exchange service publish failed for LocGPS."
     exit 2
@@ -453,8 +444,7 @@ export VERS="2.3.0"
 cat ${NS_FILE_IBM} | envsubst > $KEY_TEST_DIR/svc_netspeed.json
 
 echo -e "Register IBM/netspeed service $VERS:"
-hzn exchange service publish -I -u $IBM_ADMIN_AUTH -o IBM -f $KEY_TEST_DIR/svc_netspeed.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
-if [ $? -ne 0 ]
+if ! hzn exchange service publish -I -u $IBM_ADMIN_AUTH -o IBM -f $KEY_TEST_DIR/svc_netspeed.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 then
     echo -e "hzn exchange service publish failed for IBM/netspeed."
     exit 2
@@ -463,8 +453,7 @@ fi
 cat ${NS_FILE_E2EDEV} | envsubst > $KEY_TEST_DIR/svc_netspeed.json
 
 echo -e "Register e2edev@somecomp.com/netspeed service $VERS:"
-hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_netspeed.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
-if [ $? -ne 0 ]
+if ! hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_netspeed.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 then
     echo -e "hzn exchange service publish failed for e2edev@somecomp.com/netspeed."
     exit 2
@@ -501,8 +490,7 @@ if [[ $TEST_DIFF_ORG -eq 1 ]]; then
 fi
 
 echo -e "Register GPSTest service $VERS:"
-hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_gpstest.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
-if [ $? -ne 0 ]
+if ! hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_gpstest.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 then
     echo -e "hzn exchange service publish failed for GPSTest."
     exit 2
@@ -540,8 +528,7 @@ if [[ $TEST_DIFF_ORG -eq 1 ]]; then
     sed -i  's/"public":false/"public":true/g' $KEY_TEST_DIR/svc_location.json
 fi
 echo -e "Register service based location $VERS:"
-hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_location.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
-if [ $? -ne 0 ]
+if ! hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_location.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 then
     echo -e "hzn exchange service publish failed for Location."
     exit 2
@@ -577,8 +564,7 @@ if [[ $TEST_DIFF_ORG -eq 1 ]]; then
     sed -i  's/"public":false/"public":true/g' $KEY_TEST_DIR/svc_location2.json
 fi
 echo -e "Register service based location $VERS:"
-hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_location2.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
-if [ $? -ne 0 ]
+if ! hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_location2.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 then
     echo -e "hzn exchange service publish failed for Location."
     exit 2
@@ -622,8 +608,7 @@ if [[ $TEST_DIFF_ORG -eq 1 ]]; then
     sed -i  's/"public":false/"public":true/g' $KEY_TEST_DIR/svc_weather.json
 fi
 echo -e "Register service based PWS $VERS:"
-hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_weather.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
-if [ $? -ne 0 ]
+if ! hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_weather.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 then
     echo -e "hzn exchange service publish failed for PWS."
     exit 2
@@ -666,8 +651,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_k8s1.json
 EOF
 
 echo -e "Register k8s-service1 $VERS:"
-hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_k8s1.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
-if [ $? -ne 0 ]
+if ! hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_k8s1.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 then
     echo -e "hzn exchange service publish failed for k8s-service1."
     exit 2
@@ -709,8 +693,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_k8s_embedded_ns.json
 EOF
 
 echo -e "Register k8s-service-embedded-ns $VERS:"
-hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_k8s_embedded_ns.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
-if [ $? -ne 0 ]
+if ! hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_k8s_embedded_ns.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 then
     echo -e "hzn exchange service publish failed for k8s-service-embedded-ns."
     exit 2
@@ -759,8 +742,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_k8s_secret.json
 EOF
 
 echo -e "Register k8s-hello-secret $VERS:"
-hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_k8s_secret.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
-if [ $? -ne 0 ]
+if ! hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_k8s_secret.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 then
     echo -e "hzn exchange service publish failed for k8s-hello-secret."
     exit 2
@@ -803,8 +785,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_k8s_mms.json
 EOF
 
 echo -e "Register k8s-hello-mms $VERS:"
-hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_k8s_mms.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
-if [ $? -ne 0 ]
+if ! hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_k8s_mms.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 then
     echo -e "hzn exchange service publish failed for k8s-hello-mms."
     exit 2
@@ -1240,9 +1221,6 @@ if [ "${NOVAULT}" != "1" ]; then
   RES=$(echo "$sdef" | curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sk8s-with-secrets" | jq -r '.')
 
   results "$RES"
-
-
-
 fi
 
 
@@ -1290,12 +1268,12 @@ cat $SALL_PATTERN | envsubst > $KEY_TEST_DIR/pattern_sall.json
 msdef=$(cat $KEY_TEST_DIR/pattern_sall.json)
 
 if [[ $TEST_DIFF_ORG -eq 0 ]]; then
-  msdef=$(echo $msdef |jq 'del(.services[] | select(.serviceUrl == "https://bluehorizon.network/services/netspeed") | select(.serviceOrgid == "e2edev@somecomp.com"))')
+  msdef=$(echo "$msdef" |jq 'del(.services[] | select(.serviceUrl == "https://bluehorizon.network/services/netspeed") | select(.serviceOrgid == "e2edev@somecomp.com"))')
 fi
 
 echo -e "Register service based all pattern:"
 
-  RES=$(echo $msdef | curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sall" | jq -r '.')
+  RES=$(echo "$msdef" | curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sall" | jq -r '.')
 
 results "$RES"
 
@@ -1473,8 +1451,7 @@ results "$RES"
 if [ "${NOHZNDEV}" == "1" ] && [ "${NOHELLO}" == "1" ] && [ "${TEST_PATTERNS}" != "susehello" ]; then
     echo -e "Skipping usehello policy creation"
 else
-
-read -dr '' bphellodef <<EOF
+  read -dr '' bphellodef <<EOF
 {
   "label": "business policy for usehello",
   "description": "for usehello",
@@ -1513,12 +1490,11 @@ read -dr '' bphellodef <<EOF
   ]
 }
 EOF
-echo -e "Register business policy for usehelllo:"
+  echo -e "Register business policy for usehelllo:"
 
   RES=$(echo "$bphellodef" | curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_usehello" | jq -r '.')
 
-results "$RES"
-
+  results "$RES"
 fi
 
 read -dr '' bpk8ssvc1def <<EOF
@@ -1604,7 +1580,7 @@ echo -e "Register business policy bp_k8s_embedded_ns for k8s-service-embedded-ns
 results "$RES"
 
 if [ "${NOVAULT}" != "1" ]; then
-read -dr '' bpk8ssvc1def <<EOF
+  read -dr '' bpk8ssvc1def <<EOF
 {
   "label": "business policy for k8s-hello-secret",
   "description": "Deployment Policy for k8s-hello-secret using a secret",
@@ -1661,11 +1637,11 @@ read -dr '' bpk8ssvc1def <<EOF
   ]
 }
 EOF
-echo -e "Register business policy bp_k8s_secret for k8s-hello-secret:"
+  echo -e "Register business policy bp_k8s_secret for k8s-hello-secret:"
 
   RES=$(echo "$bpk8ssvc1def" | curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_k8s_secret" | jq -r '.')
 
-results "$RES"
+  results "$RES"
 fi
 
 read -dr '' bpk8smmsdef <<EOF
