@@ -28,7 +28,7 @@ getCpuFromProc() {
 
 # Get the currect CPU consumption, then construct the HTTP response message
 CPU=$(getCpuFromProc)
-HEADERS="Content-Type: application/json; charset=ISO-8859-1"
+HEADERS="Content-Type: text/html; charset=ISO-8859-1"
 BODY="{\"leaf\":${CPU}}"
 
 # Emit the HTTP response
