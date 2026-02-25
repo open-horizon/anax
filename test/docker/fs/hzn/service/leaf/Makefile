@@ -4,8 +4,8 @@ DOCKER_TAG = 1.0
 
 DOCKER_HUB_ID = localhost:443
 
-HZN_DEV_HOST_IP ?= 127.0.0.1
-leafip := $(HZN_DEV_HOST_IP)
+HZN_DEV_HOST_IP ?=127.0.0.1
+leafip :=$(HZN_DEV_HOST_IP)
 
 default: all
 
@@ -20,7 +20,7 @@ run: stop
 check:
 	#contId=$(shell docker ps -aq | head -1) && \
 	#leafip=$(docker inspect --format "{{range .NetworkSettings.Networks }}{{ .Gateway }}{{ end }}" "$${contId}") && \
-	curl -sSL "http://$(leafip):8347/v1/cpu" | jq .
+	curl -sSL "http://$$leafip:8347/v1/cpu" | jq .
 
 stop:
 	-docker rm -f $(DOCKER_NAME) 2> /dev/null || :
