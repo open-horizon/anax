@@ -19,7 +19,11 @@ function verify {
             echo -e "\nERROR: $4. Output was:"
             echo -e "$resp"
             exit 1
+        else
+          exit 0
         fi
+    else
+      exit 0
     fi
 }
 
