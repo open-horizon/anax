@@ -250,15 +250,15 @@ fi
 echo -e "Creating dependencies."
 
 cd "${CPU_HOME}" || { echo "Error: hzn_dev_services.sh - ln ${LINENO} - Failure to change directories"; exit 1; }
-depCreate=$(hzn dev dependency fetch -p ${LEAF_HOME}/horizon -v 2>&1)
+depCreate=$(hzn dev dependency fetch -d "${CPU_HOME}/horizon" -p "${LEAF_HOME}/horizon" -v 2>&1)
 verify "${depCreate}" "New dependency created" "Could not create CPU dependency on leaf."
 
 cd "${HELLO_HOME}" || { echo "Error: hzn_dev_services.sh - ln ${LINENO} - Failure to change directories"; exit 1; }
 
-depCreate=$(hzn dev dependency fetch -p ${CPU_HOME}/horizon -v 2>&1)
+depCreate=$(hzn dev dependency fetch -d "${HELLO_HOME}/horizon" -p "${CPU_HOME}/horizon" -v 2>&1)
 verify "${depCreate}" "New dependency created" "Could not create hello dependency on CPU."
 
-depCreate=$(hzn dev dependency fetch -p ${LEAF_HOME}/horizon -v 2>&1)
+depCreate=$(hzn dev dependency fetch -d "${HELLO_HOME}/horizon" -p "${LEAF_HOME}/horizon" -v 2>&1)
 verify "${depCreate}" "New dependency created" "Could not create hello dependency on leaf."
 
 echo -e "Verifying the Hello project."
@@ -270,10 +270,10 @@ then
 fi
 
 cd "${USEHELLO_HOME}" || { echo "Error: hzn_dev_services.sh - ln ${LINENO} - Failure to change directories"; exit 1; }
-depCreate=$(hzn dev dependency fetch -p ${CPU_HOME}/horizon -v 2>&1)
+depCreate=$(hzn dev dependency fetch -d "${USEHELLO_HOME}/horizon" -p "${CPU_HOME}/horizon" -v 2>&1)
 verify "${depCreate}" "New dependency created" "Could not create usehello dependency on CPU."
 
-depCreate=$(hzn dev dependency fetch -p ${HELLO_HOME}/horizon -v 2>&1)
+depCreate=$(hzn dev dependency fetch -d "${USEHELLO_HOME}/horizon" -p "${HELLO_HOME}/horizon" -v 2>&1)
 verify "${depCreate}" "New dependency created" "Could not create usehello dependency on hello."
 
 echo -e "Verifying the UseHello project."
