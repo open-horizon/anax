@@ -82,7 +82,7 @@ do
 
     echo "${AUTH}  ,  ${CERT}  ,  ${BASEURL}  ,  ${OBJECT_TYPE}"
 
-    OBJS=$(curl -sL "${AUTH}${CERT}${BASEURL}${OBJECT_TYPE}?received=true")
+    OBJS=$(curl -sL "${AUTH}" "${CERT}" "${BASEURL}${OBJECT_TYPE}?received=true")
 
     BADRES=$(echo "${OBJS}" | jq -r '.[].objectID')
     if [ "${BADRES}" = "" ]
@@ -99,11 +99,11 @@ do
       if [ "$del" = "true" ]
       then
         echo "Acknowledging that Object $id is deleted"
-        ACKDEL=$(curl -sLX PUT "${AUTH}${CERT}${BASEURL}${OBJECT_TYPE}/${id}/deleted")
+        ACKDEL=$(curl -sLX PUT "${AUTH}" "${CERT}" "${BASEURL}${OBJECT_TYPE}/${id}/deleted")
         rm -f "${FILE_LOC}/${id}"
       else
-        DATA=$(curl -sL -o "${FILE_LOC}/${id} ${AUTH}${CERT}${BASEURL}${OBJECT_TYPE}/${id}/data")
-        RCVD=$(curl -sLX PUT "${AUTH}${CERT}${BASEURL}${OBJECT_TYPE}/${id}/received")
+        DATA=$(curl -sL -o "${FILE_LOC}/${id}" "${AUTH}" "${CERT}" "${BASEURL}${OBJECT_TYPE}/${id}/data")
+        RCVD=$(curl -sLX PUT "${AUTH}" "${CERT}" "${BASEURL}${OBJECT_TYPE}/${id}/received")
         printf '%s' "Received object: ${id}"
       fi
     done
@@ -143,7 +143,7 @@ do
     printf '%s' "Calling ESS to poll for new objects"
 
     # Pick up any newly added objects or notifications of changed or deleted objects since our initial poll.
-    OBJS=$(curl -sL "${AUTH}${CERT}${BASEURL}${OBJECT_TYPE}")
+    OBJS=$(curl -sL "${AUTH}" "${CERT}" "${BASEURL}${OBJECT_TYPE}")
 
     echo "Full poll response: ${OBJS}"
 
@@ -157,12 +157,12 @@ do
       if [ "$del" = "true" ]
       then
         echo "Acknowledging that Object $id is deleted"
-        ACKDEL=$(curl -sLX PUT "${AUTH}${CERT}${BASEURL}${OBJECT_TYPE}/${id}/deleted")
+        ACKDEL=$(curl -sLX PUT "${AUTH}" "${CERT}" "${BASEURL}${OBJECT_TYPE}/${id}/deleted")
         rm -f "${FILE_LOC}/${id}"
       else
         # Assume we got a new object
-        DATA=$(curl -sL -o "${FILE_LOC}/${id} ${AUTH}${CERT}${BASEURL}${OBJECT_TYPE}/${id}/data")
-        RCVD=$(curl -sLX PUT "${AUTH}${CERT}${BASEURL}${OBJECT_TYPE}/${id}/received")
+        DATA=$(curl -sL -o "${FILE_LOC}/${id}" "${AUTH}" "${CERT}" "${BASEURL}${OBJECT_TYPE}/${id}/data")
+        RCVD=$(curl -sLX PUT "${AUTH}" "${CERT}" "${BASEURL}${OBJECT_TYPE}/${id}/received")
         printf '%s' "Got a new object: ${id}"
       fi
     done

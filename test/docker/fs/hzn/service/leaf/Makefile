@@ -19,8 +19,8 @@ run: stop
 #contId=$(shell docker ps -aq | head -1)
 #leafip=$(docker inspect --format "{{range .NetworkSettings.Networks }}{{ .Gateway }}{{ end }}" "$${contId}")
 check:
-	docker ps -a --filter name=$(DOCKER_NAME); \
-	docker logs $(DOCKER_NAME); \
+	docker ps -a --filter name=$(DOCKER_NAME)
+	docker logs $(DOCKER_NAME)
 	curl -sSL "http://${HZN_DEV_HOST_IP}:8347/v1/cpu" | jq .
 
 stop:

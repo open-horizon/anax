@@ -14,12 +14,12 @@ build: clean
 	docker build -t $(DOCKER_HUB_ID)/$(DOCKER_NAME):$(DOCKER_TAG) .
 
 run: stop
-	docker run -d --name $(DOCKER_NAME) --network=hzn_horizonnet --publish=8347:8347 --volume `pwd`:/outside $(DOCKER_HUB_ID)/$(DOCKER_NAME):$(DOCKER_TAG)
+	docker run -d --name $(DOCKER_NAME) --network=hzn_horizonnet --publish=8348:8347 --volume `pwd`:/outside $(DOCKER_HUB_ID)/$(DOCKER_NAME):$(DOCKER_TAG)
 
 check:
 	docker ps -a --filter name=$(DOCKER_NAME)
 	docker logs $(DOCKER_NAME)
-	curl -sSL "http://${HZN_DEV_HOST_IP}:8347/v1/cpu" | jq .
+	curl -sSL "http://${HZN_DEV_HOST_IP}:8348/v1/cpu" | jq .
 
 stop:
 	-docker rm -f $(DOCKER_NAME) 2> /dev/null || :
