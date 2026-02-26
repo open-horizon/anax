@@ -14,7 +14,7 @@ else
   CERT_VAR=(--silent)
 fi
 
-MAIN_AUTH="iamapikey:${API_KEY}"
+MAIN_AUTH="apikey:${API_KEY}"
 
 HZN_EXCHANGE_NODE_AUTH="testNode:Abcdefghijklmno1"
 NODE_NAME="testNode"
