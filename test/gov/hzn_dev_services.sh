@@ -61,7 +61,7 @@ function createProject {
 
     echo -e "Creating Horizon $2 service project."
 
-    newProject=$(hzn dev service new -v -d "$1/horizon" -s "$4" -V 1.0.0 -i "localhost:443/${ARCH}_$9:1.0" --noImageGen --noPattern 2>&1)
+    newProject=$(hzn dev service new -d "$1/horizon" -s "$4" -V 1.0.0 -i "localhost:443/${ARCH}_$9:1.0" --noImageGen --noPattern 2>&1)
     if ! RES=$(verify "${newProject}" "Created horizon metadata" "Horizon project was not created")
     then
       exit "${RES}"
