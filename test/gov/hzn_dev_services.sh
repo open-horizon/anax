@@ -41,7 +41,7 @@ function createProject {
 
     buildOut=$(make ARCH="${ARCH}" 2>&1)
 
-    if ! RES=$(verify "${buildOut}" "writing image sha256:[0-9A-Za-z\.[:space:]]* done" "writing image sha256:[0-9A-Za-z\.[:space:]]* done" "$2 container did not build")
+    if ! RES=$(verify "${buildOut}" "Successfully built" "writing image sha256:[0-9A-Za-z\.[:space:]]* done" "$2 container did not build")
     then
       exit "${RES}"
     else
