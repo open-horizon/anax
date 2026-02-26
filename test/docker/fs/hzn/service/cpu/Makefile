@@ -14,7 +14,7 @@ build: clean
 	docker build -t $(DOCKER_HUB_ID)/$(DOCKER_NAME):$(DOCKER_TAG) .
 
 run: stop
-	docker run -d --name $(DOCKER_NAME) --publish=8347:8347 --volume `pwd`:/outside $(DOCKER_HUB_ID)/$(DOCKER_NAME):$(DOCKER_TAG)
+	docker run -d --name $(DOCKER_NAME) --network=hzn_horizonnet --publish=8347:8347 --volume `pwd`:/outside $(DOCKER_HUB_ID)/$(DOCKER_NAME):$(DOCKER_TAG)
 
 check:
 	docker ps -a --filter name=$(DOCKER_NAME)

@@ -20,10 +20,10 @@ horizonstop:
 	hzn -v dev service stop
 
 run:
-	docker run --name $(IMAGE) -e MY_VAR1='outside' -e HZN_ARCH=$(ARCH) -d -t $(BASE)/$(IMAGE):$(VER)
+	docker run --name $(IMAGE) --network=hzn_horizonnet -e MY_VAR1='outside' -e HZN_ARCH=$(ARCH) -d -t $(BASE)/$(IMAGE):$(VER)
 
 check:
-	docker ps -a --filter name=$(DOCKER_NAME)
+	docker ps -a --filter name=$(IMAGE)
 	docker logs $(IMAGE)
 
 stop:
