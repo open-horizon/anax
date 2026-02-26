@@ -7,7 +7,7 @@
 # $2 - expected result with docker legacy build
 # $3 - expected result with DOCKER_BUILDKIT
 # $4 - error message
-function verify {
+verify() {
     local resp=$1
     echo -e "$resp"
     respContains=$(echo "$resp" | grep "$2")
@@ -19,11 +19,7 @@ function verify {
             echo -e "\nERROR: $4. Output was:"
             echo -e "$resp"
             exit 1
-        else
-          exit 0
         fi
-    else
-      exit 0
     fi
 }
 
@@ -39,7 +35,7 @@ function verify {
 # $9 - deployment config service name
 # $10 - MaxMemory config
 # $11 - NanoCpus config
-function createProject {
+createProject() {
     echo -e "Building $2 service container."
     cd "$1" || { echo "Error: hzn_dev_services.sh - ln ${LINENO} - Failure to change directories"; exit 1; }
 
@@ -48,15 +44,15 @@ function createProject {
     if ! RES=$(verify "${buildOut}" "Successfully built" "writing image sha256:[0-9A-Za-z\.[:space:]]* done" "$2 container did not build")
     then
       exit "${RES}"
-    else
-      echo "${RES}"
+    #else
+      #echo "${RES}"
     fi
 
     if ! RES=$(verify "${buildOut}" "$3" "$2 container did not produce output")
     then
       exit "${RES}"
-    else
-      echo "${RES}"
+    #else
+      #echo "${RES}"
     fi
 
     buildStop=$(make stop ARCH="${ARCH}" 2>&1)
@@ -70,8 +66,8 @@ function createProject {
     if ! RES=$(verify "${newProject}" "Created horizon metadata" "Horizon project was not created")
     then
       exit "${RES}"
-    else
-      echo "${RES}"
+    #else
+      #echo "${RES}"
     fi
 
     echo -e "Editing $2 project metadata."
@@ -99,7 +95,7 @@ function createProject {
     fi
 
     echo -e "Verifying the $2 project."
-    verifyProject=$(hzn dev service verify -v 2>&1)
+    verifyProject=$(hzn dev service verify -d "$1/horizon" -v 2>&1)
 
     if ! RES=$(verify "${verifyProject}" "verified" "Horizon $2 project was not verifiable")
     then
@@ -111,7 +107,7 @@ function createProject {
 
 # Stop the services that are started in the hzn dev test environment. Implicitly uses
 # the horizon project in PWD.
-function stopServices {
+stopServices() {
     echo -e "Stopping the top level service in the Horizon test environment."
     stopDev=$(hzn dev service stop -v 2>&1)
     stoppedServices=$(echo "${stopDev}" | grep -c "Stopped service.")
@@ -126,7 +122,7 @@ function stopServices {
 # Deploy a new hzn dev service project. The inputs are:
 # $1 - project directory
 # $2 - project name
-function deploy {
+deploy() {
     cd "$1" || { echo "Error: hzn_dev_services.sh - ln ${LINENO} - Failure to change directories"; exit 1; }
     deploy=$(hzn exchange service publish -v -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem -f ./horizon/service.definition.json 2>&1)
     deploying=$(echo "${deploy}" | grep "HTTP code: 201")
@@ -143,7 +139,7 @@ function deploy {
 # $1 - project directory
 # $2 - project name
 # $3 - service name
-function deployWithPull {
+deployWithPull() {
     cd "$1" || { echo "Error: hzn_dev_services.sh - ln ${LINENO} - Failure to change directories"; exit 1; }
 
     # First remove the existing docker image.
@@ -168,7 +164,7 @@ function deployWithPull {
 
 # Undeploy a new hzn dev service project. The input is:
 # $1 - service
-function undeploy {
+undeploy() {
     undeploy=$(hzn exchange service remove -f "$1")
     echo -e "$1 service undeployed."
 }
@@ -177,7 +173,7 @@ function undeploy {
 # $1 - service
 # $2 - expected MaxMemory
 # $3 - expected NanoCpus
-function checkMemoryAndCpus {
+checkMemoryAndCpus() {
     echo -e "Checng custom MaxMemory and NanoCpus for $1."
     service_id=$(docker ps -qf "name=$1")
     svc_memory=$(docker inspect "$service_id" | jq -r '.[0].HostConfig.Memory')
