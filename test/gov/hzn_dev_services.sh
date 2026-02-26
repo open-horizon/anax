@@ -208,7 +208,8 @@ export ARCH=${ARCH}
 E2EDEV_ADMIN_AUTH=$2
 CLEAN_UP=$3
 
-PROJECT_HOME="./docker/fs/hzn/service"
+TEST_ROOT=$(pwd)
+PROJECT_HOME="${TEST_ROOT}/docker/fs/hzn/service"
 
 LEAF_HOME=${PROJECT_HOME}/leaf
 CPU_HOME=${PROJECT_HOME}/cpu
