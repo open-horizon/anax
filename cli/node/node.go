@@ -126,11 +126,9 @@ func Env(org, userPw, exchUrl, cssUrl, agbotUrl string) {
 	msgPrinter.Println()
 	if strings.Contains(userPw, "iamapikey:") {
 		userPw = "iamapikey:" + mask
-	}
-	else if strings.Contains(userPw, "apikey:") {
+	} else if strings.Contains(userPw, "apikey:") {
     		userPw = "apikey:" + mask
-    }
-    else strings.ContainsAny(userPw, ":") {
+    } else strings.ContainsAny(userPw, ":") {
 		user := strings.Split(userPw, ":")
 		userPw = user[0] + ":" + mask
 	}
