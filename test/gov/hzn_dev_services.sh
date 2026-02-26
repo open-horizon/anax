@@ -75,7 +75,7 @@ createProject() {
     userInput=$1/horizon/userinput.json
     serviceURL=$4
 
-    sed -e 's|"label": "${SERVICE_NAME} for ${ARCH}"|"label": "'"$2"'service"|' "${serviceDef}" > "${serviceDef}.tmp" && mv "${serviceDef}.tmp" "${serviceDef}"
+    sed -e "s|\"label\": \"${SERVICE_NAME} for ${ARCH}\"|\"label\": \"$2service\"|" "${serviceDef}" > "${serviceDef}.tmp" && mv "${serviceDef}.tmp" "${serviceDef}"
     sed -e 's|"description": ""|"description": "'"$2"' service"|' "${serviceDef}" > "${serviceDef}.tmp" && mv "${serviceDef}.tmp" "${serviceDef}"
     sed -e 's|"public": false|"public": true|' "${serviceDef}" > "${serviceDef}.tmp" && mv "${serviceDef}.tmp" "${serviceDef}"
     sed -e 's|"sharable": "multiple"|"sharable": "'"$5"'"|' "${serviceDef}" > "${serviceDef}.tmp" && mv "${serviceDef}.tmp" "${serviceDef}"
@@ -95,7 +95,7 @@ createProject() {
     fi
 
     echo -e "Verifying the $2 project."
-    verifyProject=$(hzn dev service verify -d "$1/horizon" -v 2>&1)
+    verifyProject=$(hzn dev service verify -d "$1/horizon" -u -u "${E2EDEV_ADMIN_AUTH}" -v 2>&1)
 
     if ! RES=$(verify "${verifyProject}" "verified" "Horizon $2 project was not verifiable")
     then
@@ -251,19 +251,19 @@ fi
 echo -e "Creating dependencies."
 
 cd "${CPU_HOME}" || { echo "Error: hzn_dev_services.sh - ln ${LINENO} - Failure to change directories"; exit 1; }
-depCreate=$(hzn dev dependency fetch -d "${CPU_HOME}/horizon" -p "${LEAF_HOME}/horizon" -v 2>&1)
+depCreate=$(hzn dev dependency fetch -d "${CPU_HOME}/horizon" -p "${LEAF_HOME}/horizon" -u "${E2EDEV_ADMIN_AUTH}" -v 2>&1)
 verify "${depCreate}" "New dependency created" "Could not create CPU dependency on leaf."
 
 cd "${HELLO_HOME}" || { echo "Error: hzn_dev_services.sh - ln ${LINENO} - Failure to change directories"; exit 1; }
 
-depCreate=$(hzn dev dependency fetch -d "${HELLO_HOME}/horizon" -p "${CPU_HOME}/horizon" -v 2>&1)
+depCreate=$(hzn dev dependency fetch -d "${HELLO_HOME}/horizon" -p "${CPU_HOME}/horizon" -u "${E2EDEV_ADMIN_AUTH}" -v 2>&1)
 verify "${depCreate}" "New dependency created" "Could not create hello dependency on CPU."
 
-depCreate=$(hzn dev dependency fetch -d "${HELLO_HOME}/horizon" -p "${LEAF_HOME}/horizon" -v 2>&1)
+depCreate=$(hzn dev dependency fetch -d "${HELLO_HOME}/horizon" -p "${LEAF_HOME}/horizon" -u "${E2EDEV_ADMIN_AUTH}" -v 2>&1)
 verify "${depCreate}" "New dependency created" "Could not create hello dependency on leaf."
 
 echo -e "Verifying the Hello project."
-verifyProject=$(hzn dev service verify -v 2>&1)
+verifyProject=$(hzn dev service verify -u "${E2EDEV_ADMIN_AUTH}" -v 2>&1)
 
 if ! RES=$(verify "${verifyProject}" "verified" "Horizon Hello project was not verifiable")
 then
@@ -271,14 +271,14 @@ then
 fi
 
 cd "${USEHELLO_HOME}" || { echo "Error: hzn_dev_services.sh - ln ${LINENO} - Failure to change directories"; exit 1; }
-depCreate=$(hzn dev dependency fetch -d "${USEHELLO_HOME}/horizon" -p "${CPU_HOME}/horizon" -v 2>&1)
+depCreate=$(hzn dev dependency fetch -d "${USEHELLO_HOME}/horizon" -p "${CPU_HOME}/horizon" -u "${E2EDEV_ADMIN_AUTH}" -v 2>&1)
 verify "${depCreate}" "New dependency created" "Could not create usehello dependency on CPU."
 
-depCreate=$(hzn dev dependency fetch -d "${USEHELLO_HOME}/horizon" -p "${HELLO_HOME}/horizon" -v 2>&1)
+depCreate=$(hzn dev dependency fetch -d "${USEHELLO_HOME}/horizon" -p "${HELLO_HOME}/horizon" -u "${E2EDEV_ADMIN_AUTH}" -v 2>&1)
 verify "${depCreate}" "New dependency created" "Could not create usehello dependency on hello."
 
 echo -e "Verifying the UseHello project."
-verifyProject=$(hzn dev service verify -v 2>&1)
+verifyProject=$(hzn dev service verify -u "${E2EDEV_ADMIN_AUTH}" -v 2>&1)
 
 if ! RES=$(verify "${verifyProject}" "verified" "Horizon UseHello project was not verifiable")
 then
@@ -289,7 +289,7 @@ fi
 
 echo -e "Starting the top level service in the Horizon test environment."
 
-startDev=$(hzn dev service start -v -m /root/resources/private/basicres/basicres.tgz -m /root/resources/private/multires/multires.tgz -t model 2>&1)
+startDev=$(hzn dev service start -u "${E2EDEV_ADMIN_AUTH}" -v -m /root/resources/private/basicres/basicres.tgz -m /root/resources/private/multires/multires.tgz -t model 2>&1)
 startedServices=$(echo "${startDev}" | sed 's/Running service./Running service.\n/g' | grep -c "Running service.")
 if [ "${startedServices}" != "${NUMBER_SERVICES}" ]; then
     echo -e "${startedServices}"
@@ -343,28 +343,28 @@ then
     exit 1
 fi
 
-if ! RES=$(deploy ${LEAF_HOME} "LEAF")
+if ! RES=$(deploy "${LEAF_HOME}" "LEAF")
 then
   exit "${RES}"
 fi
 
 echo -e "Redeploying, but this time with the docker pull option."
-if ! RES=$(deployWithPull ${LEAF_HOME} "LEAF" "leaf")
+if ! RES=$(deployWithPull "${LEAF_HOME}" "LEAF" "leaf")
 then
   exit "${RES}"
 fi
 
-if ! RES=$(deploy ${CPU_HOME} "CPU")
+if ! RES=$(deploy "${CPU_HOME}" "CPU")
 then
   exit "${RES}"
 fi
 
-if ! RES=$(deploy ${HELLO_HOME} "Hello")
+if ! RES=$(deploy "${HELLO_HOME}" "Hello")
 then
   exit "${RES}"
 fi
 
-if ! RES=$(deploy ${USEHELLO_HOME} "UseHello")
+if ! RES=$(deploy "${USEHELLO_HOME}" "UseHello")
 then
   exit "${RES}"
 fi
