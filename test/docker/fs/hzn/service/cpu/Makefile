@@ -4,6 +4,8 @@ DOCKER_TAG = 1.0
 
 DOCKER_HUB_ID = localhost:443
 
+HZN_DEV_HOST_IP ?=127.0.0.1
+
 default: all
 
 all: build run check
@@ -15,9 +17,9 @@ run: stop
 	docker run -d --name $(DOCKER_NAME) --publish=8347:8347 --volume `pwd`:/outside $(DOCKER_HUB_ID)/$(DOCKER_NAME):$(DOCKER_TAG)
 
 check:
-	contId=$(shell docker ps -q | head -1) && \
-	cpuip=$(docker inspect --format "{{range .NetworkSettings.Networks }}{{ .Gateway }}{{ end }}" "${contId}") && \
-	curl -sSL "http://${cpuip}:8347/v1/cpu" | jq .
+	docker ps -a --filter name=$(DOCKER_NAME)
+	docker logs $(DOCKER_NAME)
+	curl -sSL "http://${HZN_DEV_HOST_IP}:8347/v1/cpu" | jq .
 
 stop:
 	-docker rm -f $(DOCKER_NAME) 2> /dev/null || :

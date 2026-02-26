@@ -5,6 +5,8 @@ VER = 1.0
 BASE = localhost:443
 IMAGE = $(ARCH)_helloservice
 
+HZN_DEV_HOST_IP ?=127.0.0.1
+
 default: build run check
 
 build: clean Dockerfile start.sh server
@@ -25,9 +27,9 @@ run: stop build
 	sleep 3
 
 check:
-	contId=$(shell docker ps -aq | head -1) && \
-	helloip=$(docker inspect --format "{{range .NetworkSettings.Networks }}{{ .Gateway }}{{ end }}" "${contId}") && \
-	curl -sSLv "http://${helloip}:8000/movie"
+	docker ps -a --filter name=$(DOCKER_NAME)
+	docker logs $(DOCKER_NAME)
+	curl -sSLv "http://${HZN_DEV_HOST_IP}:8000/movie"
 
 stop:
 	-docker stop $(IMAGE)
