@@ -9,6 +9,7 @@
 # $4 - error message
 function verify {
     local resp=$1
+    echo -e "$resp"
     respContains=$(echo "$resp" | grep "$2")
     if [ "${respContains}" == "" ]; then
         echo -e "Didn't find \"$2\" in the response, check \"$3\" in response"
