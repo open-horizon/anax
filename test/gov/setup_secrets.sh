@@ -1,17 +1,16 @@
 #!/bin/bash
+
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 # First create the secret that the service will need
 
-if [ "${NOVAULT}" == "1" ]
+if [ "${NOVAULT}" = "1" ]
 then
   echo -e "Skipping secret setup"
   exit 0
-fi
-
-# get the cert file
-if [ "${CERT_LOC}" -eq 1 ]; then
-  CERT_VAR="--cacert /certs/agbotapi.crt"
-else
-  CERT_VAR=(--silent)
 fi
 
 # ensure the agbot API URL is set
@@ -38,8 +37,6 @@ ORG_SECRET_VALUE2="netspeed-other-password"
 ORG_SECRET_VALUE3="k8s-password1"
 ORG_SECRET_VALUE4="k8s-password2"
 
-
-
 # set HZN_AGBOT_URL for the cli
 export HZN_AGBOT_URL=${AGBOT_SAPI_URL}
 
@@ -61,7 +58,6 @@ echo -e "Create netspeed secret2"
 CMD="hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE2} ${CREATE_ORG_SECRET2} -O"
 echo "$CMD"
 
-
 # check for erroneous return 
 if ! RES=$(hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE2} ${CREATE_ORG_SECRET2} -O)
 then
@@ -82,7 +78,7 @@ CMD="hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --
 echo "$CMD"
 RES=$(hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE3} ${CREATE_ORG_SECRET5} -O)
 
-CMD="hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE4} ${CREATE_ORG_SECRET56} -O"
+CMD="hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE4} ${CREATE_ORG_SECRET6} -O"
 echo "$CMD"
 RES=$(hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE4} ${CREATE_ORG_SECRET6} -O)
 

@@ -1,14 +1,19 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 # Reusable functions
 
 # Verify a response. The inputs are:
 # $1 - the response
 # $2 - expected result
 # $3 - error message
-function verify {
-    respContains=$(echo $1 | grep "$2")
-    if [ "${respContains}" == "" ]; then
+verify() {
+    respContains=$(echo "$1" | grep "$2")
+    if [ "${respContains}" = "" ]; then
         echo -e "\nERROR: $3. Output was:"
         echo -e "$1"
         exit 1
@@ -25,19 +30,17 @@ echo -e "Begin Helm preparation."
 PROJECT_HOME="/root/helm/hello"
 PROJECT_HELM_HOME="/root/helm/hello/external"
 
-cd ${PROJECT_HOME}
+cd ${PROJECT_HOME} || exit
 
 buildContainer=$(make build)
 
 verify "${buildContainer}" "Successfully built" "hello container did not build"
-if [ $? -ne 0 ]; then exit $?; fi
 
 mkdir -p /root/.helm
 
-cd ${PROJECT_HELM_HOME}
+cd ${PROJECT_HELM_HOME} || exit
 buildPackage=$(make package)
 
 verify "${buildPackage}" "Successfully packaged" "hello Helm package did not build"
-if [ $? -ne 0 ]; then exit $?; fi
 
 echo -e "End of Helm preparation."

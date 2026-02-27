@@ -1,11 +1,16 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 # $1 - results
 # $2 -
 
 TEST_DIFF_ORG=${TEST_DIFF_ORG:-1}
 
-function results {
+results() {
   if [ "$(echo "$1" | jq -r '.code')" != "ok" ]
   then
     echo -e "Error: $(echo "$1" | jq -r '.msg')"
@@ -20,7 +25,7 @@ else
 fi
 
 # check if the hub is all-in-1 management hub or not
-if [[ ${EXCH_APP_HOST} == *"://exchange-api:"* ]]; then
+if [[ ${EXCH_APP_HOST} = *"://exchange-api:"* ]]; then
   export REMOTE_HUB=0
 else
   export REMOTE_HUB=1
@@ -62,7 +67,6 @@ else
     exit 2
   fi
 fi
-
 
 # test service amd64
 read -dr '' sdef <<EOF
@@ -222,7 +226,6 @@ echo -e "Register e2edev@somecomp.com/network service $VERS:"
 
 results "$RES"
 
-
 VERS="1.5.0"
 read -dr '' sdef <<EOF
 {
@@ -250,7 +253,6 @@ echo -e "Register e2edev@somecomp.com/network service $VERS:"
   RES=$(echo "$sdef" | curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
 
 results "$RES"
-
 
 # GPS service
 VERS="2.0.3"
@@ -420,7 +422,6 @@ then
     exit 2
 fi
 
-
 # ============================= Top Level services here =============================
 
 # The netspeed service:
@@ -495,7 +496,6 @@ then
     echo -e "hzn exchange service publish failed for GPSTest."
     exit 2
 fi
-
 
 # Location definition
 VERS="2.0.6"
@@ -791,12 +791,9 @@ then
     exit 2
 fi
 
-
 echo -e "Listing services:"
 hzn exchange service list -o e2edev@somecomp.com
 hzn exchange service list -o IBM
-
-
 
 # ======================= Patterns that use top level services ======================
 # sns pattern
@@ -926,7 +923,7 @@ results "$RES"
 
 # results "$RES"
 
-if [ "${NOHZNDEV}" == "1" ] && [ "${NOHELLO}" == "1" ] && [ "${TEST_PATTERNS}" != "sall" ] && [ "${TEST_PATTERNS}" != "susehello" ]; then
+if [ "${NOHZNDEV}" == "1" ] && [ "${NOHELLO}" = "1" ] && [ "${TEST_PATTERNS}" != "sall" ] && [ "${TEST_PATTERNS}" != "susehello" ]; then
     echo -e "Skipping use hello pattern creation"
 else
 
@@ -1223,10 +1220,9 @@ if [ "${NOVAULT}" != "1" ]; then
   results "$RES"
 fi
 
-
 # the sall pattern
 
-if [ "${NOHZNDEV}" == "1" ] && [ "${NOHELLO}" == "1" ] && [ "${TEST_PATTERNS}" != "sall" ]; then
+if [ "${NOHZNDEV}" == "1" ] && [ "${NOHELLO}" = "1" ] && [ "${TEST_PATTERNS}" != "sall" ]; then
     echo -e "Skipping sall pattern creation"
 else
 
@@ -1448,7 +1444,7 @@ echo -e "Register business policy for pws:"
 
 results "$RES"
 
-if [ "${NOHZNDEV}" == "1" ] && [ "${NOHELLO}" == "1" ] && [ "${TEST_PATTERNS}" != "susehello" ]; then
+if [ "${NOHZNDEV}" == "1" ] && [ "${NOHELLO}" = "1" ] && [ "${TEST_PATTERNS}" != "susehello" ]; then
     echo -e "Skipping usehello policy creation"
 else
   read -dr '' bphellodef <<EOF
@@ -1685,7 +1681,6 @@ echo -e "Register business policy bp_k8s_mms for k8s-hello-mms service:"
   RES=$(echo "$bpk8smmsdef" | curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_k8s_mms" | jq -r '.')
 
 results "$RES"
-
 
 # ======================= Service Policies that use top level services ======================
 read -dr '' nspoldef <<EOF

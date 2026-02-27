@@ -1,18 +1,17 @@
 #!/bin/bash
 
-function results {
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
+results() {
   if [ "$(echo "$1" | jq -r '.code')" != "ok" ]
   then
     echo -e "Error: $(echo "$1" | jq -r '.msg')"
     exit 2
   fi
 }
-
-if [ "${CERT_LOC}" -eq 1 ]; then
-  CERT_VAR="--cacert /certs/css.crt"
-else
-  CERT_VAR=(--silent)
-fi
 
 MAIN_AUTH="apikey:${API_KEY}"
 

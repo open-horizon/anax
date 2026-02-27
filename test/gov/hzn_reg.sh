@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 PREFIX="hzn reg test:"
 
 echo ""
@@ -142,7 +147,7 @@ cat <<EOF > /tmp/reg_userinput_all.json
 }
 EOF
 
-function reg_node {
+reg_node() {
   cmd=$1
   echo -e "$cmd"
   if ! ${cmd}; then
@@ -152,18 +157,17 @@ function reg_node {
 }
 
 # unregister the node using hzn
-function unreg_node {
+unreg_node() {
   if ! hzn unregister -f; then
     echo -e "${PREFIX} Failed to unregister the node."
     exit 1
   fi
 }
 
-
 # make sure agreements are up and running
 # $1 - org ID for node check
 # $2 - auth for node check
-function verify_agreements {
+verify_agreements() {
   if ! ORG_ID=$1 ADMIN_AUTH=$2 HZN_REG_TEST=1 ./verify_agreements.sh; then
     echo -e "${PREFIX} Failed to verify agreement."
     exit 1
@@ -235,7 +239,7 @@ else
   echo -e "$ret"
 fi
 
-if [ "$TEST_PATTERNS" == "sall" ]; then
+if [ "$TEST_PATTERNS" = "sall" ]; then
   ## register pattern sns, node will be created by this command
   unreg_node
   hzn exchange -u e2edevadmin:e2edevadminpw -o e2edev@somecomp.com node remove an12345 -f 

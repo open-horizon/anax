@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 # Deploy the input file to the file sync service. The parameters are:
 # 1 - the path and file name to be deployed. The file's object id will be the filename without the path.
 # 2 - the object version.
@@ -16,19 +21,19 @@ else
 fi
 
 DEST_TYPE=${5}
-if [ "${5}" == "none" ]
+if [ "${5}" = "none" ]
 then
   DEST_TYPE=""
 fi
 
 DEST_ID=${6}
-if [ "${6}" == "none" ]
+if [ "${6}" = "none" ]
 then
   DEST_ID=""
 fi
 
 OBJ_POLICY=${7}
-if [ "${7}" == "none" ]
+if [ "${7}" = "none" ]
 then
   OBJ_POLICY="null"
 fi
@@ -68,7 +73,7 @@ echo -e "\n$resmeta\n"
 
 URL_ENCODED_3=$(echo -n "${3}" | jq -rRs @uri)
 
-if [ "${3}" == "IBM" ];
+if [ "${3}" = "IBM" ];
 then
   # deploy public object to IBM using exchange root credentials
   ADDM=$(curl -sL -X PUT -w "%{http_code}\n" "${CERT_VAR[@]}" -u "root/root:${EXCH_ROOTPW}" --header "Accept:application/json" --header "Content-Type:application/json" "${CSS_URL}/api/v1/objects/${URL_ENCODED_3}/${4}/${FILENAME}" --data "$resmeta")
@@ -85,7 +90,7 @@ then
 
   echo -e "PUT ${CSS_URL}/api/v1/objects/${URL_ENCODED_3}/${4}/${FILENAME}/data : ${ADDF}"
 
-  if [ "$ADDF" == "204" ]
+  if [ "$ADDF" = "204" ]
   then
     echo -e "Data file ${1} added successfully"
   else
@@ -95,7 +100,7 @@ then
 else
   admin_user="${3}admin"
   admin_pw="${3}adminpw"
-  if [ "${3}" == "e2edev@somecomp.com" ]; then
+  if [ "${3}" = "e2edev@somecomp.com" ]; then
     admin_user="e2edevadmin"
     admin_pw="e2edevadminpw"
   fi
@@ -116,7 +121,7 @@ else
 
   echo -e "PUT ${CSS_URL}/api/v1/objects/${URL_ENCODED_3}/${4}/${FILENAME}/data : ${ADDF}"
 
-  if [ "$ADDF" == "204" ]
+  if [ "$ADDF" = "204" ]
   then
     echo -e "Data file ${1} added successfully"
   else

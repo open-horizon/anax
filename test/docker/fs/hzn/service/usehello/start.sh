@@ -99,11 +99,11 @@ do
       if [ "$del" = "true" ]
       then
         echo "Acknowledging that Object $id is deleted"
-        ACKDEL=$(curl -sLX PUT "${AUTH}" "${CERT}" "${BASEURL}${OBJECT_TYPE}/${id}/deleted")
+        curl -sLX PUT "${AUTH}" "${CERT}" "${BASEURL}${OBJECT_TYPE}/${id}/deleted" > /dev/null
         rm -f "${FILE_LOC}/${id}"
       else
-        DATA=$(curl -sL -o "${FILE_LOC}/${id}" "${AUTH}" "${CERT}" "${BASEURL}${OBJECT_TYPE}/${id}/data")
-        RCVD=$(curl -sLX PUT "${AUTH}" "${CERT}" "${BASEURL}${OBJECT_TYPE}/${id}/received")
+        curl -sL -o "${FILE_LOC}/${id}" "${AUTH}" "${CERT}" "${BASEURL}${OBJECT_TYPE}/${id}/data" > /dev/null
+        curl -sLX PUT "${AUTH}" "${CERT}" "${BASEURL}${OBJECT_TYPE}/${id}/received" > /dev/null
         printf '%s' "Received object: ${id}"
       fi
     done
@@ -157,12 +157,12 @@ do
       if [ "$del" = "true" ]
       then
         echo "Acknowledging that Object $id is deleted"
-        ACKDEL=$(curl -sLX PUT "${AUTH}" "${CERT}" "${BASEURL}${OBJECT_TYPE}/${id}/deleted")
+        curl -sLX PUT "${AUTH}" "${CERT}" "${BASEURL}${OBJECT_TYPE}/${id}/deleted" > /dev/null
         rm -f "${FILE_LOC}/${id}"
       else
         # Assume we got a new object
-        DATA=$(curl -sL -o "${FILE_LOC}/${id}" "${AUTH}" "${CERT}" "${BASEURL}${OBJECT_TYPE}/${id}/data")
-        RCVD=$(curl -sLX PUT "${AUTH}" "${CERT}" "${BASEURL}${OBJECT_TYPE}/${id}/received")
+        curl -sL -o "${FILE_LOC}/${id}" "${AUTH}" "${CERT}" "${BASEURL}${OBJECT_TYPE}/${id}/data" > /dev/null
+        curl -sLX PUT "${AUTH}" "${CERT}" "${BASEURL}${OBJECT_TYPE}/${id}/received" > /dev/null
         printf '%s' "Got a new object: ${id}"
       fi
     done

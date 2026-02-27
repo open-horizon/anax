@@ -1,12 +1,17 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 echo -e "\nBC setting is $BC"
 
 if [ "$BC" != "1" ]
 then
 
 echo -e "Pattern is set to $PATTERN"
-if [ "$PATTERN" == "" ]
+if [ "$PATTERN" = "" ]
 then
 
 # and then configure by service API to opt into the node side services.
@@ -71,7 +76,7 @@ echo "Registering service based cpu service"
 
 ERR=$(echo "$slocservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config" | jq -r '.error')
 if [ "$ERR" != "null" ]; then
-    if [ "$NONS" == "1" ] || [ "${ERR:0:22}" != "Duplicate registration" ]; then
+    if [ "$NONS" = "1" ] || [ "${ERR:0:22}" != "Duplicate registration" ]; then
         echo -e "error occured: $ERR"
         exit 2
     fi 
@@ -99,7 +104,7 @@ if [ "$ERR" != "null" ]; then
   fi
 fi
 
-elif [ "$PATTERN" == "sall" ] || [ "$PATTERN" == "sloc" ]; then
+elif [ "$PATTERN" == "sall" ] || [ "$PATTERN" = "sloc" ]; then
 
 # and then configure by service API
 read -dr '' slocservice <<EOF

@@ -1,12 +1,15 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 EMAIL="foo@goo.com"
 
   echo "Calling node API"
 
-curl -sS -H "Content-Type: application/json" "$ANAX_API/node" | jq -er '. | .account.id' > /dev/null
-
-if [[ $? -eq 0 ]]; then
+if curl -sS -H "Content-Type: application/json" "$ANAX_API/node" | jq -er '. | .account.id' > /dev/null; then
   read -dr '' updatehzntoken <<EOF
 {
   "account": {

@@ -15,6 +15,7 @@ anax/doc/*.png
 /.idea
 /test/docker/tempfs
 /test/docker/fs/hzn/helloms/server
+/test/docker/fs/hzn/service/hello/server
 minikube-setup-by-test
 /css/cloud-sync-service
 /css/LICENSE.txt

@@ -1,11 +1,16 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 TEST_DIFF_ORG=${TEST_DIFF_ORG:-1}
 
 export ARCH=${ARCH:-amd64}
 export CSS_URL=${CSS_URL:-http://127.0.0.1:9443}
 
-function set_exports {
+set_exports() {
   if [ "$NOANAX" != "1" ]
   then
     export USER=anax1
@@ -32,13 +37,13 @@ function set_exports {
   fi
 }
 
-function run_delete_loops {
+run_delete_loops() {
   # Start the deletion loop tests if they have not been disabled.
   echo -e "No loop setting is $NOLOOP"
 
   # get the admin auth for verify_agreements.sh
    local admin_auth="e2edevadmin:e2edevadminpw"
-   if [ "$DEVICE_ORG" == "userdev" ]; then
+   if [ "$DEVICE_ORG" = "userdev" ]; then
      admin_auth="userdevadmin:userdevadminpw"
    fi
 
@@ -57,9 +62,9 @@ function run_delete_loops {
   else
     echo -e "Deletion loop tests set to only run once."
 
-    if [ "${PATTERN}" == "sall" ] || [ "${PATTERN}" == "sloc" ] || [ "${PATTERN}" == "sns" ] || [ "${PATTERN}" == "sgps" ] || [ "${PATTERN}" == "spws" ] || [ "${PATTERN}" == "susehello" ] || [ "${PATTERN}" == "shelm" ]; then
+    if [ "${PATTERN}" == "sall" ] || [ "${PATTERN}" == "sloc" ] || [ "${PATTERN}" == "sns" ] || [ "${PATTERN}" == "sgps" ] || [ "${PATTERN}" == "spws" ] || [ "${PATTERN}" == "susehello" ] || [ "${PATTERN}" = "shelm" ]; then
       echo -e "Starting service pattern verification scripts"
-      if [ "$NOLOOP" == "1" ]; then
+      if [ "$NOLOOP" = "1" ]; then
         if ! ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh; then echo "Verify agreement failure."; exit 1; fi
          echo -e "No cancellation setting is $NOCANCEL"
         if [ "$NOCANCEL" != "1" ]; then
@@ -78,7 +83,7 @@ function run_delete_loops {
       echo -e "Verifying policy based workload deployment"
       echo -e "No cancellation setting is $NOCANCEL"
       if [ "$NOCANCEL" != "1" ]; then
-        if [ "$NONS" == "1" ] || [ "$NOPWS" == "1" ] || [ "$NOLOC" == "1" ] || [ "$NOGPS" == "1" ] || [ "$NOHELLO" == "1" ] || [ "$NOK8S" == "1" ]; then
+        if [ "$NONS" == "1" ] || [ "$NOPWS" == "1" ] || [ "$NOLOC" == "1" ] || [ "$NOGPS" == "1" ] || [ "$NOHELLO" == "1" ] || [ "$NOK8S" = "1" ]; then
           echo "Skipping agreement verification"
           sleep 30
         else
@@ -91,7 +96,7 @@ function run_delete_loops {
       else
         echo -e "Cancellation tests are disabled"
       fi
-      if [ "$NONS" == "1" ] || [ "$NOPWS" == "1" ] || [ "$NOLOC" == "1" ] || [ "$NOGPS" == "1" ] || [ "$NOHELLO" == "1" ] || [ "$NOK8S" == "1" ]; then
+      if [ "$NONS" == "1" ] || [ "$NOPWS" == "1" ] || [ "$NOLOC" == "1" ] || [ "$NOGPS" == "1" ] || [ "$NOHELLO" == "1" ] || [ "$NOK8S" = "1" ]; then
         echo "Skipping agreement verification"
       else
         if ! ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh; then echo "Verify agreement failure."; exit 1; fi
@@ -107,7 +112,7 @@ mkdir -p /var/horizon
 mkdir -p /var/horizon/.colonus
 
 # check if the hub is all-in-1 management hub or not
-if [[ ${EXCH_APP_HOST} == *"://exchange-api:"* ]]; then
+if [[ ${EXCH_APP_HOST} = *"://exchange-api:"* ]]; then
   export REMOTE_HUB=0
 else
   export REMOTE_HUB=1
@@ -127,7 +132,7 @@ fi
 cd /root || { echo "Error: gov-combined.sh - ln 134 - Failure to change directories."; exit 1; }
 
 # Build an old anax if we need it
-if [ "$OLDANAX" == "1" ]; then
+if [ "$OLDANAX" = "1" ]; then
   if ! ./build_old_anax.sh; then
     exit 255
   fi
@@ -210,7 +215,6 @@ then
 fi
 
 echo -e "No agbot setting is $NOAGBOT"
-HZN_AGBOT_API=${AGBOT_API}
 if [ "$NOAGBOT" != "1" ] && [ "$TESTFAIL" != "1" ]
 then
   if [ ${REMOTE_HUB} -eq 0 ]; then
@@ -221,7 +225,7 @@ then
       exit 1
     fi
 
-    if [ "$MULTIAGBOT" == "1" ]; then
+    if [ "$MULTIAGBOT" = "1" ]; then
       if ! curl -sSL "${AGBOT2_API}"/agreement > /dev/null; then
         echo "Agreement Bot 2 verification failure."
         TESTFAIL="1"
@@ -247,7 +251,7 @@ done
 echo "TEST_PATTERNS=${TEST_PATTERNS}"
 
 # Services can be run via patterns or from policy files
-if [[ "${TEST_PATTERNS}" == "" ]] && [ "$TESTFAIL" != "1" ]
+if [[ "${TEST_PATTERNS}" = "" ]] && [ "$TESTFAIL" != "1" ]
 then
   echo -e "Making agreements based on policy files."
 
@@ -278,7 +282,7 @@ then
 
 elif [ "$TESTFAIL" != "1" ]; then
   # make agreements based on patterns
-  last_pattern="$(echo "$TEST_PATTERNS" |sed -e 's/^.*,//')"
+  last_pattern="${TEST_PATTERNS##*,}"
   echo -e "Last pattern is $last_pattern"
 
   for pat in $(echo "$TEST_PATTERNS" | tr "," " "); do
@@ -290,7 +294,7 @@ elif [ "$TESTFAIL" != "1" ]; then
     # the main agent is sall, the pattern for the multi-agent will be sns. 
     # Otherwide they will have the same pattern. 
     ma_pattern=$PATTERN
-    if [ "${PATTERN}" == "sall" ]; then
+    if [ "${PATTERN}" = "sall" ]; then
       ma_pattern="sns"
     fi
 
@@ -309,6 +313,7 @@ elif [ "$TESTFAIL" != "1" ]; then
     fi
 
     # start multiple agents
+    # shellcheck source=test/gov/multiple_agents.sh
     source ./multiple_agents.sh
     if [ -n "$MULTIAGENTS" ] && [ "$MULTIAGENTS" != "0" ]; then
       echo "Starting multiple agents with pattern ${ma_pattern} ..."
@@ -318,7 +323,6 @@ elif [ "$TESTFAIL" != "1" ]; then
         break
       fi
     fi
-
 
     if ! run_delete_loops
     then
@@ -364,9 +368,9 @@ elif [ "$TESTFAIL" != "1" ]; then
 
       echo -e "Unregister the node. Anax will be shutdown."
       if ! ./unregister.sh; then
-        sleep 10
-      else
         exit 1
+      else
+        sleep 10
       fi
     fi
     echo -e "***************************"
@@ -375,7 +379,7 @@ elif [ "$TESTFAIL" != "1" ]; then
 fi
 
 if [ "$NOCOMPCHECK" != "1" ] && [ "$TESTFAIL" != "1" ]; then
-  if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" == "" ]; then
+  if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" = "" ]; then
     if ! ./agbot_apitest.sh
     then
       echo "Policy compatibility test using Agbot API failure."
@@ -408,31 +412,31 @@ fi
 # fi
 
 if [ "$NOSURFERR" != "1" ] && [ "$TESTFAIL" != "1" ] && [ ${REMOTE_HUB} -eq 0 ]; then
-  if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" == "" ] && [ "$NOLOOP" == "1" ] && [ "$NONS" == "" ] && [ "$NOGPS" == "" ] && [ "$NOPWS" == "" ] && [ "$NOLOC" == "" ] && [ "$NOHELLO" == "" ] && [ "$NOK8S" == "" ]; then
+  if { [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" == "" ]; } && [ "$NOLOOP" == "1" ] && [ "$NONS" == "" ] && [ "$NOGPS" == "" ] && [ "$NOPWS" == "" ] && [ "$NOLOC" == "" ] && [ "$NOHELLO" == "" ] && [ "$NOK8S" = "" ]; then
     if ! ./verify_surfaced_error.sh; then echo "Verify surfaced error failure."; exit 1; fi
   fi
 fi
 
 if [ "$NOSURFERR" != "1" ] && [ "$TESTFAIL" != "1" ] && [ ${REMOTE_HUB} -eq 0 ]; then
-  if [ "$TEST_PATTERNS" == "" ] && [ "$NOLOOP" == "1" ] && [ "$NONS" == "" ] && [ "$NOGPS" == "" ] && [ "$NOPWS" == "" ] && [ "$NOLOC" == "" ] && [ "$NOHELLO" == "" ] && [ "$NOK8S" == "" ]; then
+  if [ "$TEST_PATTERNS" == "" ] && [ "$NOLOOP" == "1" ] && [ "$NONS" == "" ] && [ "$NOGPS" == "" ] && [ "$NOPWS" == "" ] && [ "$NOLOC" == "" ] && [ "$NOHELLO" == "" ] && [ "$NOK8S" = "" ]; then
     if ! ./policy_change.sh; then echo "Policy change test failure."; exit 1; fi
   fi
 fi
 
 if [ "$NOUPGRADE" != "1" ] && [ "$TESTFAIL" != "1" ] && [ ${REMOTE_HUB} -eq 0 ]; then
-  if [ "$TEST_PATTERNS" == "sall" ]; then
+  if [ "$TEST_PATTERNS" = "sall" ]; then
     if ! ./service_upgrading_downgrading_test.sh; then echo "Service upgrading/downgrading test failure."; exit 1; fi
   fi
 fi
 
-if [ "$NOVAULT" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "$NOLOOP" == "1" ] && [ "$NONS" == "" ] && [ "$NOGPS" == "" ] && [ "$NOPWS" == "" ] && [ "$NOLOC" == "" ] && [ "$NOHELLO" == "" ] && [ "$NOK8S" == "" ]; then
-  if [ "$TEST_PATTERNS" == "" ]; then
+if [ "$NOVAULT" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "$NOLOOP" == "1" ] && [ "$NONS" == "" ] && [ "$NOGPS" == "" ] && [ "$NOPWS" == "" ] && [ "$NOLOC" == "" ] && [ "$NOHELLO" == "" ] && [ "$NOK8S" = "" ]; then
+  if [ "$TEST_PATTERNS" = "" ]; then
     if ! ./service_secrets_test.sh; then echo "Service secret test failure."; exit 1; fi
   fi
 fi
 
 if [ "$NOHZNREG" != "1" ] && [ "$TESTFAIL" != "1" ]; then
-  if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" == "" ]; then
+  if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" = "" ]; then
     echo "Sleeping 15 seconds..."
     sleep 15
 
@@ -443,7 +447,7 @@ if [ "$NOHZNREG" != "1" ] && [ "$TESTFAIL" != "1" ]; then
   fi
 fi
 
-if [ "$TEST_PATTERNS" == "sall" ] && [ "$NOHZNLOG" != "1" ] && [ "$NOHZNREG" != "1" ] && [ "$TESTFAIL" != "1" ]; then
+if [ "$TEST_PATTERNS" = "sall" ] && [ "$NOHZNLOG" != "1" ] && [ "$NOHZNREG" != "1" ] && [ "$TESTFAIL" != "1" ]; then
   if ! ./service_log_test.sh; then
     echo "Failed hzn service log tests."
     exit 1
@@ -451,7 +455,7 @@ if [ "$TEST_PATTERNS" == "sall" ] && [ "$NOHZNLOG" != "1" ] && [ "$NOHZNREG" != 
 fi
 
 if [ "$NOPATTERNCHANGE" != "1" ] && [ "$TESTFAIL" != "1" ]; then
-  if [ "$TEST_PATTERNS" == "sall" ]; then
+  if [ "$TEST_PATTERNS" = "sall" ]; then
     if ! ./pattern_change.sh; then
       echo "Failed node pattern change tests."
       exit 1
@@ -461,7 +465,7 @@ fi
 
 # Start the node unconfigure tests if they have been enabled.
 echo -e "Node unconfig setting is $UNCONFIG"
-if [ "$UNCONFIG" == "1" ] && [ "$NOAGBOT" != "1" ] && [ "$TESTFAIL" != "1" ]
+if [ "$UNCONFIG" = "1" ] && [ "$NOAGBOT" != "1" ] && [ "$TESTFAIL" != "1" ]
 then
   echo "Starting unconfig loop tests. Giving time for 1st agreements to complete."
   sleep 120
@@ -473,7 +477,7 @@ else
 fi
 
 # HA test
-if [ "$HA" == "1" ]; then
+if [ "$HA" = "1" ]; then
   if ! ./ha_test.sh; then
     echo "HA tests failure."
     exit 1
@@ -542,7 +546,7 @@ if [ ${REMOTE_HUB} -eq 1 ]; then
   echo "$DL8PATTERNSNS"
 fi
 
-if [ "$NOLOOP" == "1" ]; then
+if [ "$NOLOOP" = "1" ]; then
   if [ "$TESTFAIL" != "1" ]; then
     echo "All tests SUCCESSFUL"
   else

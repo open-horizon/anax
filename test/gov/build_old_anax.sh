@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
   echo "Building old anax."
   chown -R root:root /root/.ssh
   mkdir -p /tmp/oldanax/anax-gopath/src/github.com/open-horizon
@@ -8,20 +13,18 @@
   export GOPATH="/tmp/oldanax/anax-gopath"
   export TMPDIR="/tmp/oldanax/"
 
-  cd /tmp/oldanax/anax-gopath/src/github.com/open-horizon
-  git clone https://github.com/open-horizon/anax.git
-  if [ $? -ne 0 ]; then
-  	echo "Failed to clone the anax repository."
-  	exit 2
+  cd /tmp/oldanax/anax-gopath/src/github.com/open-horizon || exit
+  if ! git clone https://github.com/open-horizon/anax.git; then
+    echo "Failed to clone the anax repository."
+    exit 2
   fi
-  cd /tmp/oldanax/anax-gopath/src/github.com/open-horizon/anax
-  make anax
-  if [ $? -ne 0 ]; then
-  	echo "Failed to build anax."
-  	exit 2
+  cd /tmp/oldanax/anax-gopath/src/github.com/open-horizon/anax || exit
+  if ! make anax; then
+    echo "Failed to build anax."
+    exit 2
   fi
   cp anax /usr/bin/old-anax
 
   export GOPATH="/tmp"
   unset TMPDIR
-  cd /tmp
+  cd /tmp || exit

@@ -1,6 +1,10 @@
 #!/bin/bash
 
-# set -x
+
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
 
 NAME_SPACE="agent-namespace"
 CONFIGMAP_NAME="agent-configmap-horizon"
@@ -9,7 +13,7 @@ PVC_NAME="openhorizon-agent-pvc"
 
 isRoot=$(id -u)
 cprefix="sudo -E"
-if [ "${isRoot}" == "0" ]
+if [ "${isRoot}" = "0" ]
 then
 	cprefix=""
 fi
@@ -18,15 +22,15 @@ fi
 # Check if microk8s is running.
 #
 
-$sudoprefix apparmor_parser -R /var/lib/snapd/apparmor/profiles/snap.microk8s.daemon-containerd
-$sudoprefix apparmor_parser -a /var/lib/snapd/apparmor/profiles/snap.microk8s.daemon-containerd
+$cprefix apparmor_parser -R /var/lib/snapd/apparmor/profiles/snap.microk8s.daemon-containerd
+$cprefix apparmor_parser -a /var/lib/snapd/apparmor/profiles/snap.microk8s.daemon-containerd
 
 echo "Preparing to cleanup Kube test environment"
 OUT=$($cprefix microk8s.status)
 RC=$?
 if [ $RC -ne 0 ]; then echo "microk8s not running, nothing to clean up."; exit 0; fi
 
-if [[ $OUT == *"microk8s is not running."* ]]; then echo "microk8s not running, nothing to clean up."; exit 0; fi
+if [[ $OUT = *"microk8s is not running."* ]]; then echo "microk8s not running, nothing to clean up."; exit 0; fi
 
 #
 # Stop the agent in k8s gracefully
@@ -34,11 +38,11 @@ if [[ $OUT == *"microk8s is not running."* ]]; then echo "microk8s not running, 
 echo "Stopping agent in k8s"
 
 POD=$(microk8s.kubectl get pod -l app=agent -n ${NAME_SPACE} -o jsonpath="{.items[0].metadata.name}")
-if [[ ${POD} == "" ]]
+if [[ ${POD} = "" ]]
 then
        echo "Unable to find agent POD"
 else
-       microk8s.kubectl exec ${POD} -it -n ${NAME_SPACE} -- /usr/bin/hzn unregister -fr
+       microk8s.kubectl exec "${POD}" -it -n "${NAME_SPACE}" -- /usr/bin/hzn unregister -fr
 
        echo "Stopped agent in k8s."
 fi
@@ -66,7 +70,8 @@ $cprefix microk8s.kubectl delete namespace ${NAME_SPACE}
 RC=$?
 if [ $RC -ne 0 ]; then echo "Error deleting agent namespace ${NAME_SPACE}: $RC"; fi
 
-$cprefix microk8s.ctr --namespace k8s.io image remove docker.io/openhorizon/${ARCH}_anax_k8s:testing
+# shellcheck disable=SC2086
+$cprefix microk8s.ctr --namespace k8s.io image remove "docker.io/openhorizon/${ARCH}_anax_k8s:testing"
 RC=$?
 if [ $RC -ne 0 ]; then echo "Error deleting agent container from container registry: $RC"; fi
 

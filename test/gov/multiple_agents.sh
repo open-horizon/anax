@@ -1,41 +1,47 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 PREFIX="Multiple agents:"
 
-function startMultiAgents {
+startMultiAgents() {
   echo -e "${PREFIX} Starting agents"
 
   # get main agent's user input and save it to a file to be used by mult-agent
   UIFILE="/tmp/agent_userinput.json"
-  ui=$(hzn userinput list)
-  if [ $? -ne 0 ]; then
+  if ! ui=$(hzn userinput list); then
     echo -e "${PREFIX} Failed to get user input from the main agent. $ui"
     exit 1
-  fi 
+  fi
   
   echo -e "${PREFIX} userinput is: $ui"
   echo "$ui" > $UIFILE
 
   # set css certs for the agent container
-  if [ ${CERT_LOC} -eq 1 ]; then
+  if [ "${CERT_LOC}" -eq 1 ]; then
     cat /certs/css.crt > /tmp/e2edevtest/css.crt
   fi
 
   counter=0
-  while [ ${counter} -lt ${MULTIAGENTS} ]; do
-    agent_port=$((8512 + ${counter}))
-    device_num=$((6 + ${counter}))
+  while [ "${counter}" -lt "${MULTIAGENTS}" ]; do
+    agent_port=$((8512 + counter))
+    device_num=$((6 + counter))
 
     # set config for the agent container
     configfile="/tmp/e2edevtest/horizon.multi_agents"
-    echo -e "HZN_EXCHANGE_URL=${EXCH_APP_HOST}" > $configfile
-    echo -e "HZN_FSS_CSSURL=${CSS_URL}" >> $configfile
-    echo -e "HZN_AGBOT_URL=${AGBOT_SAPI_URL}" >> $configfile
-    echo -e "HZN_DEVICE_ID=anaxdevice${device_num}" >> $configfile
-    echo -e "HZN_NODE_ID=anaxdevice${device_num}" >> $configfile
-    echo -e "HZN_AGENT_PORT=${agent_port}" >> $configfile
-    if [ ${CERT_LOC} -eq 1 ]; then
-      echo "HZN_MGMT_HUB_CERT_PATH=/tmp/e2edevtest/css.crt" >> $configfile
+    {
+      echo -e "HZN_EXCHANGE_URL=${EXCH_APP_HOST}"
+      echo -e "HZN_FSS_CSSURL=${CSS_URL}"
+      echo -e "HZN_AGBOT_URL=${AGBOT_SAPI_URL}"
+      echo -e "HZN_DEVICE_ID=anaxdevice${device_num}"
+      echo -e "HZN_NODE_ID=anaxdevice${device_num}"
+      echo -e "HZN_AGENT_PORT=${agent_port}"
+    } > "$configfile"
+    if [ "${CERT_LOC}" -eq 1 ]; then
+      echo "HZN_MGMT_HUB_CERT_PATH=/tmp/e2edevtest/css.crt" >> "$configfile"
     fi
 
     # start agent container
@@ -43,53 +49,50 @@ function startMultiAgents {
     export HC_DONT_PULL=1;
     export HC_DOCKER_TAG=testing
     horizon_num=${device_num};
-    /tmp/anax-in-container/horizon-container start ${horizon_num} $configfile
-    if [ $? -ne 0 ]; then
+    if ! /tmp/anax-in-container/horizon-container start ${horizon_num} $configfile; then
       echo -e "${PREFIX} Failed to start agent horizon${horizon_num}."
       exit 1
-    fi 
+    fi
 
-    # connect the hzn_horizonnet network to the container so that it 
+    # connect the hzn_horizonnet network to the container so that it
     # can use the local exchange-api and css-api through this network
-    docker network connect ${DOCKER_TEST_NETWORK} horizon${horizon_num}
-    if [ $? -ne 0 ]; then
+    if ! docker network connect "${DOCKER_TEST_NETWORK}" "horizon${horizon_num}"; then
       echo -e "${PREFIX} Failed to connect agent container horizon${horizon_num} to network ${DOCKER_TEST_NETWORK}."
       exit 1
-    fi 
+    fi
     sleep 10
 
     # copy the userinput file to agent container
-    docker cp $UIFILE horizon${horizon_num}:$UIFILE
-    if [ $? -ne 0 ]; then
+    if ! docker cp $UIFILE horizon${horizon_num}:$UIFILE; then
       echo -e "${PREFIX} Failed to copy file $UIFILE to agent container horizon${horizon_num}."
       exit 1
-    fi 
+    fi
 
     # register the agent
     ha_group_option=""
-    if [ "$HA" == "1" ]; then
+    if [ "$HA" = "1" ]; then
       ha_group_option="--ha-group group2"
     fi
 
     regcmd="hzn register -f $UIFILE -p $PATTERN -o e2edev@somecomp.com -u e2edev@somecomp.com/e2edevadmin:e2edevadminpw $ha_group_option"
-    ret=$(docker exec -e "HORIZON_URL=http://localhost:${agent_port}" horizon${horizon_num} $regcmd)
-    if [ $? -ne 0 ]; then
+    # shellcheck disable=SC2086
+    if ! ret=$(docker exec -e "HORIZON_URL=http://localhost:${agent_port}" "horizon${horizon_num}" $regcmd); then
       echo "${PREFIX} Registration failed for anaxdevice${device_num}: $ret"
       return 1
     fi
     echo "$ret"
 
-    let counter=counter+1
+    (( counter=counter+1 ))
   done
 }
 
-function verifyMultiAgentsAgreements {
+verifyMultiAgentsAgreements() {
   echo -e "${PREFIX} Verifying agreements"
 
   counter=0
-  while [ ${counter} -lt ${MULTIAGENTS} ]; do
-    agent_port=$((8512 + ${counter}))
-    device_num=$((6 + ${counter}))
+  while [ "${counter}" -lt "${MULTIAGENTS}" ]; do
+    agent_port=$((8512 + counter))
+    device_num=$((6 + counter))
 
     echo "${PREFIX} Verify agreement for agent container horizon${device_num} ..."
  
@@ -97,35 +100,33 @@ function verifyMultiAgentsAgreements {
     docker cp /root/verify_agreements.sh horizon${device_num}:/root/.
     docker cp /root/check_node_status.sh horizon${device_num}:/root/.
 
-    docker exec -e ANAX_API=http://localhost:${agent_port} \
-        -e EXCH_APP_HOST=${EXCH_APP_HOST} \
+    docker exec -e "ANAX_API=http://localhost:${agent_port}" \
+        -e "EXCH_APP_HOST=${EXCH_APP_HOST}" \
         -e ORG_ID=e2edev@somecomp.com \
-        -e PATTERN=${PATTERN} \
+        -e "PATTERN=${PATTERN}" \
         -e ADMIN_AUTH=e2edevadmin:e2edevadminpw \
-        -e NODEID=anaxdevice${device_num} \
-        -e NOLOOP=${NOLOOP} \
-        horizon${device_num} /root/verify_agreements.sh
+        -e "NODEID=anaxdevice${device_num}" \
+        -e "NOLOOP=${NOLOOP}" \
+        "horizon${device_num}" /root/verify_agreements.sh
 
-    let counter=counter+1
+    (( counter=counter+1 ))
   done
 }
 
-function stopMultiAgents {
+stopMultiAgents() {
   echo -e "${PREFIX} Stopping agents"
 
   counter=0
-  while [ ${counter} -lt ${MULTIAGENTS} ]; do
-    agent_port=$((8512 + ${counter}))
-    device_num=$((6 + ${counter}))
+  while [ "${counter}" -lt "${MULTIAGENTS}" ]; do
+    agent_port=$((8512 + counter))
+    device_num=$((6 + counter))
 
     echo "${PREFIX} Delete agent container horizon${device_num} ..."
-    let horizon_num=$i+5
-    let port_num=$i+8511
     ret=$(docker exec -e HORIZON_URL=http://localhost:${agent_port} horizon${device_num} hzn unregister -f -r)
     echo "$ret"
     /tmp/anax-in-container/horizon-container stop ${device_num}
 
-    let counter=counter+1
+    (( counter=counter+1 ))
   done
 }
 

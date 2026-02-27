@@ -1,7 +1,11 @@
-CPU_IMAGE_NAME="${DOCKER_CPU_INAME}"
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
 
+CPU_IMAGE_NAME="${DOCKER_CPU_INAME}"
 CPU_IMAGE_TAG="${DOCKER_CPU_TAG}"
 
 echo "Testing node error surfacing to exchange"
@@ -19,7 +23,7 @@ do
   NUM_ERRS=$(echo "${ERRS}" | jq -r '. | length')
   sleep 5s
   ((TIMEOUT++))
-  if [[ $TIMEOUT == 26 ]]; then echo -e "surface errors failed to resolve"; exit 2; fi
+  if [[ $TIMEOUT = 26 ]]; then echo -e "surface errors failed to resolve"; exit 2; fi
 done
 
 echo -e "All surfaced errors resolved, test can proceed."

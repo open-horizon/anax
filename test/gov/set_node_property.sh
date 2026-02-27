@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 ANAX_API=http://localhost:8510
 PROP_NAME=$1
 PROP_VALUE=$2
@@ -7,10 +12,10 @@ PROP_VALUE=$2
 # If there is already a node level Property object, then just update it with our property.
 ATTRS=$(curl -sS -X GET -H "Content-Type: application/json" "$ANAX_API/attribute")
 
-PROP=$(echo $ATTRS | jq -r '.attributes[] | select (.type == "PropertyAttributes")')
+PROP=$(echo "$ATTRS" | jq -r '.attributes[] | select (.type == "PropertyAttributes")')
 
 # If there is no property attribute, create one.
-if [ "$PROP" == "" ]; then
+if [ "$PROP" = "" ]; then
 
     # Then set a node level property
     read -dr '' propattribute <<EOF
@@ -38,11 +43,11 @@ EOF
 # Otherwise we need to update the existing property object.
 else
 
-	  ID=$(echo $PROP | jq -r '.id')
+	  ID=$(echo "$PROP" | jq -r '.id')
 
     # The specific property we're updating might already be present
 
-    NEW_MAPPINGS=$(echo $PROP | jq --arg val "$PROP_VALUE" '.mappings + {'$PROP_NAME': $val}')
+    NEW_MAPPINGS=$(echo "$PROP" | jq --arg key "$PROP_NAME" --arg val "$PROP_VALUE" '.mappings + {($key): $val}')
 
     read -dr '' propattribute <<EOF
 {

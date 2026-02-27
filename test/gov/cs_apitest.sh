@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 # =================================================================
 # Run tests on the Configstate API
 
@@ -15,7 +20,7 @@ EOF
 echo "Testing for noop state change in configstate API"
 RES=$(echo "$newhzndevice" | curl -sS -X PUT -H "Content-Type: application/json" --data @- "$ANAX_API/node/configstate")
 
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$newhzndevice \nresulted in empty response"
   exit 2
@@ -44,7 +49,7 @@ EOF
 echo "Testing for transition to configured in configstate API"
 RES=$(echo "$newhzndevice" | curl -sS -X PUT -H "Content-Type: application/json" --data @- "$ANAX_API/node/configstate")
 
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$newhzndevice \nresulted in empty response"
   exit 2
@@ -52,7 +57,7 @@ fi
 
 # The gps pattern doesnt require MS and workload config to have been done, likewise for the sgps service. We expect no error
 # for this test in that case. For all other patterns, we expect an error.
-if [ "$PATTERN" == "gps" ] || [ "$PATTERN" == "sgps" ] || [ "$PATTERN" == "" ]
+if [ "$PATTERN" == "gps" ] || [ "$PATTERN" == "sgps" ] || [ "$PATTERN" = "" ]
 then
 
 ERR=$(echo "$RES" | jq -r ".error")
@@ -68,7 +73,7 @@ fi
 else
 
 ERR=$(echo "$RES" | jq -r ".error")
-if [ "$ERR" == "null" ]
+if [ "$ERR" = "null" ]
 then
   echo -e "$newhzndevice \nresulted in incorrect response: $RES"
   exit 2
@@ -91,7 +96,7 @@ EOF
 echo "Testing for transition to configuring in configstate API"
 RES=$(echo "$newhzndevice" | curl -sS -X PUT -H "Content-Type: application/json" --data @- "$ANAX_API/node/configstate")
 
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$newhzndevice \nresulted in empty response"
   exit 2
@@ -99,7 +104,7 @@ fi
 
 # The gps pattern doesnt require MS and workload config to have been done, likewise for the sgps service. We expect no error
 # for this test in that case. For all other patterns, we expect an error.
-if [ "$PATTERN" == "gps" ] || [ "$PATTERN" == "sgps" ] || [ "$PATTERN" == "" ]
+if [ "$PATTERN" == "gps" ] || [ "$PATTERN" == "sgps" ] || [ "$PATTERN" = "" ]
 then
 
 ERR=$(echo "$RES" | jq -r ".error")

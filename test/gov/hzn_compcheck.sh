@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 USERDEV_ADMIN_AUTH="userdev/userdevadmin:userdevadminpw"
 export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
 USERDEV_ORG="userdev"
@@ -11,7 +16,6 @@ unset HZN_EXCHANGE_USER_AUTH
 export ARCH=${ARCH}
 
 PREFIX="HZN deployment compatibility test:"
-
 
 echo ""
 echo -e "${PREFIX} start test"
@@ -26,20 +30,14 @@ else
   pattern_sloc="/root/input_files/compcheck/pattern_sloc.json"
 fi
 
-if [[ "$NOKUBE" != "1" ]]; then
-  bp_k8s="/root/input_files/compcheck/business_pol_k8s_service1"
-fi
-
-
 # check the the result to see if it matches the expected http code and error
-function results {
+results() {
 
   echo "$1"
 
   # check error text
   if [ ! -z "$2" ]; then
-    res=$(echo "$1" | grep "$2")
-    if [ $? -ne 0 ]; then
+    if ! echo "$1" | grep -q "$2"; then
       echo -e "Error: the response should have contained \"$2\", but did not. "
       exit 2
     fi
@@ -47,8 +45,7 @@ function results {
 
   # check error code
   if [ ! -z "$3" ]; then
-    res=$(echo "$1" | grep "$3")
-    if [ $? -ne 0 ]; then
+    if ! echo "$1" | grep -q "$3"; then
       echo -e "Error: the response should have contained \"$3\", but did not. "
       exit 2
     fi
@@ -58,7 +55,7 @@ function results {
 }
 
 # check the good result to see if the compatible and reason are correct.
-function check_comp_results {
+check_comp_results() {
   echo "$1"
 
   if [ -z "$1" ]; then
@@ -66,8 +63,8 @@ function check_comp_results {
     exit 2
   fi
 
-  comp=$(echo $1 | jq -r ".compatible")
-  reason=$(echo $1 | jq -r ".reason")
+  comp=$(echo "$1" | jq -r ".compatible")
+  reason=$(echo "$1" | jq -r ".reason")
 
   if [ "$comp" != "$2" ]; then
     echo "Expected compatible be $2 but got $comp."
@@ -75,8 +72,7 @@ function check_comp_results {
   fi
 
   if [ ! -z "$3" ]; then
-    res=$(echo "$reason" | grep "$3")
-    if [ $? -ne 0 ]; then
+    if ! echo "$reason" | grep -q "$3"; then
       echo -e "Error: the reason should have contained \"$3\", but not. "
       exit 2
     fi
@@ -197,23 +193,21 @@ echo -e "\n${PREFIX} test input: mixed. node pol, business policy id. compatible
 CMD="hzn deploycheck policy -u $USERDEV_ADMIN_AUTH  -b userdev/bp_location --node-pol input_files/compcheck/node_policy2.json -c"
 echo "$CMD"
 RES=$($CMD 2>&1)
-c=$(echo $RES | jq '.compatible')
+c=$(echo "$RES" | jq '.compatible')
 if [ "$c" != "true" ]; then
   echo "It should return compatible but not."
   exit 2
 fi
-l=$(echo $RES | jq '.reason | length')
+l=$(echo "$RES" | jq '.reason | length')
 if [ "$l" != "2" ]; then
   echo "It should return 2 service result but got $l."
   exit 2
 fi
-echo $RES | jq ".reason.\"e2edev@somecomp.com/bluehorizon.network-services-location_2.0.6_${ARCH}\"" | grep -q Incompatible
-if [ $? -ne 0 ]; then
+if ! echo "$RES" | jq ".reason.\"e2edev@somecomp.com/bluehorizon.network-services-location_2.0.6_${ARCH}\"" | grep -q Incompatible; then
   echo "Service bluehorizon.network-services-location_2.0.6_${ARCH} should be incompatible but not."
   exit 2
 fi
-echo $RES | jq ".reason.\"e2edev@somecomp.com/bluehorizon.network-services-location_2.0.7_${ARCH}\"" | grep -q Incompatible
-if [ $? -eq 0 ]; then
+if echo "$RES" | jq ".reason.\"e2edev@somecomp.com/bluehorizon.network-services-location_2.0.7_${ARCH}\"" | grep -q Incompatible; then
   echo "Service bluehorizon.network-services-location_2.0.7_${ARCH} should be compatible but not."
   exit 2
 fi
@@ -407,23 +401,21 @@ CMD="hzn deploycheck all -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/
 echo "$CMD"
 RES=$($CMD 2>&1)
 check_comp_results "$RES" "true" ""
-c=$(echo $RES | jq '.compatible')
+c=$(echo "$RES" | jq '.compatible')
 if [ "$c" != "true" ]; then
   echo "It should return compatible but not."
   exit 2
 fi
-l=$(echo $RES | jq 'del(..|.general?) |.reason | length')
+l=$(echo "$RES" | jq 'del(..|.general?) |.reason | length')
 if [ "$l" != "2" ]; then
   echo "It should return 2 service result but got $l."
   exit 2
 fi
-echo $RES | jq ".reason.\"e2edev@somecomp.com/bluehorizon.network-services-location_2.0.6_${ARCH}\"" | grep -q Incompatible
-if [ $? -ne 0 ]; then
+if ! echo "$RES" | jq ".reason.\"e2edev@somecomp.com/bluehorizon.network-services-location_2.0.6_${ARCH}\"" | grep -q Incompatible; then
   echo "Service bluehorizon.network-services-location_2.0.6_${ARCH} should be incompatible but not."
   exit 2
 fi
-echo $RES | jq ".reason.\"e2edev@somecomp.com/bluehorizon.network-services-location_2.0.7_${ARCH}\"" | grep -q Incompatible
-if [ $? -eq 0 ]; then
+if echo "$RES" | jq ".reason.\"e2edev@somecomp.com/bluehorizon.network-services-location_2.0.7_${ARCH}\"" | grep -q Incompatible; then
   echo "Service bluehorizon.network-services-location_2.0.7_${ARCH} should be compatible but not."
   exit 2
 fi

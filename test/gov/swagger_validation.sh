@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 CONTAINERID=/swagger-validator-v2
 VALIDATOR_URI=localhost:8050
 EXCHANGE_URI=localhost:8090
@@ -18,25 +23,25 @@ done
 
 EXCHANGEOUTPUT=$(curl -Ss -d @/tmp/swagger.json -H 'Content-Type:application/json' ${VALIDATOR_URI}/validator/debug)
 
-if [ "$EXCHANGEOUTPUT" == "{}" ]
+if [ "$EXCHANGEOUTPUT" = "{}" ]
 then
 	echo -e "No errors in the exchange swagger\n"
 else
 	echo -e "The errors in the exchange swagger are as follows:\n"
-	echo ${EXCHANGEOUTPUT} | jq
+	echo "${EXCHANGEOUTPUT}" | jq
 fi
 
 curl -Ss ${ESS_URI} > /tmp/swagger.json
 
 ESSOUTPUT=$(curl -Ss -d @/tmp/swagger.json -H 'Content-Type:application/json' ${VALIDATOR_URI}/validator/debug)
 
-if [ "$ESSOUTPUT" == "{}" ]
+if [ "$ESSOUTPUT" = "{}" ]
 then
 	echo -e "No errors in the ESS swagger\n"
 else
 	echo -e "The errors in the ESS swagger are as follows:\n"
-	echo ${ESSOUTPUT} | jq
+	echo "${ESSOUTPUT}" | jq
 fi
 
-docker kill $(docker ps -aqf 'name=/swagger-validator-v2')
-docker rm $(docker ps -aqf 'name=/swagger-validator-v2')
+docker kill "$(docker ps -aqf 'name=/swagger-validator-v2')"
+docker rm "$(docker ps -aqf 'name=/swagger-validator-v2')"

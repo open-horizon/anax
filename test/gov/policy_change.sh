@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
 USERDEV_ADMIN_AUTH="userdev/userdevadmin:userdevadminpw"
 E2EDEV_ADMIN_AUTH="e2edev@somecomp.com/e2edevadmin:e2edevadminpw"
@@ -8,7 +13,7 @@ PREFIX="policy change test "
 timeout=24
 pws_ag=$(hzn agreement list | jq -r '.[] | select(.name | contains("userdev/bp_pws")).current_agreement_id' )
 netspeed_ag=$(hzn agreement list | jq -r '.[] | select(.name | contains("userdev/bp_netspeed")).current_agreement_id' )
-while [[ "$pws_ag" == "" || "$netspeed_ag" == "" ]]; do
+while [[ "$pws_ag" == "" || "$netspeed_ag" = "" ]]; do
 	sleep 5s
 	if [[ $(hzn agreement list | jq -r '.[] | select(.name | contains("userdev/bp_pws")).agreement_execution_start_time') != "" ]]; then
 		pws_ag=$(hzn agreement list | jq -r '.[] | select(.name | contains("userdev/bp_pws")).current_agreement_id' )
@@ -17,7 +22,7 @@ while [[ "$pws_ag" == "" || "$netspeed_ag" == "" ]]; do
 		netspeed_ag=$(hzn agreement list | jq -r '.[] | select(.name | contains("userdev/bp_netspeed")).current_agreement_id' )
 	fi
 	((timeout="$timeout"-1))
-	if [[ $timeout == 0 ]]; then
+	if [[ $timeout = 0 ]]; then
 		echo "timed out waiting for agreements to be formed before starting test."
 		hzn agreement list
 		exit 1
@@ -48,7 +53,7 @@ timeout=6
 while [[ $(hzn agreement list | jq 'length') -gt 2 && timeout -gt 0 ]]; do
 	sleep 5s
 	((timeout="$timeout"-1))
-	if [ $timeout == 0 ]; then
+	if [ $timeout = 0 ]; then
 		echo "timed out waiting for incompatible agreements to be cancelled."
 		exit 1
 	fi
@@ -79,7 +84,7 @@ timeout=6
 while [[ $(hzn agreement list | jq 'length') != 5 && timeout -gt 0 ]]; do
 	sleep 5s
 	((timeout="$timeout"-1))
-	if [ $timeout == 0 ]; then
+	if [ $timeout = 0 ]; then
 		echo "timed out waiting for agreements to be reformed."
 		exit 1
 	fi

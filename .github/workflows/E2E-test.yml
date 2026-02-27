@@ -27,6 +27,9 @@ jobs:
     env:
       GOPATH: /home/runner/work/anax/anax/go
       DOCKER_CONFIG: /home/runner/.docker-config
+      # Pass GitHub Actions runner debug flag to test scripts.
+      # Set ACTIONS_STEP_DEBUG=true in repository secrets to enable debug tracing.
+      DEBUG: ${{ runner.debug }}
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -36,22 +39,88 @@ jobs:
           path: go/src/github.com/${{github.repository}}
     
       # Prepares the environment by setting up golang
+      # cache: true caches $GOPATH/pkg/mod keyed on go.sum for faster dependency resolution
       - name: Set up golang 1.24
         uses: actions/setup-go@v5
         with:
           go-version: '1.24'
           check-latest: true
+          cache: true
+          cache-dependency-path: go/src/github.com/${{github.repository}}/go.sum
 
       - name: Verify Docker version
         run: docker --version
 
+      # Set up Docker Buildx to enable BuildKit and layer caching support
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          install: true
+
+      # Cache the e2edev test Docker image to avoid rebuilding when Dockerfile and
+      # docker context files are unchanged between runs.
+      - name: Cache e2edev test Docker image
+        id: cache-e2edev-image
+        uses: actions/cache@v4
+        with:
+          path: /tmp/e2edev-test-image.tar
+          key: e2edev-test-image-${{ runner.os }}-${{ hashFiles('go/src/github.com/**/test/docker/Dockerfile', 'go/src/github.com/**/test/docker/fs/**') }}
+          restore-keys: |
+            e2edev-test-image-${{ runner.os }}-
+
+      # Restore the cached e2edev test image if available
+      - name: Restore e2edev test Docker image from cache
+        if: steps.cache-e2edev-image.outputs.cache-hit == 'true'
+        run: docker load -i /tmp/e2edev-test-image.tar
+
       # Build anax binaries
       - name: Build anax binaries
         run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make
-          
-      # Build the e2edev docker images 
+
+      # Build the e2edev docker images (skipped if restored from cache)
       - name: Build the e2edev docker images
+        if: steps.cache-e2edev-image.outputs.cache-hit != 'true'
         run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make -C test build-remote
+
+      # Save the e2edev test image to cache for future runs
+      - name: Save e2edev test Docker image to cache
+        if: steps.cache-e2edev-image.outputs.cache-hit != 'true'
+        run: docker save openhorizon/e2edev-test:latest -o /tmp/e2edev-test-image.tar
+
+      # Cache the Docker registry image (pinned by digest - key is constant so always hits after first run)
+      - name: Cache Docker registry image
+        id: cache-registry-image
+        uses: actions/cache@v4
+        with:
+          path: /tmp/registry-image.tar
+          key: registry-image-${{ runner.os }}-sha256-7d081088e4bfd632a88e3f3bcd9e007ef44a796fddfe3261407a3f9f04abe1e7
+
+      - name: Restore Docker registry image from cache
+        if: steps.cache-registry-image.outputs.cache-hit == 'true'
+        run: docker load -i /tmp/registry-image.tar
+
+      - name: Pull and save Docker registry image to cache
+        if: steps.cache-registry-image.outputs.cache-hit != 'true'
+        run: |
+          docker pull registry@sha256:7d081088e4bfd632a88e3f3bcd9e007ef44a796fddfe3261407a3f9f04abe1e7
+          docker save registry@sha256:7d081088e4bfd632a88e3f3bcd9e007ef44a796fddfe3261407a3f9f04abe1e7 -o /tmp/registry-image.tar
+
+      # Cache the e2edev service images built from test/docker/fs/ Dockerfiles.
+      # These images (cpu, leaf, hello, usehello, helm/hello) are built at test runtime
+      # by hzn_dev_services.sh via 'make ARCH=amd64' in each service directory.
+      # Key is based on all service Dockerfiles so cache is invalidated on any change.
+      - name: Cache e2edev service images
+        id: cache-service-images
+        uses: actions/cache@v4
+        with:
+          path: /tmp/e2edev-service-images.tar
+          key: e2edev-service-images-${{ runner.os }}-${{ hashFiles('go/src/github.com/**/test/docker/fs/hzn/**', 'go/src/github.com/**/test/docker/fs/helm/**') }}
+          restore-keys: |
+            e2edev-service-images-${{ runner.os }}-
+
+      - name: Restore e2edev service images from cache
+        if: steps.cache-service-images.outputs.cache-hit == 'true'
+        run: docker load -i /tmp/e2edev-service-images.tar
 
       - name: Verify Built Container Images
         run: docker images
@@ -59,6 +128,19 @@ jobs:
       - name: E2E Development Test
         id: test-runner
         run: cd ${GOPATH}/src/github.com/open-horizon/anax && make -C test test-no-clean TEST_VARS=${{matrix.tests}}
+
+      # Save service images built during the test run for future cache hits.
+      # Images are tagged as localhost:443/amd64_*:1.0 and hello:1.0 by the service Makefiles.
+      # continue-on-error so a partial test run (some images missing) does not block failure diagnostics.
+      - name: Save e2edev service images to cache
+        if: steps.cache-service-images.outputs.cache-hit != 'true'
+        continue-on-error: true
+        run: |
+          images=$(docker images --format '{{.Repository}}:{{.Tag}}' | grep -E '^(localhost:443/amd64_|hello:1\.0)')
+          if [ -n "$images" ]; then
+            # shellcheck disable=SC2086
+            docker save $images -o /tmp/e2edev-service-images.tar
+          fi
       
       - name: Test Failure Catch - Check Docker Images
         continue-on-error: true

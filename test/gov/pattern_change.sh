@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
 E2EDEV_ADMIN_AUTH="e2edev@somecomp.com/e2edevadmin:e2edevadminpw"
 USERDEV_ADMIN_AUTH="userdev/userdevadmin:userdevadminpw"
@@ -262,7 +267,7 @@ cat <<EOF > /tmp/userinput_for_sall.json
 }
 EOF
 
-function results {
+results() {
   if [ "$(echo "$1" | jq -r '.code')" != "ok" ]
   then
     echo -e "Error: $(echo "$1" | jq -r '.msg')"
@@ -273,7 +278,7 @@ function results {
 # make sure agreements are up and running
 # $1 - org ID for node check
 # $2 - admin auth for node check
-function verify_agreements {
+verify_agreements() {
   if ! ORG_ID=$1 ADMIN_AUTH=$2 HZN_REG_TEST=1 ./verify_agreements.sh; then
     echo -e "${PREFIX} Failed to verify agreement."
     exit 1
@@ -281,7 +286,7 @@ function verify_agreements {
 }
 
 # check if current node pattern is the same as the given pattern
-function checkNodePattern {
+checkNodePattern() {
     pattern=$1
 
     echo "Checking if device has the new pattern name $pattern."
@@ -308,7 +313,7 @@ if ! ret=$(hzn node list |jq '.organization'); then
     exit 1
 fi
 
-if [ "$ret" == '"userdev"' ]; then
+if [ "$ret" = '"userdev"' ]; then
     org="userdev"
     auth=${USERDEV_ADMIN_AUTH}
 else
@@ -332,7 +337,6 @@ sleep 90
 
 checkNodePattern "e2edev@somecomp.com/sns"
 verify_agreements "e2edev@somecomp.com" "e2edevadmin:e2edevadminpw"
-
 
 # now change the pattern to sall, this will fail because there is not enough user input
 echo -e "${PREFIX} change node pattern back on the exchange to sall"

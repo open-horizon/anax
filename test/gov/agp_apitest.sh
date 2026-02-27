@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 # ==================================================================
 # Begin testing global agreement protocol attributes
 
@@ -19,13 +24,13 @@ echo -e "\n\n[D] agreement protocol payload: $agreementprotocolattribute"
 echo "Setting workload independent agreement protocol attribute"
 
 RES=$(echo "$agreementprotocolattribute" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/attribute")
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$agreementprotocolattribute \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "$ERR" != "missing key" ]
 then
   echo -e "$agreementprotocolattribute \nresulted in incorrect response: $RES"
@@ -52,13 +57,13 @@ echo -e "\n\n[D] agreement protocol payload: $agreementprotocolattribute"
 echo "Setting workload independent agreement protocol attribute"
 
 RES=$(echo "$agreementprotocolattribute" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/attribute")
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$agreementprotocolattribute \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "$ERR" != "array value is empty" ]
 then
   echo -e "$agreementprotocolattribute \nresulted in incorrect response: $RES"
@@ -85,13 +90,13 @@ echo -e "\n\n[D] agreement protocol payload: $agreementprotocolattribute"
 echo "Setting workload independent agreement protocol attribute"
 
 RES=$(echo "$agreementprotocolattribute" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/attribute")
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$agreementprotocolattribute \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "$ERR" != "expected []interface{} received json.Number" ]
 then
   echo -e "$agreementprotocolattribute \nresulted in incorrect response: $RES"
@@ -118,13 +123,13 @@ echo -e "\n\n[D] agreement protocol payload: $agreementprotocolattribute"
 echo "Setting workload independent agreement protocol attribute"
 
 RES=$(echo "$agreementprotocolattribute" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/attribute")
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$agreementprotocolattribute \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "$ERR" != "array value is not a map[string]interface{}, it is json.Number" ]
 then
   echo -e "$agreementprotocolattribute \nresulted in incorrect response: $RES"
@@ -155,13 +160,13 @@ echo -e "\n\n[D] agreement protocol payload: $agreementprotocolattribute"
 echo "Setting workload independent agreement protocol attribute"
 
 RES=$(echo "$agreementprotocolattribute" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/attribute")
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$agreementprotocolattribute \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "$ERR" != "protocol name fred is not supported" ]
 then
   echo -e "$agreementprotocolattribute \nresulted in incorrect response: $RES"
@@ -192,13 +197,13 @@ echo -e "\n\n[D] agreement protocol payload: $agreementprotocolattribute"
 echo "Setting workload independent agreement protocol attribute"
 
 RES=$(echo "$agreementprotocolattribute" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/attribute")
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$agreementprotocolattribute \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "$ERR" != "blockchain value is not []interface{}, it is json.Number" ]
 then
   echo -e "$agreementprotocolattribute \nresulted in incorrect response: $RES"
@@ -229,13 +234,13 @@ echo -e "\n\n[D] agreement protocol payload: $agreementprotocolattribute"
 echo "Setting workload independent agreement protocol attribute"
 
 RES=$(echo "$agreementprotocolattribute" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/attribute")
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$agreementprotocolattribute \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "$ERR" != "blockchain array element is not map[string]interface{}, it is json.Number" ]
 then
   echo -e "$agreementprotocolattribute \nresulted in incorrect response: $RES"
@@ -271,13 +276,13 @@ echo -e "\n\n[D] agreement protocol payload: $agreementprotocolattribute"
 echo "Setting workload independent agreement protocol attribute"
 
 RES=$(echo "$agreementprotocolattribute" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/attribute")
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$agreementprotocolattribute \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "$ERR" != "blockchain type is not string, it is json.Number" ]
 then
   echo -e "$agreementprotocolattribute \nresulted in incorrect response: $RES"
@@ -313,13 +318,13 @@ echo -e "\n\n[D] agreement protocol payload: $agreementprotocolattribute"
 echo "Setting workload independent agreement protocol attribute"
 
 RES=$(echo "$agreementprotocolattribute" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/attribute")
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$agreementprotocolattribute \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "$ERR" != "blockchain name is not string, it is json.Number" ]
 then
   echo -e "$agreementprotocolattribute \nresulted in incorrect response: $RES"
@@ -355,13 +360,13 @@ echo -e "\n\n[D] agreement protocol payload: $agreementprotocolattribute"
 echo "Setting workload independent agreement protocol attribute"
 
 RES=$(echo "$agreementprotocolattribute" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/attribute")
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$agreementprotocolattribute \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "$ERR" != "blockchain type hyperledger is not supported for protocol Basic" ]
 then
   echo -e "$agreementprotocolattribute \nresulted in incorrect response: $RES"
@@ -397,13 +402,13 @@ echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 echo "Registering netspeed service"
 
 RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "$ERR" != "missing key" ]
 then
   echo -e "$netspeedservice \nresulted in incorrect response: $RES"
@@ -438,13 +443,13 @@ echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 echo "Registering netspeed service"
 
 RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "$ERR" != "array value is empty" ]
 then
   echo -e "$netspeedservice \nresulted in incorrect response: $RES"
@@ -479,13 +484,13 @@ echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 echo "Registering netspeed service"
 
 RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "$ERR" != "expected []interface{} received json.Number" ]
 then
   echo -e "$netspeedservice \nresulted in incorrect response: $RES"
@@ -520,13 +525,13 @@ echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 echo "Registering netspeed service"
 
 RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "$ERR" != "array value is not a map[string]interface{}, it is json.Number" ]
 then
   echo -e "$netspeedservice \nresulted in incorrect response: $RES"
@@ -565,13 +570,13 @@ echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 echo "Registering netspeed service"
 
 RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "$ERR" != "protocol name fred is not supported" ]
 then
   echo -e "$netspeedservice \nresulted in incorrect response: $RES"
@@ -610,13 +615,13 @@ echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 echo "Registering netspeed service"
 
 RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "$ERR" != "blockchain value is not []interface{}, it is json.Number" ]
 then
   echo -e "$netspeedservice \nresulted in incorrect response: $RES"
@@ -655,13 +660,13 @@ echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 echo "Registering netspeed service"
 
 RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "$ERR" != "blockchain array element is not map[string]interface{}, it is json.Number" ]
 then
   echo -e "$netspeedservice \nresulted in incorrect response: $RES"
@@ -705,13 +710,13 @@ echo -e "\n\n[D] agreement protocol payload: $netspeedservice"
 echo "Setting workload independent agreement protocol attribute"
 
 RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "$ERR" != "blockchain type is not string, it is json.Number" ]
 then
   echo -e "$netspeedservice \nresulted in incorrect response: $RES"
@@ -755,13 +760,13 @@ echo -e "\n\n[D] agreement protocol payload: $netspeedservice"
 echo "Setting workload independent agreement protocol attribute"
 
 RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "$ERR" != "blockchain name is not string, it is json.Number" ]
 then
   echo -e "$netspeedservice \nresulted in incorrect response: $RES"
@@ -805,13 +810,13 @@ echo -e "\n\n[D] agreement protocol payload: $netspeedservice"
 echo "Setting workload independent agreement protocol attribute"
 
 RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "$ERR" != "blockchain type hyperledger is not supported for protocol Basic" ]
 then
   echo -e "$netspeedservice \nresulted in incorrect response: $RES"
@@ -823,7 +828,7 @@ fi
 # ==========================================================================================
 # Now testing valid service specific agreement protocol attributes that will never be used.
 
-if [ "$PATTERN" == "" ]
+if [ "$PATTERN" = "" ]
 then
 
 read -dr '' netspeedservice <<EOF
@@ -893,13 +898,13 @@ echo -e "\n\n[D] agreement protocol payload: $netspeedservice"
 echo "Setting workload independent agreement protocol attribute"
 
 RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "${ERR:0:25}" != "device is using a pattern" ]
 then
   echo -e "$netspeedservice \nresulted in incorrect response: $RES"

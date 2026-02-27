@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 # tar up the raw resource files used in the test services.
 echo "Building resource packages."
 
@@ -44,12 +49,10 @@ for dir in */; do
 			fi
 		done
 
-
 		if ! "${EXEC_DIR}/gov/deploy_file.sh" "${EXEC_DIR}/docker/fs/resources/private/${dir}${justDirName}.tgz" 1.0.0 "${RESOURCE_ORG1}" "${RESOURCE_TYPE}" none none "$(cat "${EXEC_DIR}/docker/fs/objects/${justDirName}".policy)" false
 		then
 			exit 255
 		fi
-
 
 		if ! "${EXEC_DIR}/gov/deploy_file.sh" "${EXEC_DIR}/docker/fs/resources/private/${dir}${justDirName}.tgz" 1.0.0 "${RESOURCE_ORG2}" "${RESOURCE_TYPE}" none none "$(cat "${EXEC_DIR}/docker/fs/objects/${justDirName}".policy)" false
 		then
@@ -57,7 +60,7 @@ for dir in */; do
 		fi
 	fi
 
-	cd ..
+	cd .. || exit
 done
 
 echo "Making resource tarball for public resource"

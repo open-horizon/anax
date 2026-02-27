@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 # bootstrap the exchange
 
 TEST_DIFF_ORG=${TEST_DIFF_ORG:-1}
@@ -18,8 +23,8 @@ docker version
 #if [ "$ICP_HOST_IP" != "0" ]
 #then
 #  echo "Updating hosts file."
-#  HOST_NAME_ICP=`echo $EXCH_URL | awk -F/ '{print $3}' | sed 's/:.*//g'`
-#  HOST_NAME=`echo $EXCH_URL | awk -F/ '{print $3}' | sed 's/:.*//g' | sed 's/\.icp*//g'`
+#  HOST_NAME_ICP=$(echo $EXCH_URL | awk -F/ '{print $3}' | sed 's/:.*//g')
+#  HOST_NAME=$(echo $EXCH_URL | awk -F/ '{print $3}' | sed 's/:.*//g' | sed 's/\.icp*//g')
 #  echo "$ICP_HOST_IP $HOST_NAME_ICP $HOST_NAME"
 #  echo "$ICP_HOST_IP $HOST_NAME_ICP $HOST_NAME" >> /etc/hosts
 #fi
@@ -60,12 +65,12 @@ fi
   echo "$DL8AGBOT"
 
   echo "Delete network_1.5.0 ..."
-  DLHELM100=$(curl -X DELETE "${CERT_VAR[@]}" --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/bluehorizon.network-services-network_1.5.0_${ARCH}" | jq -r '.code, .msg')
-  echo "$DL150"
+  DLNET150=$(curl -X DELETE "${CERT_VAR[@]}" --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/bluehorizon.network-services-network_1.5.0_${ARCH}" | jq -r '.code, .msg')
+  echo "$DLNET150"
 
   echo "Delete network2_1.5.0 ..."
-  DLHELM100=$(curl -X DELETE "${CERT_VAR[@]}" --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/bluehorizon.network-services-network2_1.5.0_${ARCH}" | jq -r '.code, .msg')
-  echo "$DL2150"
+  DLNET2150=$(curl -X DELETE "${CERT_VAR[@]}" --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/bluehorizon.network-services-network2_1.5.0_${ARCH}" | jq -r '.code, .msg')
+  echo "$DLNET2150"
 
   echo "Delete helm-service_1.0.0 ..."
   DLHELM100=$(curl -X DELETE "${CERT_VAR[@]}" --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/my.company.com-services-helm-service_1.0.0_${ARCH}" | jq -r '.code, .msg')
@@ -177,7 +182,7 @@ REGANAX1C=$(curl -sSL -X PUT "${CERT_VAR[@]}" --header 'Content-Type: applicatio
 echo "$REGANAX1C"
 
 DEVICE_NUM=6
-NUM_AGENTS=$(( MULTIAGENTS + DEVICE_NUM ))
+NUM_AGENTS=$(( ${MULTIAGENTS:-0} + DEVICE_NUM ))
 while [ ${DEVICE_NUM} -lt ${NUM_AGENTS} ]; do
   echo "Registering Anax device ${DEVICE_NUM}..."
   REGANAXMUL=$(curl -sSL -X PUT "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "e2edev@somecomp.com/anax1:anax1pw" -d "{\"token\":\"Abcdefghijklmno1\",\"name\":\"anaxdev\",\"registeredServices\":[],\"msgEndPoint\":\"\",\"softwareVersions\":{},\"publicKey\":\"\",\"pattern\":\"\",\"arch\":\"${ARCH}\"}" "${EXCH_URL}/orgs/e2edev@somecomp.com/nodes/anaxdevice${DEVICE_NUM}" | jq -r '.code, .msg')
@@ -188,9 +193,8 @@ while [ ${DEVICE_NUM} -lt ${NUM_AGENTS} ]; do
   echo "Registering Anax device ${DEVICE_NUM} in customer org..."
   REGANAXMULC=$(curl -sSL -X PUT "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "Customer1/icpadmin:icpadminpw" -d "{\"token\":\"Abcdefghijklmno1\",\"name\":\"anaxdev\",\"registeredServices\":[],\"msgEndPoint\":\"\",\"softwareVersions\":{},\"publicKey\":\"\",\"pattern\":\"\",\"arch\":\"${ARCH}\"}" "${EXCH_URL}/orgs/Customer1/nodes/anaxdevice${DEVICE_NUM}" | jq -r '.code, .msg')
   echo "$REGANAXMULC"
-  [ "$(( DEVICE_NUM=DEVICE_NUM+1 ))" -ne 0 ]
+  DEVICE_NUM=$(( DEVICE_NUM + 1 ))
 done
-
 
 # Register agreement bot in the exchange
 if [ "$NOAGBOT" != "1" ] && [ "$TESTFAIL" != "1" ]
@@ -214,7 +218,6 @@ then
 
   sleep 30
 fi
-
 
 # Create Orgs in CSS
  ./gov/init_sync_service.sh

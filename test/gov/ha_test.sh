@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 if [ "$HA" != "1" ]; then
     echo "Skipping $0"
     exit
@@ -13,8 +18,7 @@ ORG="userdev"
 
 PREFIX="HA test:"
 
-
-function verify_ha_group_name {
+verify_ha_group_name() {
     node=$1
     local_port=$2
 
@@ -33,9 +37,8 @@ function verify_ha_group_name {
         exit 2
     fi
 
-
     echo -e "\n${PREFIX} checking exchange node ${ORG}/${node} ..."
-    res=$(hzn exchange node list -o $ORG -u $USERDEV_ADMIN_AUTH ${node})
+    res=$(hzn exchange node list -o "$ORG" -u "$USERDEV_ADMIN_AUTH" "${node}")
     ha_group_name=$(echo "$res" | jq -r ".\"${ORG}/${node}\".ha_group")
 
     if [ "$ha_group_name" != "group1" ]; then
@@ -44,7 +47,7 @@ function verify_ha_group_name {
     fi
 }
 
-function publish_new_netspeed_service {
+publish_new_netspeed_service() {
     echo -e "\n${PREFIX} publish netspeed service 2.4.0..."
     if [ "${NOVAULT}" != "1" ]; then
       NS_FILE_IBM="/root/service_defs/IBM/netspeed_2.3.0_secrets.json"
@@ -58,21 +61,18 @@ function publish_new_netspeed_service {
     export CPU_IMAGE_NAME="${DOCKER_CPU_INAME}"
     export CPU_IMAGE_TAG="${DOCKER_CPU_TAG}"
 
-    res=$(cat ${NS_FILE_IBM} | envsubst | hzn exchange service publish -f- -O -P -o IBM -u ${IBM_ADMIN_AUTH} 2>&1)
-    if [ $? -ne 0 ]; then
+    if ! res=$(cat ${NS_FILE_IBM} | envsubst | hzn exchange service publish -f- -O -P -o IBM -u ${IBM_ADMIN_AUTH} 2>&1); then
         echo -e "\n${PREFIX} failed to create netspeed service version 2.4.0 for IBM org. $res"
         exit 2
-    fi 
+    fi
 
-
-    res=$(cat ${NS_FILE_E2EDEV} | envsubst | hzn exchange service publish -f- -O -P -o e2edev@somecomp.com -u ${E2EDEV_ADMIN_AUTH} 2>&1)
-    if [ $? -ne 0 ]; then
+    if ! res=$(cat ${NS_FILE_E2EDEV} | envsubst | hzn exchange service publish -f- -O -P -o e2edev@somecomp.com -u ${E2EDEV_ADMIN_AUTH} 2>&1); then
         echo -e "\n${PREFIX} failed to create netspeed service version 2.4.0 for e2edev@somecomp.com org. $res"
         exit 2
-    fi 
+    fi
 }
 
-function update_sns_pattern {
+update_sns_pattern() {
     echo -e "\n${PREFIX} updating pattern sns with netspeed service 2.4.0..."
     read -dr '' sns <<EOF
 {
@@ -201,18 +201,17 @@ function update_sns_pattern {
     ]
 }
 EOF
-    if [ "${NOVAULT}" == "1" ]; then
-      sns=$(echo $sns |jq 'del(.secretBinding)')
+    if [ "${NOVAULT}" = "1" ]; then
+      sns=$(echo "$sns" |jq 'del(.secretBinding)')
     fi
 
-    res=$(echo "$sns" | hzn exchange pattern publish -f- -p sns -o e2edev@somecomp.com -u ${E2EDEV_ADMIN_AUTH} 2>&1)
-    if [ $? -ne 0 ]; then
+    if ! res=$(echo "$sns" | hzn exchange pattern publish -f- -p sns -o e2edev@somecomp.com -u ${E2EDEV_ADMIN_AUTH} 2>&1); then
         echo -e "\n${PREFIX} failed to update pattern sns with netspeed service 2.4.0. $res"
         exit 2
-    fi 
+    fi
 }
 
-function update_ns_policy {
+update_ns_policy() {
     echo -e "\n${PREFIX} updating deployment policy bp_netspeed with netspeed service 2.4.0..."
     read -dr '' bp_ns <<EOF
 {
@@ -357,20 +356,20 @@ function update_ns_policy {
     ]
 }
 EOF
-    if [ "${NOVAULT}" == "1" ]; then
-      bp_ns=$(echo $bp_ns |jq 'del(.secretBinding)')
+    if [ "${NOVAULT}" = "1" ]; then
+      bp_ns=$(echo "$bp_ns" |jq 'del(.secretBinding)')
     fi
 
-    res=$(echo "$bp_ns" | hzn exchange deployment addpolicy -f- -o userdev -u ${USERDEV_ADMIN_AUTH} bp_netspeed 2>&1)
-    if [ $? -ne 0 ]; then
+    if ! res=$(echo "$bp_ns" | hzn exchange deployment addpolicy -f- -o userdev -u ${USERDEV_ADMIN_AUTH} bp_netspeed 2>&1); then
         echo -e "\n${PREFIX} failed to update deployment policy bp_netspeed with netspeed service 2.4.0. $res"
         exit 2
-    fi 
+    fi
 }
 
 # make sure the service 2.4.0 are running on both nodes
 # and they were upgraded one by one 
-function verify_rolling_upgrade {
+verify_rolling_upgrade() {
+    # shellcheck source=test/gov/utils.sh
     source ./utils.sh
 
     NS_ORG=$1
@@ -381,11 +380,9 @@ function verify_rolling_upgrade {
 
     # wait util both nodes have netspeed service version 2.4.0 running
     echo -e "\n${PREFIX} Checking service upgrade on node an12345..."
-    ANAX_API=$ANAX_API1 MAX_ITERATION=60 WaitForService $NS_URL $NS_ORG $NS_VERSION
-    if [ $? -ne 0 ]; then hzn eventlog list; exit $?; fi
+    if ! ANAX_API=$ANAX_API1 MAX_ITERATION=60 WaitForService "$NS_URL" "$NS_ORG" "$NS_VERSION"; then hzn eventlog list; exit 1; fi
     echo -e "\n${PREFIX} Checking service upgrade on node an54321..."
-    ANAX_API=$ANAX_API2 MAX_ITERATION=60 WaitForService $NS_URL $NS_ORG $NS_VERSION
-    if [ $? -ne 0 ]; then HORIZON_URL=$ANAX_API2 hzn eventlog list; exit $?; fi
+    if ! ANAX_API=$ANAX_API2 MAX_ITERATION=60 WaitForService "$NS_URL" "$NS_ORG" "$NS_VERSION"; then HORIZON_URL=$ANAX_API2 hzn eventlog list; exit 1; fi
 
     # now make sure they were upgraded in a rolling fashion
     ag1=$(curl -s  $ANAX_API1/agreement |jq -r ".agreements.active[] | select(.workload_to_run.url==\"$NS_URL\") | select(.workload_to_run.version==\"$NS_VERSION\") | select(.workload_to_run.org==\"$NS_ORG\")" 2>&1)
@@ -397,16 +394,15 @@ function verify_rolling_upgrade {
 
     echo -e "\n${PREFIX} ag_creation_time1=$ag_creation_time1 ag_svc_start_time1=$ag_svc_start_time1"
     echo -e "\n${PREFIX} ag_creation_time2=$ag_creation_time2 ag_svc_start_time2=$ag_svc_start_time2"
-    if [ $ag_creation_time1 -le $ag_creation_time2 ] && [ $ag_svc_start_time1 -ge $ag_creation_time2 ]; then
+    if [ "$ag_creation_time1" -le "$ag_creation_time2" ] && [ "$ag_svc_start_time1" -ge "$ag_creation_time2" ]; then
         echo -e "\n${PREFIX} the HA group nodes did not upgrade the services with rolling fashion."
         exit 2
-    fi 
-    if [ $ag_creation_time1 -gt $ag_creation_time2 ] && [ $ag_svc_start_time2 -ge $ag_creation_time1 ]; then
+    fi
+    if [ "$ag_creation_time1" -gt "$ag_creation_time2" ] && [ "$ag_svc_start_time2" -ge "$ag_creation_time1" ]; then
         echo -e "\n${PREFIX} the HA group nodes did not upgrade the services with rolling fashion."
         exit 2
     fi 
 }
-
 
 echo ""
 echo -e "${PREFIX} HA test started."
@@ -416,7 +412,7 @@ verify_ha_group_name "an12345" "8510"
 verify_ha_group_name "an54321" "8511"
 
 if  [ "$PATTERN" != "" ]; then
-    if  [ "$PATTERN" == "sns" ]; then
+    if  [ "$PATTERN" = "sns" ]; then
         # add new netspeed service version 2.4.0 to pattern sns
         publish_new_netspeed_service
         update_sns_pattern
@@ -433,6 +429,4 @@ else
     verify_rolling_upgrade "e2edev@somecomp.com"
 fi
 echo -e "${PREFIX} Done"
-
-
 

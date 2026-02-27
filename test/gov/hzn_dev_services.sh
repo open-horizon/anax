@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 # Reusable functions
 
 # Verify a response. The inputs are:
@@ -11,11 +16,11 @@ verify() {
     local resp=$1
     echo -e "$resp"
     respContains=$(echo "$resp" | grep "$2")
-    if [ "${respContains}" == "" ]; then
+    if [ "${respContains}" = "" ]; then
         echo -e "Didn't find \"$2\" in the response, check \"$3\" in response"
         # with DOCKER_BUILDKIT, message is: # writing image sha256:[0-9A-Za-z]* done
         respContains=$(echo "$resp" | grep -E "$3")
-        if [ "${respContains}" == "" ]; then
+        if [ "${respContains}" = "" ]; then
             echo -e "\nERROR: $4. Output was:"
             echo -e "$resp"
             exit 1
@@ -55,7 +60,7 @@ createProject() {
       #echo "${RES}"
     fi
 
-    buildStop=$(make stop ARCH="${ARCH}" 2>&1)
+    make stop ARCH="${ARCH}" > /dev/null 2>&1
 
     echo -e "Removing any existing working directory content"
     rm -rf "$1/horizon"
@@ -72,8 +77,6 @@ createProject() {
 
     echo -e "Editing $2 project metadata."
     serviceDef=$1/horizon/service.definition.json
-    userInput=$1/horizon/userinput.json
-    serviceURL=$4
 
     sed -e "s|\"label\": \"${SERVICE_NAME} for ${ARCH}\"|\"label\": \"$2service\"|" "${serviceDef}" > "${serviceDef}.tmp" && mv "${serviceDef}.tmp" "${serviceDef}"
     sed -e 's|"description": ""|"description": "'"$2"' service"|' "${serviceDef}" > "${serviceDef}.tmp" && mv "${serviceDef}.tmp" "${serviceDef}"
@@ -126,7 +129,7 @@ deploy() {
     cd "$1" || { echo "Error: hzn_dev_services.sh - ln ${LINENO} - Failure to change directories"; exit 1; }
     deploy=$(hzn exchange service publish -v -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem -f ./horizon/service.definition.json 2>&1)
     deploying=$(echo "${deploy}" | grep "HTTP code: 201")
-    if [ "${deploying}" == "" ]; then
+    if [ "${deploying}" = "" ]; then
         echo -e "\nERROR: $2 did not deploy. Output was:"
         echo -e "${deploy}"
         exit 1
@@ -145,7 +148,7 @@ deployWithPull() {
     # First remove the existing docker image.
     removeImage=$(docker rmi "localhost:443/${ARCH}_${3}:1.0")
     removed=$(echo "${removeImage}" | grep "Deleted:")
-    if [ "${removed}" == "" ]; then
+    if [ "${removed}" = "" ]; then
         echo -e "\nERROR: image localhost:443/${ARCH}_${3}:1.0 was not removed from local repository. Output was:"
         echo -e "${removeImage}"
         exit 1
@@ -154,7 +157,7 @@ deployWithPull() {
     # Redeploy by pulling the image and extracting the image digest. Also overwrite the previous deployment.
     deploy=$(hzn exchange service publish -vOP -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem -f ./horizon/service.definition.json 2>&1)
     deploying=$(echo "${deploy}" | grep "HTTP code: 201")
-    if [ "${deploying}" == "" ]; then
+    if [ "${deploying}" = "" ]; then
         echo -e "\nERROR: $2 did not deploy. Output was:"
         echo -e "${deploy}"
         exit 1
@@ -165,7 +168,7 @@ deployWithPull() {
 # Undeploy a new hzn dev service project. The input is:
 # $1 - service
 undeploy() {
-    undeploy=$(hzn exchange service remove -f "$1")
+    hzn exchange service remove -f "$1" > /dev/null
     echo -e "$1 service undeployed."
 }
 
@@ -194,7 +197,7 @@ checkMemoryAndCpus() {
 # ============= Main =================================================
 #
 
-if [ "${NOHZNDEV}" == "1" ] && [ "${NOHELLO}" == "1" ] && [ "${TEST_PATTERNS}" != "sall" ] && [ "${TEST_PATTERNS}" != "susehello" ]
+if [ "${NOHZNDEV}" == "1" ] && [ "${NOHELLO}" = "1" ] && [ "${TEST_PATTERNS}" != "sall" ] && [ "${TEST_PATTERNS}" != "susehello" ]
 then
   echo -e "Skipping hzn dev tests"
   exit 0
@@ -238,7 +241,6 @@ then
   exit "${RES}"
 fi
 [ "$(( NUMBER_SERVICES += 1 ))" -ne 0 ]
-
 
 if ! RES=$(createProject "${USEHELLO_HOME}" "UseHello" "variables verified." "my.company.com.services.usehello2" "singleton" "MY_VAR1" "string" "inside" "usehello" "512" "0.5")
 then

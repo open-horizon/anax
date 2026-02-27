@@ -1,15 +1,20 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 num=$1
 
 export HZN_AGENT_PORT=$((8509 + "${num}"))
  
-if [[ "$num" == "1" ]]; then
+if [[ "$num" = "1" ]]; then
   num=""
 fi
 
 while (true) do
-  if [ "$OLDANAX" == 1 ]
+  if [ "$OLDANAX" = 1 ]
   then
       echo "Starting OLD Anax to run workloads."
       if [ "${CERT_LOC}" -eq 1 ]; then

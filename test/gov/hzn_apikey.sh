@@ -1,14 +1,19 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 PREFIX="hzn exchange user apikey test:"
 echo -e "$PREFIX start"
 
 # Get defaults if not explicitly set
-if [[ -z "$HZN_ORG_ID" || "$HZN_ORG_ID" == *"e2edev@somecomp.com"* ]]; then
+if [[ -z "$HZN_ORG_ID" || "$HZN_ORG_ID" = *"e2edev@somecomp.com"* ]]; then
   export HZN_ORG_ID="userdev"
 fi
 
-if [[ -z "$HZN_EXCHANGE_USER_AUTH" || "$HZN_EXCHANGE_USER_AUTH" == *"e2edevadmin:e2edevadminpw"* ]]; then
+if [[ -z "$HZN_EXCHANGE_USER_AUTH" || "$HZN_EXCHANGE_USER_AUTH" = *"e2edevadmin:e2edevadminpw"* ]]; then
   export HZN_EXCHANGE_USER_AUTH="userdevadmin:userdevadminpw"
 fi
 
