@@ -48,6 +48,24 @@ jobs:
           cache: true
           cache-dependency-path: go/src/github.com/${{github.repository}}/go.sum
 
+      # Cache the Go build cache (~/.cache/go-build) to speed up compilation of anax binaries.
+      # The key includes the Go version and a hash of all Go source files so the cache is
+      # invalidated whenever source code changes. The restore-key falls back to any prior
+      # build cache for the same OS/Go version, allowing incremental reuse even on cache miss.
+      - name: Cache Go build cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/go-build
+          key: go-build-${{ runner.os }}-go1.24-${{ hashFiles('**/*.go') }}
+          restore-keys: |
+            go-build-${{ runner.os }}-go1.24-
+
+      # Create the custom DOCKER_CONFIG directory so Docker and hzn tools can find credentials.
+      # Without this, hzn dev service start fails with "no such file or directory" when reading
+      # config.json, producing invalid image tag format errors.
+      - name: Create Docker config directory
+        run: mkdir -p "${DOCKER_CONFIG}" && echo '{}' > "${DOCKER_CONFIG}/config.json"
+
       - name: Verify Docker version
         run: docker --version
 

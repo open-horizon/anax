@@ -22,13 +22,13 @@ endif
 TEST_VARS ?= NOLOOP=1 TEST_PATTERNS=sall
 # TEST_VARS ?= NOLOOP=1 NOCANCEL=1
 
-export PREBUILT_DOCKER_REG_URL ?= ""
-export PREBUILT_DOCKER_REG_USER ?= ""
-export PREBUILT_DOCKER_REG_PW ?= ""
+export PREBUILT_DOCKER_REG_URL ?=
+export PREBUILT_DOCKER_REG_USER ?=
+export PREBUILT_DOCKER_REG_PW ?=
 export PREBUILT_ANAX_VERSION ?= nightly
 export PREBUILT_ESS_VERSION ?= nightly
 
-BRANCH_NAME ?= ""
+BRANCH_NAME ?=
 ANAX_SOURCE ?= $(shell dirname $(CURDIR))
 DOCKER_DEV_OPTS :=  --rm --no-cache --build-arg ARCH=$(arch)
 E2EDEVTEST_TEMPFS := $(CURDIR)/docker/tempfs/e2edevtest
@@ -58,7 +58,7 @@ UDS ?= /var/run/horizon/
 API_KEY ?= 0
 DOCKER_CPU_TAG := 1.2.7
 ICP_HOST_IP ?= 0
-ORG_ID ?= ""
+ORG_ID ?=
 ifeq ($(arch),ppc64le)
 	DOCKER_CPU_INAME ?= openhorizon/ibm.cpu_$(arch)
 else
@@ -173,7 +173,7 @@ export DOCKER_REG_USER ?= $(DOCKER_REG_USER)
 export DOCKER_REG_PW ?= $(DOCKER_REG_PW)
 #export HZN_EXCHANGE_URL ?= $(HZN_EXCHANGE_URL)
 export HZN_DEV_HOST_IP ?= $(E2EDEV_HOST_IP)
-export HZN_DEV_FSS_IMAGE_TAG ?= "testing$(BRANCH_NAME)"
+export HZN_DEV_FSS_IMAGE_TAG ?= testing$(BRANCH_NAME)
 #export DOCKER_CPU_INAME ?= $(DOCKER_CPU_INAME)
 #export DOCKER_CPU_TAG ?= $(DOCKER_CPU_TAG)
 export ARCH ?= amd64
