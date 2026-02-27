@@ -13,11 +13,6 @@ results() {
   fi
 }
 
-# The exchange requires apikey: credential format. Pre-pend the org so the stock
-# hzn CLI (installed by deploy-mgmt-hub.sh) does not double-prepend it.
-# OrgAndCreds() returns the credential unchanged when the id already contains '/'.
-MAIN_AUTH="e2edev@somecomp.com/apikey:${API_KEY}"
-
 HZN_EXCHANGE_NODE_AUTH="testNode:Abcdefghijklmno1"
 NODE_NAME="testNode"
 
@@ -26,6 +21,35 @@ if [ "${ORG_ID}" = "" ]; then
 fi
 
 export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
+
+# Admin credentials used to generate the API key from the Exchange.
+E2EDEV_ADMIN_AUTH="${E2EDEV_ADMIN_AUTH:-e2edevadmin:e2edevadminpw}"
+E2EDEV_ADMIN_USER="${E2EDEV_ADMIN_AUTH%%:*}"
+
+# Generate an API key for the admin user via the Exchange REST API.
+# The Exchange returns {"id": "<key-id>", "key": "<secret>"}.
+echo "Generating API key for ${E2EDEV_ADMIN_USER} in org ${ORG_ID}..."
+APIKEY_RESP=$(curl -sSL -X POST \
+    --header 'Content-Type: application/json' \
+    --header 'Accept: application/json' \
+    -u "${ORG_ID}/${E2EDEV_ADMIN_AUTH}" \
+    -d '{"description":"api_key.sh test key"}' \
+    "${EXCH_APP_HOST}/orgs/${ORG_ID}/users/${E2EDEV_ADMIN_USER}/keys")
+echo "API key response: ${APIKEY_RESP}"
+
+APIKEY_ID=$(echo "${APIKEY_RESP}" | jq -r '.id // empty')
+APIKEY_SECRET=$(echo "${APIKEY_RESP}" | jq -r '.key // empty')
+
+if [ -z "${APIKEY_ID}" ] || [ -z "${APIKEY_SECRET}" ]; then
+    echo "Error: failed to generate API key. Response: ${APIKEY_RESP}"
+    exit 2
+fi
+echo "Generated API key id: ${APIKEY_ID}"
+
+# Use the generated API key as the credential for all subsequent hzn commands.
+# The Exchange accepts 'organization/apikey:<secret>' as a credential type.
+# Prepending the org prevents the hzn CLI from double-prepending it.
+MAIN_AUTH="${ORG_ID}/apikey:${APIKEY_SECRET}"
 
 # Register services via the hzn dev exchange commands
 if ! ./gov/hzn_dev_services.sh "${HZN_EXCHANGE_URL}" "${MAIN_AUTH}" 1
@@ -45,7 +69,7 @@ then
 fi
 
 KEY_TEST_DIR="/tmp/keytest"
-mkdir -p $KEY_TEST_DIR
+mkdir -p "${KEY_TEST_DIR}"
 
 cd "$KEY_TEST_DIR" || { echo "Error: api_key.sh - ln 50 - Failure to change directories."; exit 1; }
 if ls ./*.key > /dev/null 2>&1
@@ -127,3 +151,11 @@ then
 fi
 
 unset HZN_EXCHANGE_URL
+
+# Clean up the generated API key from the Exchange.
+echo "Deleting API key ${APIKEY_ID} for ${E2EDEV_ADMIN_USER} in org ${ORG_ID}..."
+curl -sSL -X DELETE \
+    --header 'Accept: application/json' \
+    -u "${ORG_ID}/${E2EDEV_ADMIN_AUTH}" \
+    "${EXCH_APP_HOST}/orgs/${ORG_ID}/users/${E2EDEV_ADMIN_USER}/keys/${APIKEY_ID}"
+echo "API key cleanup complete."
