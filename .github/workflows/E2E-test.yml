@@ -54,38 +54,10 @@ jobs:
       # Set up Docker Buildx to enable BuildKit and layer caching support
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-        with:
-          install: true
-
-      # Cache the e2edev test Docker image to avoid rebuilding when Dockerfile and
-      # docker context files are unchanged between runs.
-      - name: Cache e2edev test Docker image
-        id: cache-e2edev-image
-        uses: actions/cache@v4
-        with:
-          path: /tmp/e2edev-test-image.tar
-          key: e2edev-test-image-${{ runner.os }}-${{ hashFiles('go/src/github.com/**/test/docker/Dockerfile', 'go/src/github.com/**/test/docker/fs/**') }}
-          restore-keys: |
-            e2edev-test-image-${{ runner.os }}-
-
-      # Restore the cached e2edev test image if available
-      - name: Restore e2edev test Docker image from cache
-        if: steps.cache-e2edev-image.outputs.cache-hit == 'true'
-        run: docker load -i /tmp/e2edev-test-image.tar
 
       # Build anax binaries
       - name: Build anax binaries
         run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make
-
-      # Build the e2edev docker images (skipped if restored from cache)
-      - name: Build the e2edev docker images
-        if: steps.cache-e2edev-image.outputs.cache-hit != 'true'
-        run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make -C test build-remote
-
-      # Save the e2edev test image to cache for future runs
-      - name: Save e2edev test Docker image to cache
-        if: steps.cache-e2edev-image.outputs.cache-hit != 'true'
-        run: docker save openhorizon/e2edev-test:latest -o /tmp/e2edev-test-image.tar
 
       # Cache the Docker registry image (pinned by digest - key is constant so always hits after first run)
       - name: Cache Docker registry image
