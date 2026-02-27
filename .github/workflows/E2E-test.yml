@@ -123,13 +123,11 @@ jobs:
         run: echo "week=$(date -u +'%Y-%U')" >> "$GITHUB_OUTPUT"
 
       # Cache each management hub image separately so changing one tag only invalidates
-      # that image's cache entry. Pinned tags (mongo:4.0.6, postgres:17) use a stable key
-      # and are never re-pulled unless the tag changes. Mutable tags (testing, latest)
-      # use a weekly key so they refresh each week.
-      #
-      # Note: the agbot (openhorizon/amd64_agbot:e2edev) and vault (openhorizon/amd64_vault:testing)
-      # images are built locally from source by the Makefile get-agbot-image and get-vault-image
-      # targets, so they are not pre-pulled here.
+      # that image's cache entry. All management hub images (exchange, agbot, CSS, mongo,
+      # postgres, vault) are built or pulled by deploy-mgmt-hub.sh at test runtime.
+      # We restore them before the test so deploy-mgmt-hub.sh finds them already present
+      # in the Docker daemon (avoiding registry pulls), then save them after the test.
+      # Mutable tags (testing, latest, e2edev) use a weekly key; pinned tags use a stable key.
 
       - name: Cache Exchange image
         id: cache-exchange-image
@@ -144,11 +142,18 @@ jobs:
         if: steps.cache-exchange-image.outputs.cache-hit == 'true'
         run: docker load -i /tmp/exchange-image.tar
 
-      - name: Pull and save Exchange image to cache
-        if: steps.cache-exchange-image.outputs.cache-hit != 'true'
-        run: |
-          docker pull quay.io/openhorizon/amd64_exchange-api:testing
-          docker save quay.io/openhorizon/amd64_exchange-api:testing -o /tmp/exchange-image.tar
+      - name: Cache Agbot image
+        id: cache-agbot-image
+        uses: actions/cache@v4
+        with:
+          path: /tmp/agbot-image.tar
+          key: agbot-image-${{ runner.os }}-e2edev-${{ steps.date.outputs.week }}
+          restore-keys: |
+            agbot-image-${{ runner.os }}-e2edev-
+
+      - name: Restore Agbot image from cache
+        if: steps.cache-agbot-image.outputs.cache-hit == 'true'
+        run: docker load -i /tmp/agbot-image.tar
 
       - name: Cache CSS image
         id: cache-css-image
@@ -163,12 +168,6 @@ jobs:
         if: steps.cache-css-image.outputs.cache-hit == 'true'
         run: docker load -i /tmp/css-image.tar
 
-      - name: Pull and save CSS image to cache
-        if: steps.cache-css-image.outputs.cache-hit != 'true'
-        run: |
-          docker pull docker.io/openhorizon/amd64_cloud-sync-service:latest
-          docker save docker.io/openhorizon/amd64_cloud-sync-service:latest -o /tmp/css-image.tar
-
       - name: Cache MongoDB image
         id: cache-mongo-image
         uses: actions/cache@v4
@@ -181,12 +180,6 @@ jobs:
       - name: Restore MongoDB image from cache
         if: steps.cache-mongo-image.outputs.cache-hit == 'true'
         run: docker load -i /tmp/mongo-image.tar
-
-      - name: Pull and save MongoDB image to cache
-        if: steps.cache-mongo-image.outputs.cache-hit != 'true'
-        run: |
-          docker pull mongo:4.0.6
-          docker save mongo:4.0.6 -o /tmp/mongo-image.tar
 
       - name: Cache PostgreSQL image
         id: cache-postgres-image
@@ -201,11 +194,18 @@ jobs:
         if: steps.cache-postgres-image.outputs.cache-hit == 'true'
         run: docker load -i /tmp/postgres-image.tar
 
-      - name: Pull and save PostgreSQL image to cache
-        if: steps.cache-postgres-image.outputs.cache-hit != 'true'
-        run: |
-          docker pull postgres:17
-          docker save postgres:17 -o /tmp/postgres-image.tar
+      - name: Cache Vault image
+        id: cache-vault-image
+        uses: actions/cache@v4
+        with:
+          path: /tmp/vault-image.tar
+          key: vault-image-${{ runner.os }}-testing-${{ steps.date.outputs.week }}
+          restore-keys: |
+            vault-image-${{ runner.os }}-testing-
+
+      - name: Restore Vault image from cache
+        if: steps.cache-vault-image.outputs.cache-hit == 'true'
+        run: docker load -i /tmp/vault-image.tar
 
       - name: E2E Development Test
         id: test-runner
@@ -222,6 +222,58 @@ jobs:
           if [ -n "$images" ]; then
             # shellcheck disable=SC2086
             docker save $images -o /tmp/e2edev-service-images.tar
+          fi
+
+      # Save management hub images pulled/built during the test run for future cache hits.
+      # deploy-mgmt-hub.sh pulls exchange, agbot, CSS, mongo, postgres, vault images.
+      # Each image is saved to its own tar so individual cache entries can be invalidated
+      # independently when tags change. continue-on-error so missing images don't block diagnostics.
+      - name: Save Exchange image to cache
+        if: steps.cache-exchange-image.outputs.cache-hit != 'true'
+        continue-on-error: true
+        run: |
+          if docker image inspect quay.io/openhorizon/amd64_exchange-api:testing > /dev/null 2>&1; then
+            docker save quay.io/openhorizon/amd64_exchange-api:testing -o /tmp/exchange-image.tar
+          fi
+
+      - name: Save Agbot image to cache
+        if: steps.cache-agbot-image.outputs.cache-hit != 'true'
+        continue-on-error: true
+        run: |
+          if docker image inspect openhorizon/amd64_agbot:e2edev > /dev/null 2>&1; then
+            docker save openhorizon/amd64_agbot:e2edev -o /tmp/agbot-image.tar
+          fi
+
+      - name: Save CSS image to cache
+        if: steps.cache-css-image.outputs.cache-hit != 'true'
+        continue-on-error: true
+        run: |
+          if docker image inspect openhorizon/amd64_cloud-sync-service:latest > /dev/null 2>&1; then
+            docker save openhorizon/amd64_cloud-sync-service:latest -o /tmp/css-image.tar
+          fi
+
+      - name: Save MongoDB image to cache
+        if: steps.cache-mongo-image.outputs.cache-hit != 'true'
+        continue-on-error: true
+        run: |
+          if docker image inspect mongo:4.0.6 > /dev/null 2>&1; then
+            docker save mongo:4.0.6 -o /tmp/mongo-image.tar
+          fi
+
+      - name: Save PostgreSQL image to cache
+        if: steps.cache-postgres-image.outputs.cache-hit != 'true'
+        continue-on-error: true
+        run: |
+          if docker image inspect postgres:17 > /dev/null 2>&1; then
+            docker save postgres:17 -o /tmp/postgres-image.tar
+          fi
+
+      - name: Save Vault image to cache
+        if: steps.cache-vault-image.outputs.cache-hit != 'true'
+        continue-on-error: true
+        run: |
+          if docker image inspect openhorizon/amd64_vault:testing > /dev/null 2>&1; then
+            docker save openhorizon/amd64_vault:testing -o /tmp/vault-image.tar
           fi
       
       - name: Test Failure Catch - Check Docker Images
