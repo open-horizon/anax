@@ -4,7 +4,7 @@
 verify() {
   if [ "$2" = "" ]
   then
-    printf '%s' "Error: $1 should be set but is not."
+    echo "Error: $1 should be set but is not."
     exit 2
   fi
 }
@@ -20,19 +20,19 @@ then
   verify "HZN_NODE_ID" "$HZN_NODE_ID"
   verify "HZN_ORGANIZATION" "$HZN_ORGANIZATION"
   verify "HZN_EXCHANGE_URL" "$HZN_EXCHANGE_URL"
-  printf '%s' "All Horizon platform env vars verified."
+  echo "All Horizon platform env vars verified."
 else
-  printf '%s' "Running outside Horizon, skip Horizon platform env var checks."
+  echo "Running outside Horizon, skip Horizon platform env var checks."
 fi
 
 verify "MY_S_VAR1" "$MY_S_VAR1"
-printf '%s' "All Service variables verified."
+echo "All Service variables verified."
 
 /usr/local/bin/server &
 
-# Keep everything alive 
+# Keep everything alive
 while :
 do
-  printf '%s' "Service helloservice running."
+  echo "Service helloservice running."
   sleep 10
 done

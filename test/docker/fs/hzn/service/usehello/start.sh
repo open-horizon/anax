@@ -4,7 +4,7 @@
 verify() {
   if [ "$2" = "" ]
   then
-    printf '%s' "Error: $1 should be set but is not."
+    echo "Error: $1 should be set but is not."
     exit 2
   fi
 }
@@ -26,9 +26,9 @@ then
   verify "HZN_ESS_API_PORT" "$HZN_ESS_API_PORT"
   verify "HZN_ESS_AUTH" "$HZN_ESS_AUTH"
   verify "HZN_ESS_CERT" "$HZN_ESS_CERT"
-  printf '%s' "All Horizon platform env vars verified."
+  echo "All Horizon platform env vars verified."
 
-  printf '%s' "Service is running on node $HZN_NODE_ID in org $HZN_ORGANIZATION"
+  echo "Service is running on node $HZN_NODE_ID in org $HZN_ORGANIZATION"
 
   if [ "${HZN_PATTERN}" = "" ]
   then
@@ -42,20 +42,26 @@ then
   ESS_BASEURL="https://localhost/api/v1/objects/"
 
 else
-  printf '%s' "Running outside Horizon, skip Horizon platform env var checks."
+  echo "Running outside Horizon, skip Horizon platform env var checks."
 fi
 
 verify "MY_VAR1" "$MY_VAR1"
-printf '%s' "All Agreement Service variables verified."
+echo "All Agreement Service variables verified."
 
 OBJECT_TYPE="model"
-printf '%s' "Looking for file objects of type ${OBJECT_TYPE}"
+echo "Looking for file objects of type ${OBJECT_TYPE}"
 
 # ${HZN_ESS_AUTH} is mounted to this container and contains a json file with the credentials for authenticating to the ESS.
 # ${HZN_ESS_CERT} is mounted to this container and contains the client side SSL cert to talk to the ESS API.
-# ESS_USER and ESS_PW are read here; ESS_SOCKET and ESS_BASEURL are set above when HZN_AGREEMENTID is set.
-ESS_USER=$(jq -r ".id" < "${HZN_ESS_AUTH}")
-ESS_PW=$(jq -r ".token" < "${HZN_ESS_AUTH}")
+# ESS_USER and ESS_PW are read here only when running inside Horizon (HZN_ESS_AUTH is set).
+# ESS_SOCKET and ESS_BASEURL are set above when HZN_AGREEMENTID is set.
+ESS_USER=""
+ESS_PW=""
+if [ "${HZN_ESS_AUTH}" != "" ]
+then
+  ESS_USER=$(jq -r ".id" < "${HZN_ESS_AUTH}")
+  ESS_PW=$(jq -r ".token" < "${HZN_ESS_AUTH}")
+fi
 
 FAILCOUNT=0
 
@@ -67,8 +73,8 @@ while :
 do
   if [ "${ESS_SOCKET}" != "" ]
   then
-    # First sync service call should pick up any objects received the last time we were started.
-    printf '%s' "Retrieving sync service objects that have already been received."
+    # Poll for all pending objects (not yet received) as well as any previously received objects.
+    echo "Retrieving sync service objects."
 
     FILE_LOC="/e2edevuser/objects"
     mkdir -p "${FILE_LOC}"
@@ -76,12 +82,12 @@ do
     # For each object, write the data into the local file system using the object ID as the file name. Then mark the object
     # as received so that a subsequent poll doesn't see the object again.
 
-    OBJS=$(curl -sL --unix-socket "${ESS_SOCKET}" -u "${ESS_USER}:${ESS_PW}" --cacert "${HZN_ESS_CERT}" "${ESS_BASEURL}${OBJECT_TYPE}?received=true")
+    OBJS=$(curl -sL --unix-socket "${ESS_SOCKET}" -u "${ESS_USER}:${ESS_PW}" --cacert "${HZN_ESS_CERT}" "${ESS_BASEURL}${OBJECT_TYPE}")
 
-    BADRES=$(echo "${OBJS}" | jq -r '.[].objectID')
-    if [ "${BADRES}" = "" ]
+    # Verify the response is a valid JSON array; a non-array response indicates an ESS error.
+    if ! echo "${OBJS}" | jq -e 'if type == "array" then true else error end' > /dev/null 2>&1
     then
-      echo "Error Return from object poll: ${OBJS}"
+      echo "Error return from object poll (expected JSON array): ${OBJS}"
       exit 1
     fi
 
@@ -98,16 +104,16 @@ do
       else
         curl -sL -o "${FILE_LOC}/${id}" --unix-socket "${ESS_SOCKET}" -u "${ESS_USER}:${ESS_PW}" --cacert "${HZN_ESS_CERT}" "${ESS_BASEURL}${OBJECT_TYPE}/${id}/data" > /dev/null
         curl -sLX PUT --unix-socket "${ESS_SOCKET}" -u "${ESS_USER}:${ESS_PW}" --cacert "${HZN_ESS_CERT}" "${ESS_BASEURL}${OBJECT_TYPE}/${id}/received" > /dev/null
-        printf '%s' "Received object: ${id}"
+        echo "Received object: ${id}"
       fi
     done
 
     # There should be 2 files in the file sync service for this node. If not, there is a problem, exit the workload to fail the test.
-    COUNT=$(find "${FILE_LOC}" | wc -l)
+    COUNT=$(find "${FILE_LOC}" -maxdepth 1 -type f | wc -l | tr -d ' ')
     COUNT_TARGET="2"
     if [ "${COUNT}" != "${COUNT_TARGET}" ]
     then
-      printf '%s' "Found ${COUNT} files from the sync service in ${FILE_LOC}, there should be ${COUNT_TARGET}."
+      echo "Found ${COUNT} files from the sync service in ${FILE_LOC}, there should be ${COUNT_TARGET}."
       if [ "$FAILCOUNT" -gt "1" ]
       then
         exit 1
@@ -123,18 +129,18 @@ done
 # Keep everything alive
 while :
 do
-  printf '%s' "Service usehello running."
+  echo "Service usehello running."
   if [ "$MY_VAR1" != "outside" ]
   then
     co=$(curl -sS "http://${HZN_ARCH}_helloservice:8000")
-    printf '%s' "Hello service: $co"
+    echo "Hello service: $co"
     cpuo=$(curl -sS "http://${HZN_ARCH}_cpu:8347")
-    printf '%s' "CPU Usage: $cpuo"
+    echo "CPU Usage: $cpuo"
   fi
 
   if [ "${ESS_SOCKET}" != "" ]
   then
-    printf '%s' "Calling ESS to poll for new objects"
+    echo "Calling ESS to poll for new objects"
 
     # Pick up any newly added objects or notifications of changed or deleted objects since our initial poll.
     OBJS=$(curl -sL --unix-socket "${ESS_SOCKET}" -u "${ESS_USER}:${ESS_PW}" --cacert "${HZN_ESS_CERT}" "${ESS_BASEURL}${OBJECT_TYPE}")
@@ -157,7 +163,7 @@ do
         # Assume we got a new object
         curl -sL -o "${FILE_LOC}/${id}" --unix-socket "${ESS_SOCKET}" -u "${ESS_USER}:${ESS_PW}" --cacert "${HZN_ESS_CERT}" "${ESS_BASEURL}${OBJECT_TYPE}/${id}/data" > /dev/null
         curl -sLX PUT --unix-socket "${ESS_SOCKET}" -u "${ESS_USER}:${ESS_PW}" --cacert "${HZN_ESS_CERT}" "${ESS_BASEURL}${OBJECT_TYPE}/${id}/received" > /dev/null
-        printf '%s' "Got a new object: ${id}"
+        echo "Got a new object: ${id}"
       fi
     done
   fi
