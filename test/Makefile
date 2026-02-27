@@ -356,11 +356,11 @@ e2edevtest-docker-prereqs:
 
 test-image:
 	@echo "Handling $(DOCKER_TEST_INAME)"
-	if [ -n "$(shell docker images | grep '$(DOCKER_TEST_INAME)')" ]; then \
-		echo "Skipping since $(DOCKER_TEST_INAME) image exists, run 'make clean && make' if a rebuild is desired"; \
+	@if docker image inspect $(DOCKER_TEST_INAME):$(DOCKER_TEST_TAG) > /dev/null 2>&1; then \
+		echo "Skipping since $(DOCKER_TEST_INAME):$(DOCKER_TEST_TAG) image exists, run 'make clean && make' if a rebuild is desired"; \
 	else \
-		echo "Building container image $(DOCKER_TEST_INAME)"; \
-		docker build $(DOCKER_DEV_OPTS) -t $(DOCKER_TEST_INAME) -f docker/Dockerfile ./docker && docker tag $(DOCKER_TEST_INAME) $(DOCKER_TEST_INAME):$(DOCKER_TEST_TAG); \
+		echo "Building container image $(DOCKER_TEST_INAME):$(DOCKER_TEST_TAG)"; \
+		docker build $(DOCKER_DEV_OPTS) -t $(DOCKER_TEST_INAME):$(DOCKER_TEST_TAG) -f docker/Dockerfile ./docker || exit 1; \
 	fi
 
 test-no-clean: $(ANAX_SOURCE)/anax run-mgmthub run-dockerreg
