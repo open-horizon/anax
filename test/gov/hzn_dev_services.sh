@@ -110,7 +110,7 @@ stopServices() {
 # $2 - project name
 deploy() {
     cd "$1" || { echo "Error: hzn_dev_services.sh - ln ${LINENO} - Failure to change directories"; exit 1; }
-    deploy=$(hzn exchange service publish -v -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem -f ./horizon/service.definition.json 2>&1)
+    deploy=$(hzn exchange service publish -v -u "${E2EDEV_ADMIN_AUTH}" -k "${KEY_TEST_DIR}"/*private.key -K "${KEY_TEST_DIR}"/*public.pem -f ./horizon/service.definition.json 2>&1)
     deploying=$(echo "${deploy}" | grep "HTTP code: 201")
     if [ "${deploying}" = "" ]; then
         echo -e "\nERROR: $2 did not deploy. Output was:"
@@ -138,7 +138,7 @@ deployWithPull() {
     fi
 
     # Redeploy by pulling the image and extracting the image digest. Also overwrite the previous deployment.
-    deploy=$(hzn exchange service publish -vOP -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem -f ./horizon/service.definition.json 2>&1)
+    deploy=$(hzn exchange service publish -vOP -u "${E2EDEV_ADMIN_AUTH}" -k "${KEY_TEST_DIR}"/*private.key -K "${KEY_TEST_DIR}"/*public.pem -f ./horizon/service.definition.json 2>&1)
     deploying=$(echo "${deploy}" | grep "HTTP code: 201")
     if [ "${deploying}" = "" ]; then
         echo -e "\nERROR: $2 did not deploy. Output was:"
@@ -151,7 +151,7 @@ deployWithPull() {
 # Undeploy a new hzn dev service project. The input is:
 # $1 - service
 undeploy() {
-    hzn exchange service remove -f "$1" > /dev/null
+    hzn exchange service remove -u "${E2EDEV_ADMIN_AUTH}" -f "$1" > /dev/null
     echo -e "$1 service undeployed."
 }
 
@@ -160,7 +160,7 @@ undeploy() {
 # $2 - expected MaxMemory
 # $3 - expected NanoCpus
 checkMemoryAndCpus() {
-    echo -e "Checng custom MaxMemory and NanoCpus for $1."
+    echo -e "Checking custom MaxMemory and NanoCpus for $1."
     service_id=$(docker ps -qf "name=$1")
     svc_memory=$(docker inspect "$service_id" | jq -r '.[0].HostConfig.Memory')
     svc_nano_cpus=$(docker inspect "$service_id" | jq -r '.[0].HostConfig.NanoCpus')

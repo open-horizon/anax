@@ -59,7 +59,7 @@ KEY_TEST_DIR="/tmp/keytest"
 mkdir -p $KEY_TEST_DIR
 
 cd $KEY_TEST_DIR || { echo "Error: service_apireg.sh - ln ${LINENO} - Failure to change directories"; exit 1; }
-if ! ls "*.key" &> /dev/null
+if ls ./*.key > /dev/null 2>&1
 then
     echo -e "Using existing key"
 else
