@@ -13,10 +13,10 @@ results() {
   fi
 }
 
-MAIN_AUTH="apikey:${API_KEY}"
-# Tell the hzn CLI not to prepend HZN_ORG_ID to the apikey credential.
-# OrgAndCreds() in cliutils.go skips org prepending when USING_API_KEY=1.
-export USING_API_KEY=1
+# The exchange requires apikey: credential format. Pre-pend the org so the stock
+# hzn CLI (installed by deploy-mgmt-hub.sh) does not double-prepend it.
+# OrgAndCreds() returns the credential unchanged when the id already contains '/'.
+MAIN_AUTH="e2edev@somecomp.com/apikey:${API_KEY}"
 
 HZN_EXCHANGE_NODE_AUTH="testNode:Abcdefghijklmno1"
 NODE_NAME="testNode"
