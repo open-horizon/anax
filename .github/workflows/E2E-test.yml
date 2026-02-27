@@ -115,6 +115,98 @@ jobs:
       - name: Verify Built Container Images
         run: docker images
 
+      # Compute a weekly date string used as part of cache keys for mutable image tags
+      # (testing, latest, e2edev). This ensures those images are refreshed once per week
+      # while still being reused across all runs within the same week.
+      - name: Compute weekly cache key date
+        id: date
+        run: echo "week=$(date -u +'%Y-%U')" >> "$GITHUB_OUTPUT"
+
+      # Cache each management hub image separately so changing one tag only invalidates
+      # that image's cache entry. Pinned tags (mongo:4.0.6, postgres:17) use a stable key
+      # and are never re-pulled unless the tag changes. Mutable tags (testing, latest)
+      # use a weekly key so they refresh each week.
+      #
+      # Note: the agbot (openhorizon/amd64_agbot:e2edev) and vault (openhorizon/amd64_vault:testing)
+      # images are built locally from source by the Makefile get-agbot-image and get-vault-image
+      # targets, so they are not pre-pulled here.
+
+      - name: Cache Exchange image
+        id: cache-exchange-image
+        uses: actions/cache@v4
+        with:
+          path: /tmp/exchange-image.tar
+          key: exchange-image-${{ runner.os }}-testing-${{ steps.date.outputs.week }}
+          restore-keys: |
+            exchange-image-${{ runner.os }}-testing-
+
+      - name: Restore Exchange image from cache
+        if: steps.cache-exchange-image.outputs.cache-hit == 'true'
+        run: docker load -i /tmp/exchange-image.tar
+
+      - name: Pull and save Exchange image to cache
+        if: steps.cache-exchange-image.outputs.cache-hit != 'true'
+        run: |
+          docker pull quay.io/openhorizon/amd64_exchange-api:testing
+          docker save quay.io/openhorizon/amd64_exchange-api:testing -o /tmp/exchange-image.tar
+
+      - name: Cache CSS image
+        id: cache-css-image
+        uses: actions/cache@v4
+        with:
+          path: /tmp/css-image.tar
+          key: css-image-${{ runner.os }}-latest-${{ steps.date.outputs.week }}
+          restore-keys: |
+            css-image-${{ runner.os }}-latest-
+
+      - name: Restore CSS image from cache
+        if: steps.cache-css-image.outputs.cache-hit == 'true'
+        run: docker load -i /tmp/css-image.tar
+
+      - name: Pull and save CSS image to cache
+        if: steps.cache-css-image.outputs.cache-hit != 'true'
+        run: |
+          docker pull docker.io/openhorizon/amd64_cloud-sync-service:latest
+          docker save docker.io/openhorizon/amd64_cloud-sync-service:latest -o /tmp/css-image.tar
+
+      - name: Cache MongoDB image
+        id: cache-mongo-image
+        uses: actions/cache@v4
+        with:
+          path: /tmp/mongo-image.tar
+          key: mongo-image-${{ runner.os }}-4.0.6
+          restore-keys: |
+            mongo-image-${{ runner.os }}-
+
+      - name: Restore MongoDB image from cache
+        if: steps.cache-mongo-image.outputs.cache-hit == 'true'
+        run: docker load -i /tmp/mongo-image.tar
+
+      - name: Pull and save MongoDB image to cache
+        if: steps.cache-mongo-image.outputs.cache-hit != 'true'
+        run: |
+          docker pull mongo:4.0.6
+          docker save mongo:4.0.6 -o /tmp/mongo-image.tar
+
+      - name: Cache PostgreSQL image
+        id: cache-postgres-image
+        uses: actions/cache@v4
+        with:
+          path: /tmp/postgres-image.tar
+          key: postgres-image-${{ runner.os }}-17
+          restore-keys: |
+            postgres-image-${{ runner.os }}-
+
+      - name: Restore PostgreSQL image from cache
+        if: steps.cache-postgres-image.outputs.cache-hit == 'true'
+        run: docker load -i /tmp/postgres-image.tar
+
+      - name: Pull and save PostgreSQL image to cache
+        if: steps.cache-postgres-image.outputs.cache-hit != 'true'
+        run: |
+          docker pull postgres:17
+          docker save postgres:17 -o /tmp/postgres-image.tar
+
       - name: E2E Development Test
         id: test-runner
         run: cd ${GOPATH}/src/github.com/open-horizon/anax && make -C test test-no-clean TEST_VARS=${{matrix.tests}}

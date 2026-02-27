@@ -12,7 +12,6 @@ verify() {
 # If the container is running in the Horizon environment, then the Horizon platform env vars should all be there.
 # Otherwise, assume it is running outside Horizon and running in a non-Horizon environment.
 
-BASEURL=""
 if [ "$HZN_AGREEMENTID" != "" ]
 then
   verify "HZN_RAM" "$HZN_RAM"
@@ -39,7 +38,8 @@ then
   fi
 
   # Assuming the API address is a unix socket file. HZN_ESS_API_PROTOCOL should be "unix".
-  BASEURL='--unix-socket '${HZN_ESS_API_ADDRESS}' https://localhost/api/v1/objects/'
+  ESS_SOCKET="${HZN_ESS_API_ADDRESS}"
+  ESS_BASEURL="https://localhost/api/v1/objects/"
 
 else
   printf '%s' "Running outside Horizon, skip Horizon platform env var checks."
@@ -52,14 +52,10 @@ OBJECT_TYPE="model"
 printf '%s' "Looking for file objects of type ${OBJECT_TYPE}"
 
 # ${HZN_ESS_AUTH} is mounted to this container and contains a json file with the credentials for authenticating to the ESS.
-USER=$(jq -r ".id" < "${HZN_ESS_AUTH}")
-PW=$(jq -r ".token" < "${HZN_ESS_AUTH}")
-
-# Passing basic auth creds in base64 encoded form (-u).
-AUTH="-u ${USER}:${PW} "
-
 # ${HZN_ESS_CERT} is mounted to this container and contains the client side SSL cert to talk to the ESS API.
-CERT="--cacert ${HZN_ESS_CERT} "
+# ESS_USER and ESS_PW are read here; ESS_SOCKET and ESS_BASEURL are set above when HZN_AGREEMENTID is set.
+ESS_USER=$(jq -r ".id" < "${HZN_ESS_AUTH}")
+ESS_PW=$(jq -r ".token" < "${HZN_ESS_AUTH}")
 
 FAILCOUNT=0
 
@@ -69,20 +65,18 @@ FAILCOUNT=0
 
 while :
 do
-  if [ "$BASEURL" != "" ]
+  if [ "${ESS_SOCKET}" != "" ]
   then
     # First sync service call should pick up any objects received the last time we were started.
     printf '%s' "Retrieving sync service objects that have already been received."
 
     FILE_LOC="/e2edevuser/objects"
-    mkdir -p ${FILE_LOC}
+    mkdir -p "${FILE_LOC}"
 
     # For each object, write the data into the local file system using the object ID as the file name. Then mark the object
     # as received so that a subsequent poll doesn't see the object again.
 
-    echo "${AUTH}  ,  ${CERT}  ,  ${BASEURL}  ,  ${OBJECT_TYPE}"
-
-    OBJS=$(curl -sL "${AUTH}" "${CERT}" "${BASEURL}${OBJECT_TYPE}?received=true")
+    OBJS=$(curl -sL --unix-socket "${ESS_SOCKET}" -u "${ESS_USER}:${ESS_PW}" --cacert "${HZN_ESS_CERT}" "${ESS_BASEURL}${OBJECT_TYPE}?received=true")
 
     BADRES=$(echo "${OBJS}" | jq -r '.[].objectID')
     if [ "${BADRES}" = "" ]
@@ -99,11 +93,11 @@ do
       if [ "$del" = "true" ]
       then
         echo "Acknowledging that Object $id is deleted"
-        curl -sLX PUT "${AUTH}" "${CERT}" "${BASEURL}${OBJECT_TYPE}/${id}/deleted" > /dev/null
+        curl -sLX PUT --unix-socket "${ESS_SOCKET}" -u "${ESS_USER}:${ESS_PW}" --cacert "${HZN_ESS_CERT}" "${ESS_BASEURL}${OBJECT_TYPE}/${id}/deleted" > /dev/null
         rm -f "${FILE_LOC}/${id}"
       else
-        curl -sL -o "${FILE_LOC}/${id}" "${AUTH}" "${CERT}" "${BASEURL}${OBJECT_TYPE}/${id}/data" > /dev/null
-        curl -sLX PUT "${AUTH}" "${CERT}" "${BASEURL}${OBJECT_TYPE}/${id}/received" > /dev/null
+        curl -sL -o "${FILE_LOC}/${id}" --unix-socket "${ESS_SOCKET}" -u "${ESS_USER}:${ESS_PW}" --cacert "${HZN_ESS_CERT}" "${ESS_BASEURL}${OBJECT_TYPE}/${id}/data" > /dev/null
+        curl -sLX PUT --unix-socket "${ESS_SOCKET}" -u "${ESS_USER}:${ESS_PW}" --cacert "${HZN_ESS_CERT}" "${ESS_BASEURL}${OBJECT_TYPE}/${id}/received" > /dev/null
         printf '%s' "Received object: ${id}"
       fi
     done
@@ -138,12 +132,12 @@ do
     printf '%s' "CPU Usage: $cpuo"
   fi
 
-  if [ "$BASEURL" != "" ]
+  if [ "${ESS_SOCKET}" != "" ]
   then
     printf '%s' "Calling ESS to poll for new objects"
 
     # Pick up any newly added objects or notifications of changed or deleted objects since our initial poll.
-    OBJS=$(curl -sL "${AUTH}" "${CERT}" "${BASEURL}${OBJECT_TYPE}")
+    OBJS=$(curl -sL --unix-socket "${ESS_SOCKET}" -u "${ESS_USER}:${ESS_PW}" --cacert "${HZN_ESS_CERT}" "${ESS_BASEURL}${OBJECT_TYPE}")
 
     echo "Full poll response: ${OBJS}"
 
@@ -157,12 +151,12 @@ do
       if [ "$del" = "true" ]
       then
         echo "Acknowledging that Object $id is deleted"
-        curl -sLX PUT "${AUTH}" "${CERT}" "${BASEURL}${OBJECT_TYPE}/${id}/deleted" > /dev/null
+        curl -sLX PUT --unix-socket "${ESS_SOCKET}" -u "${ESS_USER}:${ESS_PW}" --cacert "${HZN_ESS_CERT}" "${ESS_BASEURL}${OBJECT_TYPE}/${id}/deleted" > /dev/null
         rm -f "${FILE_LOC}/${id}"
       else
         # Assume we got a new object
-        curl -sL -o "${FILE_LOC}/${id}" "${AUTH}" "${CERT}" "${BASEURL}${OBJECT_TYPE}/${id}/data" > /dev/null
-        curl -sLX PUT "${AUTH}" "${CERT}" "${BASEURL}${OBJECT_TYPE}/${id}/received" > /dev/null
+        curl -sL -o "${FILE_LOC}/${id}" --unix-socket "${ESS_SOCKET}" -u "${ESS_USER}:${ESS_PW}" --cacert "${HZN_ESS_CERT}" "${ESS_BASEURL}${OBJECT_TYPE}/${id}/data" > /dev/null
+        curl -sLX PUT --unix-socket "${ESS_SOCKET}" -u "${ESS_USER}:${ESS_PW}" --cacert "${HZN_ESS_CERT}" "${ESS_BASEURL}${OBJECT_TYPE}/${id}/received" > /dev/null
         printf '%s' "Got a new object: ${id}"
       fi
     done
