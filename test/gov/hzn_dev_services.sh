@@ -46,19 +46,9 @@ createProject() {
 
     buildOut=$(make ARCH="${ARCH}" 2>&1)
 
-    if ! RES=$(verify "${buildOut}" "Successfully built" "writing image sha256:[0-9A-Za-z\.[:space:]]* done" "$2 container did not build")
-    then
-      exit "${RES}"
-    #else
-      #echo "${RES}"
-    fi
+    verify "${buildOut}" "Successfully built" "writing image sha256:[0-9A-Za-z\.[:space:]]* done" "$2 container did not build"
 
-    if ! RES=$(verify "${buildOut}" "$3" "$2 container did not produce output")
-    then
-      exit "${RES}"
-    #else
-      #echo "${RES}"
-    fi
+    verify "${buildOut}" "$3" "$2 container did not produce output"
 
     make stop ARCH="${ARCH}" > /dev/null 2>&1
 
@@ -68,12 +58,7 @@ createProject() {
     echo -e "Creating Horizon $2 service project."
 
     newProject=$(hzn dev service new -d "$1/horizon" -s "$4" -V 1.0.0 -i "localhost:443/${ARCH}_$9:1.0" --noImageGen --noPattern 2>&1)
-    if ! RES=$(verify "${newProject}" "Created horizon metadata" "Horizon project was not created")
-    then
-      exit "${RES}"
-    #else
-      #echo "${RES}"
-    fi
+    verify "${newProject}" "Created horizon metadata" "Horizon project was not created"
 
     echo -e "Editing $2 project metadata."
     serviceDef=$1/horizon/service.definition.json
@@ -98,14 +83,9 @@ createProject() {
     fi
 
     echo -e "Verifying the $2 project."
-    verifyProject=$(hzn dev service verify -d "$1/horizon" -u -u "${E2EDEV_ADMIN_AUTH}" -v 2>&1)
+    verifyProject=$(hzn dev service verify -d "$1/horizon" -u "${E2EDEV_ADMIN_AUTH}" -v 2>&1)
 
-    if ! RES=$(verify "${verifyProject}" "verified" "Horizon $2 project was not verifiable")
-    then
-      exit "${RES}"
-    else
-      echo "${RES}"
-    fi
+    verify "${verifyProject}" "verified" "Horizon $2 project was not verifiable"
 }
 
 # Stop the services that are started in the hzn dev test environment. Implicitly uses
@@ -224,29 +204,17 @@ USEHELLO_HOME=${PROJECT_HOME}/usehello
 
 NUMBER_SERVICES=0
 
-if ! RES=$(createProject "${LEAF_HOME}" "LEAF" "\"leaf\":" "my.company.com.services.leaf" "singleton" "MY_LEAF_VAR" "string" "leafVarValue" "leaf")
-then
-  exit "${RES}"
-fi
-[ "$(( NUMBER_SERVICES += 1 ))" -ne 0 ]
+createProject "${LEAF_HOME}" "LEAF" "\"leaf\":" "my.company.com.services.leaf" "singleton" "MY_LEAF_VAR" "string" "leafVarValue" "leaf"
+NUMBER_SERVICES=$(( NUMBER_SERVICES + 1 ))
 
-if ! RES=$(createProject "${CPU_HOME}" "CPU" "\"cpu\":" "my.company.com.services.cpu2" "singleton" "MY_CPU_VAR" "string" "cpuVarValue" "cpu")
-then
-  exit "${RES}"
-fi
-[ "$(( NUMBER_SERVICES += 1 ))" -ne 0 ]
+createProject "${CPU_HOME}" "CPU" "\"cpu\":" "my.company.com.services.cpu2" "singleton" "MY_CPU_VAR" "string" "cpuVarValue" "cpu"
+NUMBER_SERVICES=$(( NUMBER_SERVICES + 1 ))
 
-if ! RES=$(createProject "${HELLO_HOME}" "Hello" "Star Wars" "my.company.com.services.hello2" "multiple" "MY_S_VAR1" "string" "inside" "helloservice")
-then
-  exit "${RES}"
-fi
-[ "$(( NUMBER_SERVICES += 1 ))" -ne 0 ]
+createProject "${HELLO_HOME}" "Hello" "Star Wars" "my.company.com.services.hello2" "multiple" "MY_S_VAR1" "string" "inside" "helloservice"
+NUMBER_SERVICES=$(( NUMBER_SERVICES + 1 ))
 
-if ! RES=$(createProject "${USEHELLO_HOME}" "UseHello" "variables verified." "my.company.com.services.usehello2" "singleton" "MY_VAR1" "string" "inside" "usehello" "512" "0.5")
-then
-  exit "${RES}"
-fi
-[ "$(( NUMBER_SERVICES += 1 ))" -ne 0 ]
+createProject "${USEHELLO_HOME}" "UseHello" "variables verified." "my.company.com.services.usehello2" "singleton" "MY_VAR1" "string" "inside" "usehello" "512" "0.5"
+NUMBER_SERVICES=$(( NUMBER_SERVICES + 1 ))
 
 # ============= Connect dependencies =================================
 
@@ -267,10 +235,7 @@ verify "${depCreate}" "New dependency created" "Could not create hello dependenc
 echo -e "Verifying the Hello project."
 verifyProject=$(hzn dev service verify -u "${E2EDEV_ADMIN_AUTH}" -v 2>&1)
 
-if ! RES=$(verify "${verifyProject}" "verified" "Horizon Hello project was not verifiable")
-then
-  exit "${RES}"
-fi
+verify "${verifyProject}" "verified" "Horizon Hello project was not verifiable"
 
 cd "${USEHELLO_HOME}" || { echo "Error: hzn_dev_services.sh - ln ${LINENO} - Failure to change directories"; exit 1; }
 depCreate=$(hzn dev dependency fetch -d "${USEHELLO_HOME}/horizon" -p "${CPU_HOME}/horizon" -u "${E2EDEV_ADMIN_AUTH}" -v 2>&1)
@@ -282,10 +247,7 @@ verify "${depCreate}" "New dependency created" "Could not create usehello depend
 echo -e "Verifying the UseHello project."
 verifyProject=$(hzn dev service verify -u "${E2EDEV_ADMIN_AUTH}" -v 2>&1)
 
-if ! RES=$(verify "${verifyProject}" "verified" "Horizon UseHello project was not verifiable")
-then
-  exit "${RES}"
-fi
+verify "${verifyProject}" "verified" "Horizon UseHello project was not verifiable"
 
 # ============= Start the top level service in the hzn test environment ============
 
@@ -345,31 +307,16 @@ then
     exit 1
 fi
 
-if ! RES=$(deploy "${LEAF_HOME}" "LEAF")
-then
-  exit "${RES}"
-fi
+deploy "${LEAF_HOME}" "LEAF"
 
 echo -e "Redeploying, but this time with the docker pull option."
-if ! RES=$(deployWithPull "${LEAF_HOME}" "LEAF" "leaf")
-then
-  exit "${RES}"
-fi
+deployWithPull "${LEAF_HOME}" "LEAF" "leaf"
 
-if ! RES=$(deploy "${CPU_HOME}" "CPU")
-then
-  exit "${RES}"
-fi
+deploy "${CPU_HOME}" "CPU"
 
-if ! RES=$(deploy "${HELLO_HOME}" "Hello")
-then
-  exit "${RES}"
-fi
+deploy "${HELLO_HOME}" "Hello"
 
-if ! RES=$(deploy "${USEHELLO_HOME}" "UseHello")
-then
-  exit "${RES}"
-fi
+deploy "${USEHELLO_HOME}" "UseHello"
 
 sleep 5
 
