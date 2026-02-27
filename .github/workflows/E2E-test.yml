@@ -27,9 +27,9 @@ jobs:
     env:
       GOPATH: /home/runner/work/anax/anax/go
       DOCKER_CONFIG: /home/runner/.docker-config
-      # Pass GitHub Actions runner debug flag to test scripts.
-      # Set ACTIONS_STEP_DEBUG=true in repository secrets to enable debug tracing.
-      DEBUG: ${{ runner.debug }}
+      # Note: GitHub Actions automatically sets RUNNER_DEBUG=1 in the environment when
+      # step debug logging is enabled (via ACTIONS_STEP_DEBUG=true repository secret).
+      # Test scripts check RUNNER_DEBUG to enable set -x tracing and debug() output.
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
