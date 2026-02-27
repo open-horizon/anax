@@ -5,6 +5,9 @@ if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
     set -x
 fi
 
+# Base directory for test resources (test/ directory, one level up from this script).
+E2EDEV_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
 # Reusable functions
 
 # Verify a response. The inputs are:
@@ -27,10 +30,10 @@ verify() {
 #
 echo -e "Begin Helm preparation."
 
-PROJECT_HOME="/root/helm/hello"
-PROJECT_HELM_HOME="/root/helm/hello/external"
+PROJECT_HOME="${E2EDEV_ROOT}/docker/fs/helm/hello"
+PROJECT_HELM_HOME="${E2EDEV_ROOT}/docker/fs/helm/hello/external"
 
-cd ${PROJECT_HOME} || exit
+cd "${PROJECT_HOME}" || exit
 
 buildContainer=$(make build)
 
@@ -38,7 +41,7 @@ verify "${buildContainer}" "Successfully built" "hello container did not build"
 
 mkdir -p /root/.helm
 
-cd ${PROJECT_HELM_HOME} || exit
+cd "${PROJECT_HELM_HOME}" || exit
 buildPackage=$(make package)
 
 verify "${buildPackage}" "Successfully packaged" "hello Helm package did not build"

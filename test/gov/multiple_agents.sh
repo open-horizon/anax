@@ -5,6 +5,9 @@ if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
     set -x
 fi
 
+# Base directory for test resources (test/ directory, one level up from this script).
+E2EDEV_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
 PREFIX="Multiple agents:"
 
 startMultiAgents() {
@@ -97,8 +100,8 @@ verifyMultiAgentsAgreements() {
     echo "${PREFIX} Verify agreement for agent container horizon${device_num} ..."
  
     # copy the test scripts over to agent container
-    docker cp /root/verify_agreements.sh horizon${device_num}:/root/.
-    docker cp /root/check_node_status.sh horizon${device_num}:/root/.
+    docker cp "${E2EDEV_ROOT}"/gov/verify_agreements.sh horizon${device_num}:/root/.
+    docker cp "${E2EDEV_ROOT}"/gov/check_node_status.sh horizon${device_num}:/root/.
 
     docker exec -e "ANAX_API=http://localhost:${agent_port}" \
         -e "EXCH_APP_HOST=${EXCH_APP_HOST}" \
@@ -107,7 +110,7 @@ verifyMultiAgentsAgreements() {
         -e ADMIN_AUTH=e2edevadmin:e2edevadminpw \
         -e "NODEID=anaxdevice${device_num}" \
         -e "NOLOOP=${NOLOOP}" \
-        "horizon${device_num}" /root/verify_agreements.sh
+        "horizon${device_num}" "${E2EDEV_ROOT}"/gov/verify_agreements.sh
 
     (( counter=counter+1 ))
   done

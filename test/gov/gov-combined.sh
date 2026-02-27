@@ -5,6 +5,9 @@ if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
     set -x
 fi
 
+# Base directory for test resources (test/ directory, one level up from this script).
+E2EDEV_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
 TEST_DIFF_ORG=${TEST_DIFF_ORG:-1}
 
 export ARCH=${ARCH:-amd64}
@@ -209,8 +212,8 @@ then
 
     echo "Killing anax and cleaning up."
     kill "$(pidof anax)"
-    rm -fr /root/.colonus/*.db
-    rm -fr /root/.colonus/policy.d/*
+    rm -fr "${HOME}"/.colonus/*.db
+    rm -fr "${HOME}"/.colonus/policy.d/*
   fi
 fi
 
@@ -238,7 +241,7 @@ else
 fi
 
 # Setup real ARCH value in all policies, patterns & service definition files for tests
-for in_file in /root/input_files/compcheck/*.json
+for in_file in "${E2EDEV_ROOT}"/gov/input_files/compcheck/*.json
 do
   if ! sed -i -e "s#__ARCH__#${ARCH}#g" "$in_file"
   then

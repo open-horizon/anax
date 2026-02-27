@@ -5,6 +5,9 @@ if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
     set -x
 fi
 
+# Base directory for test resources (test/ directory, one level up from this script).
+E2EDEV_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
 # Reusable functions
 
 # Verify a response. The inputs are:
@@ -253,7 +256,7 @@ verify "${verifyProject}" "verified" "Horizon UseHello project was not verifiabl
 
 echo -e "Starting the top level service in the Horizon test environment."
 
-startDev=$(hzn dev service start -u "${E2EDEV_ADMIN_AUTH}" -v -m /root/resources/private/basicres/basicres.tgz -m /root/resources/private/multires/multires.tgz -t model 2>&1)
+startDev=$(hzn dev service start -u "${E2EDEV_ADMIN_AUTH}" -v -m "${E2EDEV_ROOT}"/docker/fs/resources/private/basicres/basicres.tgz -m "${E2EDEV_ROOT}"/docker/fs/resources/private/multires/multires.tgz -t model 2>&1)
 startedServices=$(echo "${startDev}" | sed 's/Running service./Running service.\n/g' | grep -c "Running service.")
 if [ "${startedServices}" != "${NUMBER_SERVICES}" ]; then
     echo -e "${startedServices}"
@@ -336,7 +339,7 @@ then
 
   rm -rf $KEY_TEST_DIR/*public.pem
   rm -rf $KEY_TEST_DIR/*private.key
-  rm -rf /root/.colonus/*public.pem
+  rm -rf "${HOME}"/.colonus/*public.pem
 
 fi
 

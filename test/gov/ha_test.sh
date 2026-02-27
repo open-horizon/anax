@@ -5,6 +5,9 @@ if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
     set -x
 fi
 
+# Base directory for test resources (test/ directory, one level up from this script).
+E2EDEV_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
 if [ "$HA" != "1" ]; then
     echo "Skipping $0"
     exit
@@ -50,23 +53,23 @@ verify_ha_group_name() {
 publish_new_netspeed_service() {
     echo -e "\n${PREFIX} publish netspeed service 2.4.0..."
     if [ "${NOVAULT}" != "1" ]; then
-      NS_FILE_IBM="/root/service_defs/IBM/netspeed_2.3.0_secrets.json"
-      NS_FILE_E2EDEV="/root/service_defs/e2edev@somecomp.com/netspeed_2.3.0_secrets.json"
+      NS_FILE_IBM="${E2EDEV_ROOT}/gov/service_defs/IBM/netspeed_2.3.0_secrets.json"
+      NS_FILE_E2EDEV="${E2EDEV_ROOT}/gov/service_defs/e2edev@somecomp.com/netspeed_2.3.0_secrets.json"
     else
-      NS_FILE_IBM="/root/service_defs/IBM/netspeed_2.3.0.json"
-      NS_FILE_E2EDEV="/root/service_defs/e2edev@somecomp.com/netspeed_2.3.0.json"
+      NS_FILE_IBM="${E2EDEV_ROOT}/gov/service_defs/IBM/netspeed_2.3.0.json"
+      NS_FILE_E2EDEV="${E2EDEV_ROOT}/gov/service_defs/e2edev@somecomp.com/netspeed_2.3.0.json"
     fi
     export VERS="2.4.0"
     export ARCH=${ARCH}
     export CPU_IMAGE_NAME="${DOCKER_CPU_INAME}"
     export CPU_IMAGE_TAG="${DOCKER_CPU_TAG}"
 
-    if ! res=$(cat ${NS_FILE_IBM} | envsubst | hzn exchange service publish -f- -O -P -o IBM -u ${IBM_ADMIN_AUTH} 2>&1); then
+    if ! res=$(cat "${NS_FILE_IBM}" | envsubst | hzn exchange service publish -f- -O -P -o IBM -u ${IBM_ADMIN_AUTH} 2>&1); then
         echo -e "\n${PREFIX} failed to create netspeed service version 2.4.0 for IBM org. $res"
         exit 2
     fi
 
-    if ! res=$(cat ${NS_FILE_E2EDEV} | envsubst | hzn exchange service publish -f- -O -P -o e2edev@somecomp.com -u ${E2EDEV_ADMIN_AUTH} 2>&1); then
+    if ! res=$(cat "${NS_FILE_E2EDEV}" | envsubst | hzn exchange service publish -f- -O -P -o e2edev@somecomp.com -u ${E2EDEV_ADMIN_AUTH} 2>&1); then
         echo -e "\n${PREFIX} failed to create netspeed service version 2.4.0 for e2edev@somecomp.com org. $res"
         exit 2
     fi
@@ -369,7 +372,7 @@ EOF
 # make sure the service 2.4.0 are running on both nodes
 # and they were upgraded one by one 
 verify_rolling_upgrade() {
-    # shellcheck source=test/gov/utils.sh
+    # shellcheck disable=SC1091
     source ./utils.sh
 
     NS_ORG=$1

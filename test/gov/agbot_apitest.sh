@@ -5,6 +5,9 @@ if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
     set -x
 fi
 
+# Base directory for test resources (test/ directory, one level up from this script).
+E2EDEV_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
 E2EDEV_ADMIN_AUTH="e2edev@somecomp.com/e2edevadmin:e2edevadminpw"
 USERDEV_ADMIN_AUTH="userdev/userdevadmin:userdevadminpw"
 
@@ -21,19 +24,19 @@ fi
 # -------------------- deployment-check api tests ------------------------- #
 COMP_RESULT=""
 
-bp_location=$(</root/input_files/compcheck/business_pol_location.json)
-node_policy=$(</root/input_files/compcheck/node_policy.json)
-service_policy=$(cat /root/input_files/compcheck/service_policy.json)
-node_ui=$(cat /root/input_files/compcheck/node_ui.json)
-pattern_sloc=$(cat /root/input_files/compcheck/pattern_sloc.json)
-service_location=$(cat /root/input_files/compcheck/service_location.json)
-service_locgps=$(cat /root/input_files/compcheck/service_locgps.json)
+bp_location=$(<"${E2EDEV_ROOT}"/gov/input_files/compcheck/business_pol_location.json)
+node_policy=$(<"${E2EDEV_ROOT}"/gov/input_files/compcheck/node_policy.json)
+service_policy=$(cat "${E2EDEV_ROOT}"/gov/input_files/compcheck/service_policy.json)
+node_ui=$(cat "${E2EDEV_ROOT}"/gov/input_files/compcheck/node_ui.json)
+pattern_sloc=$(cat "${E2EDEV_ROOT}"/gov/input_files/compcheck/pattern_sloc.json)
+service_location=$(cat "${E2EDEV_ROOT}"/gov/input_files/compcheck/service_location.json)
+service_locgps=$(cat "${E2EDEV_ROOT}"/gov/input_files/compcheck/service_locgps.json)
 
 if [ "$NOVAULT" != "1" ]; then
-  service_location=$(cat /root/input_files/compcheck/service_location_secrets.json)
-  service_location_secret_extra=$(cat /root/input_files/compcheck/service_location_secrets_extra.json)
-  bp_location=$(</root/input_files/compcheck/business_pol_location_secrets.json)
-  pattern_sloc=$(cat /root/input_files/compcheck/pattern_sloc_secrets.json)
+  service_location=$(cat "${E2EDEV_ROOT}"/gov/input_files/compcheck/service_location_secrets.json)
+  service_location_secret_extra=$(cat "${E2EDEV_ROOT}"/gov/input_files/compcheck/service_location_secrets_extra.json)
+  bp_location=$(<"${E2EDEV_ROOT}"/gov/input_files/compcheck/business_pol_location_secrets.json)
+  pattern_sloc=$(cat "${E2EDEV_ROOT}"/gov/input_files/compcheck/pattern_sloc_secrets.json)
 fi
 
 # check the the result to see if it matches the expected http code and error

@@ -261,12 +261,12 @@ unregister_node
 
 timeout=6
 
-while [ "$(ls -A /root/tmp)" ] && [ $timeout -gt 0 ]; do
+while [ "$(ls -A "${HOME}"/tmp)" ] && [ $timeout -gt 0 ]; do
     echo "Waiting for all secret files in /var/run/horizon/secrets to be removed."
     (( timeout=timeout-1 ))
     sleep 5s
 done
-if [ "$(ls -A /root/tmp)" ]; then
+if [ "$(ls -A "${HOME}"/tmp)" ]; then
     echo "Timed out waiting for the secret files to be removed from the agent filesystem."
     exit 255
 fi 

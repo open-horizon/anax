@@ -5,6 +5,9 @@ if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
     set -x
 fi
 
+# Base directory for test resources (test/ directory, one level up from this script).
+E2EDEV_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
 # $1 - results
 # $2 -
 
@@ -156,7 +159,7 @@ echo -e "Register ppc64le test service:"
 # Helm service
 # VERS="1.0.0"
 # echo -e "Register Helm service $VERS:"
-# hzn exchange service publish -I -u root/root:${EXCH_ROOTPW} -o IBM -f /root/helm/hello/external/horizon/service.definition.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
+# hzn exchange service publish -I -u root/root:${EXCH_ROOTPW} -o IBM -f "${E2EDEV_ROOT}"/docker/fs/helm/hello/external/horizon/service.definition.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 # if [ $? -ne 0 ]
 # then
 #     echo -e "hzn exchange service publish failed for Helm service."
@@ -164,19 +167,19 @@ echo -e "Register ppc64le test service:"
 # fi
 
 if [ "${NOVAULT}" != "1" ]; then
-  CPU_FILE_IBM="/root/service_defs/IBM/service-cpu_1.2.2_secrets.json"
-  CPU_FILE_E2EDEV="/root/service_defs/e2edev@somecomp.com/service-cpu_1.0_secrets.json"
+  CPU_FILE_IBM="${E2EDEV_ROOT}/gov/service_defs/IBM/service-cpu_1.2.2_secrets.json"
+  CPU_FILE_E2EDEV="${E2EDEV_ROOT}/gov/service_defs/e2edev@somecomp.com/service-cpu_1.0_secrets.json"
 
 else
-  CPU_FILE_IBM="/root/service_defs/IBM/service-cpu_1.2.2.json"
-  CPU_FILE_E2EDEV="/root/service_defs/e2edev@somecomp.com/service-cpu_1.0.json"
+  CPU_FILE_IBM="${E2EDEV_ROOT}/gov/service_defs/IBM/service-cpu_1.2.2.json"
+  CPU_FILE_E2EDEV="${E2EDEV_ROOT}/gov/service_defs/e2edev@somecomp.com/service-cpu_1.0.json"
 
 fi
 
 # IBM cpu service - needed by the hzn dev tests, netspeed, and the location top level service as a 3rd level dependency.
 export VERS="1.2.2"
 
-cat ${CPU_FILE_IBM} | envsubst > $KEY_TEST_DIR/svc_cpu.json
+cat "${CPU_FILE_IBM}" | envsubst > $KEY_TEST_DIR/svc_cpu.json
 
 echo -e "Register IBM/cpu service $VERS:"
 if ! hzn exchange service publish -I -u $IBM_ADMIN_AUTH -o IBM -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
@@ -188,7 +191,7 @@ fi
 # e2edev@somecomp.com cpu service - needed by the e2edev@somecomp.com/netspeed
 export VERS="1.0"
 
-cat ${CPU_FILE_E2EDEV} | envsubst > $KEY_TEST_DIR/svc_cpu.json
+cat "${CPU_FILE_E2EDEV}" | envsubst > $KEY_TEST_DIR/svc_cpu.json
 
 echo -e "Register e2edev@somecomp.com/cpu service $VERS:"
 if ! hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
@@ -431,18 +434,18 @@ fi
 # register version 2.3.0 for execution purposes
 
 if [ "${NOVAULT}" != "1" ]; then
-  NS_FILE_IBM="/root/service_defs/IBM/netspeed_2.3.0_secrets.json"
-  NS_FILE_E2EDEV="/root/service_defs/e2edev@somecomp.com/netspeed_2.3.0_secrets.json"
+  NS_FILE_IBM="${E2EDEV_ROOT}/gov/service_defs/IBM/netspeed_2.3.0_secrets.json"
+  NS_FILE_E2EDEV="${E2EDEV_ROOT}/gov/service_defs/e2edev@somecomp.com/netspeed_2.3.0_secrets.json"
 
 else
-  NS_FILE_IBM="/root/service_defs/IBM/netspeed_2.3.0.json"
-  NS_FILE_E2EDEV="/root/service_defs/e2edev@somecomp.com/netspeed_2.3.0.json"
+  NS_FILE_IBM="${E2EDEV_ROOT}/gov/service_defs/IBM/netspeed_2.3.0.json"
+  NS_FILE_E2EDEV="${E2EDEV_ROOT}/gov/service_defs/e2edev@somecomp.com/netspeed_2.3.0.json"
 
 fi
 
 export VERS="2.3.0"
 
-cat ${NS_FILE_IBM} | envsubst > $KEY_TEST_DIR/svc_netspeed.json
+cat "${NS_FILE_IBM}" | envsubst > $KEY_TEST_DIR/svc_netspeed.json
 
 echo -e "Register IBM/netspeed service $VERS:"
 if ! hzn exchange service publish -I -u $IBM_ADMIN_AUTH -o IBM -f $KEY_TEST_DIR/svc_netspeed.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
@@ -451,7 +454,7 @@ then
     exit 2
 fi
 
-cat ${NS_FILE_E2EDEV} | envsubst > $KEY_TEST_DIR/svc_netspeed.json
+cat "${NS_FILE_E2EDEV}" | envsubst > $KEY_TEST_DIR/svc_netspeed.json
 
 echo -e "Register e2edev@somecomp.com/netspeed service $VERS:"
 if ! hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_netspeed.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
@@ -644,7 +647,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_k8s1.json
       }
   ],
   "clusterDeployment": {
-    "operatorYamlArchive": "/root/input_files/k8s_deploy/topservice-operator/topservice-operator.tar.gz"
+    "operatorYamlArchive": ""${E2EDEV_ROOT}"/gov/input_files/k8s_deploy/topservice-operator/topservice-operator.tar.gz"
    },
   "clusterDeploymentSignature": ""
 }
@@ -686,7 +689,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_k8s_embedded_ns.json
       }
   ],
   "clusterDeployment": {
-    "operatorYamlArchive": "/root/input_files/k8s_deploy/topservice-operator-with-embedded-ns/topservice-operator-with-embedded-ns.tar.gz"
+    "operatorYamlArchive": ""${E2EDEV_ROOT}"/gov/input_files/k8s_deploy/topservice-operator-with-embedded-ns/topservice-operator-with-embedded-ns.tar.gz"
    },
   "clusterDeploymentSignature": ""
 }
@@ -728,7 +731,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_k8s_secret.json
       }
   ],
   "clusterDeployment": {
-    "operatorYamlArchive": "/root/input_files/k8s_deploy/k8s-secret-operator/k8s-secret-operator.tar.gz",
+    "operatorYamlArchive": ""${E2EDEV_ROOT}"/gov/input_files/k8s_deploy/k8s-secret-operator/k8s-secret-operator.tar.gz",
     "secrets": {
           "secret1": {"description": "Secret 1 for cluster hello-secret."},
           "secret2": {
@@ -778,7 +781,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_k8s_mms.json
     }
   ],
   "clusterDeployment": {
-    "operatorYamlArchive": "/root/input_files/k8s_deploy/k8s-mms-operator/k8s-mms-operator.tar.gz"
+    "operatorYamlArchive": ""${E2EDEV_ROOT}"/gov/input_files/k8s_deploy/k8s-mms-operator/k8s-mms-operator.tar.gz"
   },
   "clusterDeploymentSignature": ""
 }
@@ -808,16 +811,16 @@ fi
 export VERS="2.3.0"
 
 if [ "${NOVAULT}" != "1" ]; then
-  NS_PATTERN="/root/patterns/e2edev@somecomp.com/netspeed_secrets.json"
+  NS_PATTERN="${E2EDEV_ROOT}/gov/patterns/e2edev@somecomp.com/netspeed_secrets.json"
 
 else
-  NS_PATTERN="/root/patterns/e2edev@somecomp.com/netspeed.json"
+  NS_PATTERN="${E2EDEV_ROOT}/gov/patterns/e2edev@somecomp.com/netspeed.json"
 
 fi
 
 export VERS="2.3.0"
 
-cat ${NS_PATTERN} | envsubst > $KEY_TEST_DIR/pattern_netspeed.json
+cat "${NS_PATTERN}" | envsubst > $KEY_TEST_DIR/pattern_netspeed.json
 
 echo -e "Register sns (service based netspeed) pattern $VERS:"
 
@@ -998,12 +1001,12 @@ export LOCVERS1="2.0.6"
 export LOCVERS2="2.0.7"
 
 if [ "${NOVAULT}" != "1" ]; then
-  SLOC_PATTERN="/root/patterns/e2edev@somecomp.com/sloc_secrets.json"
+  SLOC_PATTERN="${E2EDEV_ROOT}/gov/patterns/e2edev@somecomp.com/sloc_secrets.json"
 else
-  SLOC_PATTERN="/root/patterns/e2edev@somecomp.com/sloc.json"
+  SLOC_PATTERN="${E2EDEV_ROOT}/gov/patterns/e2edev@somecomp.com/sloc.json"
 fi
 
-cat $SLOC_PATTERN | envsubst > $KEY_TEST_DIR/pattern_sloc.json
+cat "$SLOC_PATTERN" | envsubst > $KEY_TEST_DIR/pattern_sloc.json
 
 sdef=$(cat $KEY_TEST_DIR/pattern_sloc.json)
 
@@ -1208,8 +1211,8 @@ echo -e "Register k8s service with embedded namesapce pattern $K8SVERS:"
 results "$RES"
 
 if [ "${NOVAULT}" != "1" ]; then
-  K8S_SECRET_PATTERN="/root/patterns/e2edev@somecomp.com/sk8s_secrets.json"
-  cat $K8S_SECRET_PATTERN | envsubst > $KEY_TEST_DIR/pattern_k8s_secret.json
+  K8S_SECRET_PATTERN="${E2EDEV_ROOT}/gov/patterns/e2edev@somecomp.com/sk8s_secrets.json"
+  cat "$K8S_SECRET_PATTERN" | envsubst > $KEY_TEST_DIR/pattern_k8s_secret.json
 
   sdef=$(cat $KEY_TEST_DIR/pattern_k8s_secret.json)
 
@@ -1252,14 +1255,14 @@ else
 fi
 
 if [ "${NOVAULT}" != "1" ]; then
-  SALL_PATTERN="/root/patterns/e2edev@somecomp.com/sall_secrets.json"
+  SALL_PATTERN="${E2EDEV_ROOT}/gov/patterns/e2edev@somecomp.com/sall_secrets.json"
 
 else
-  SALL_PATTERN="/root/patterns/e2edev@somecomp.com/sall.json"
+  SALL_PATTERN="${E2EDEV_ROOT}/gov/patterns/e2edev@somecomp.com/sall.json"
 
 fi
 
-cat $SALL_PATTERN | envsubst > $KEY_TEST_DIR/pattern_sall.json
+cat "$SALL_PATTERN" | envsubst > $KEY_TEST_DIR/pattern_sall.json
 
 msdef=$(cat $KEY_TEST_DIR/pattern_sall.json)
 

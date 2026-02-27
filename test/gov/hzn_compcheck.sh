@@ -5,6 +5,9 @@ if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
     set -x
 fi
 
+# Base directory for test resources (test/ directory, one level up from this script).
+E2EDEV_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
 USERDEV_ADMIN_AUTH="userdev/userdevadmin:userdevadminpw"
 export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
 USERDEV_ORG="userdev"
@@ -21,13 +24,13 @@ echo ""
 echo -e "${PREFIX} start test"
 
 if [ "${NOVAULT}" != "1" ]; then
-  service_location="/root/input_files/compcheck/service_location_secrets.json"
-  bp_location="/root/input_files/compcheck/business_pol_location_secrets.json"
-  pattern_sloc="/root/input_files/compcheck/pattern_sloc_secrets.json"
+  service_location="${E2EDEV_ROOT}/gov/input_files/compcheck/service_location_secrets.json"
+  bp_location="${E2EDEV_ROOT}/gov/input_files/compcheck/business_pol_location_secrets.json"
+  pattern_sloc="${E2EDEV_ROOT}/gov/input_files/compcheck/pattern_sloc_secrets.json"
 else
-  service_location="/root/input_files/compcheck/service_location.json"
-  bp_location="/root/input_files/compcheck/business_pol_location.json"
-  pattern_sloc="/root/input_files/compcheck/pattern_sloc.json"
+  service_location="${E2EDEV_ROOT}/gov/input_files/compcheck/service_location.json"
+  bp_location="${E2EDEV_ROOT}/gov/input_files/compcheck/business_pol_location.json"
+  pattern_sloc="${E2EDEV_ROOT}/gov/input_files/compcheck/pattern_sloc.json"
 fi
 
 # check the the result to see if it matches the expected http code and error

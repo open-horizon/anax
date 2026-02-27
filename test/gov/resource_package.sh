@@ -35,7 +35,7 @@ for dir in */; do
 			exit 255
 		fi
 
-		if ! "${EXEC_DIR}/gov/deploy_file.sh" "${EXEC_DIR}/docker/fs/resources/private/${dir}${justDirName}.tgz 1.0.0" "${RESOURCE_ORG2}" "${RESOURCE_TYPE}" none none none false
+		if ! "${EXEC_DIR}/gov/deploy_file.sh" "${EXEC_DIR}/docker/fs/resources/private/${dir}${justDirName}.tgz" 1.0.0 "${RESOURCE_ORG2}" "${RESOURCE_TYPE}" none none none false
 		then
 			exit 255
 		fi

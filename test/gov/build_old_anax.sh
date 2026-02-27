@@ -6,7 +6,7 @@ if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
 fi
 
   echo "Building old anax."
-  chown -R root:root /root/.ssh
+  chown -R root:root "${HOME}"/.ssh
   mkdir -p /tmp/oldanax/anax-gopath/src/github.com/open-horizon
   mkdir -p /tmp/oldanax/anax-gopath/bin
 
