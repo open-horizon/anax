@@ -14,6 +14,9 @@ results() {
 }
 
 MAIN_AUTH="apikey:${API_KEY}"
+# Tell the hzn CLI not to prepend HZN_ORG_ID to the apikey credential.
+# OrgAndCreds() in cliutils.go skips org prepending when USING_API_KEY=1.
+export USING_API_KEY=1
 
 HZN_EXCHANGE_NODE_AUTH="testNode:Abcdefghijklmno1"
 NODE_NAME="testNode"
@@ -44,7 +47,7 @@ fi
 KEY_TEST_DIR="/tmp/keytest"
 mkdir -p $KEY_TEST_DIR
 
-cd $KEY_TEST_DIR || { echo "Error: api_key.sh - ln 50 - Failure to change directories."; error 1; }
+cd "$KEY_TEST_DIR" || { echo "Error: api_key.sh - ln 50 - Failure to change directories."; exit 1; }
 if ls ./*.key > /dev/null 2>&1
 then
     echo -e "Using existing key"
