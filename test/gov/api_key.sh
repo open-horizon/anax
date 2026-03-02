@@ -42,7 +42,7 @@ APIKEY_RESP=$(curl -sSL -X POST \
 echo "API key response: ${APIKEY_RESP}"
 
 APIKEY_ID=$(echo "${APIKEY_RESP}" | jq -r '.id // empty')
-APIKEY_SECRET=$(echo "${APIKEY_RESP}" | jq -r '.key // empty')
+APIKEY_SECRET=$(echo "${APIKEY_RESP}" | jq -r '.value // empty')
 
 if [ -z "${APIKEY_ID}" ] || [ -z "${APIKEY_SECRET}" ]; then
     echo "Error: failed to generate API key. Response: ${APIKEY_RESP}"
