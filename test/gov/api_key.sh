@@ -37,8 +37,8 @@ APIKEY_RESP=$(curl -sSL -X POST \
     --header 'Content-Type: application/json' \
     --header 'Accept: application/json' \
     -u "${API_KEY_ORG}/${E2EDEV_ADMIN_AUTH}" \
-    -d '{"description":"api_key.sh test key", "label":"api-key-sh-test-key-0"}' \
-    "${EXCH_APP_HOST}/orgs/${API_KEY_ORG}/users/${E2EDEV_ADMIN_USER}/keys")
+    -d '{"description":"api_key.sh test key","label":"api-key-sh-test-key-0"}' \
+    "${EXCH_APP_HOST}/orgs/${API_KEY_ORG}/users/${E2EDEV_ADMIN_USER}/apikeys")
 echo "API key response: ${APIKEY_RESP}"
 
 APIKEY_ID=$(echo "${APIKEY_RESP}" | jq -r '.id // empty')
