@@ -8,14 +8,15 @@ fi
 # Complete configuration, transition from configuring to configured
 echo "Testing Configstate API"
 
-read -dr '' newhzndevice <<EOF
+newhzndevice=$(cat <<EOF
 {
   "state": "configured"
 }
 EOF
+)
 
 echo "Testing for config change in configstate API"
-RES=$(echo "$newhzndevice" | curl -sS -X PUT -H "Content-Type: application/json" --data @- "$ANAX_API/node/configstate")
+RES=$(curl -sS -X PUT -H "Content-Type: application/json" --data "$newhzndevice" "$ANAX_API/node/configstate")
 
 if [ "$RES" = "" ]
 then

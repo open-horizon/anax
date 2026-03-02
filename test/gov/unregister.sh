@@ -67,7 +67,7 @@ do
     if [[ "$PATTERN" != "" ]]; then
       pat="e2edev@somecomp.com/$PATTERN"
     fi
-    read -dr '' newhzndevice <<EOF
+    newhzndevice=$(cat <<EOF
 {
   "id": "$DEVICE_ID",
   "token": "$TOKEN",
@@ -76,8 +76,9 @@ do
   "pattern": "$pat"
 }
 EOF
+)
     debug "unregister: POST ${ANAX_API}/node (expect 'Node is restarting' error)"
-    HDS=$(echo "$newhzndevice" | curl_debug POST "${ANAX_API}/node" -H "Content-Type: application/json" --data @-)
+    HDS=$(curl_debug POST "${ANAX_API}/node" -H "Content-Type: application/json" --data "$newhzndevice")
 
     rc=$?
     debug "unregister: POST ${ANAX_API}/node rc=${rc}"

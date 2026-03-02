@@ -29,7 +29,7 @@ create_HA_group() {
     else
         auth=${E2EDEV_ADMIN_AUTH}
     fi
-    read -dr '' hagroup <<EOF
+    hagroup=$(cat <<EOF
 {
     "description": "HA group testing",
     "members": [
@@ -38,6 +38,7 @@ create_HA_group() {
     ]
 }
 EOF
+)
     echo "$hagroup" | hzn exchange hagroup add -f- group1 -o "$DEVICE_ORG" -u "$auth"
 
 }

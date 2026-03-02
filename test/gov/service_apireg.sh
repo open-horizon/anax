@@ -72,7 +72,7 @@ else
 fi
 
 # test service amd64
-read -dr '' sdef <<EOF
+sdef=$(cat <<EOF
 {
   "label":"Test service",
   "description":"Test service",
@@ -87,13 +87,14 @@ read -dr '' sdef <<EOF
   "deploymentSignature":""
 }
 EOF
+)
 echo -e "Register amd64 test service:"
 
-  RES=$(echo "$sdef" | curl -sLX POST "${CERT_VAR[@]}" -H "Content-Type: application/json" -H "Accept: application/json" -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" -H "Content-Type: application/json" -H "Accept: application/json" -u "$E2EDEV_ADMIN_AUTH" --data "$sdef" "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
 results "$RES"
 
 # test service arm64
-read -dr '' sdef <<EOF
+sdef=$(cat <<EOF
 {
   "label":"Test service",
   "description":"Test service",
@@ -108,14 +109,15 @@ read -dr '' sdef <<EOF
   "deploymentSignature":""
 }
 EOF
+)
 echo -e "Register arm64 test service:"
 
-  RES=$(echo "$sdef" | curl -sLX POST "${CERT_VAR[@]}" -H "Content-Type: application/json" -H "Accept: application/json" -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" -H "Content-Type: application/json" -H "Accept: application/json" -u "$E2EDEV_ADMIN_AUTH" --data "$sdef" "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
 
 results "$RES"
 
 # test service arm
-read -dr '' sdef <<EOF
+sdef=$(cat <<EOF
 {
   "label":"Test service",
   "description":"Test service",
@@ -130,14 +132,15 @@ read -dr '' sdef <<EOF
   "deploymentSignature":""
 }
 EOF
+)
 echo -e "Register arm test service:"
 
-  RES=$(echo "$sdef" | curl -sLX POST "${CERT_VAR[@]}" -H "Content-Type: application/json" -H "Accept: application/json" -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" -H "Content-Type: application/json" -H "Accept: application/json" -u "$E2EDEV_ADMIN_AUTH" --data "$sdef" "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
 
 results "$RES"
 
 # test service ppc64le
-read -dr '' sdef <<EOF
+sdef=$(cat <<EOF
 {
   "label":"Test service",
   "description":"Test service",
@@ -152,9 +155,10 @@ read -dr '' sdef <<EOF
   "deploymentSignature":""
 }
 EOF
+)
 echo -e "Register ppc64le test service:"
 
-  RES=$(echo "$sdef" | curl -sLX POST "${CERT_VAR[@]}" -H "Content-Type: application/json" -H "Accept: application/json" -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" -H "Content-Type: application/json" -H "Accept: application/json" -u "$E2EDEV_ADMIN_AUTH" --data "$sdef" "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
 
 # Helm service
 # VERS="1.0.0"
@@ -202,7 +206,7 @@ fi
 
 # A no-op network service used by the netspeed service as a dependency.
 VERS="1.5.0"
-read -dr '' sdef <<EOF
+sdef=$(cat <<EOF
 {
   "label":"Network for ${ARCH}",
   "description":"Network service",
@@ -217,20 +221,21 @@ read -dr '' sdef <<EOF
   "deploymentSignature":""
 }
 EOF
+)
 echo -e "Register IBM/network service $VERS:"
 
-  RES=$(echo "$sdef" | curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" --data @- "${EXCH_URL}/orgs/IBM/services" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" --data "$sdef" "${EXCH_URL}/orgs/IBM/services" | jq -r '.')
 
 results "$RES"
 
 echo -e "Register e2edev@somecomp.com/network service $VERS:"
 
-  RES=$(echo "$sdef" | curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" --data "$sdef" "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
 
 results "$RES"
 
 VERS="1.5.0"
-read -dr '' sdef <<EOF
+sdef=$(cat <<EOF
 {
   "label":"Network for ${ARCH}",
   "description":"Network service",
@@ -245,15 +250,16 @@ read -dr '' sdef <<EOF
   "deploymentSignature":""
 }
 EOF
+)
 echo -e "Register IBM/network service $VERS:"
 
-  RES=$(echo "$sdef" | curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" --data @- "${EXCH_URL}/orgs/IBM/services" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" --data "$sdef" "${EXCH_URL}/orgs/IBM/services" | jq -r '.')
 
 results "$RES"
 
 echo -e "Register e2edev@somecomp.com/network service $VERS:"
 
-  RES=$(echo "$sdef" | curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" --data "$sdef" "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
 
 results "$RES"
 
@@ -838,7 +844,7 @@ else
 fi
 
 VERS="1.0.0"
-read -dr '' sdef <<EOF
+sdef=$(cat <<EOF
 {
   "label": "GPS Test",
   "description": "a GPS Test pattern",
@@ -871,9 +877,10 @@ read -dr '' sdef <<EOF
   ]
 }
 EOF
+)
 echo -e "Register gps service pattern $VERS:"
 
-  RES=$(echo "$sdef" | curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sgps" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data "$sdef" "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sgps" | jq -r '.')
 
 results "$RES"
 
@@ -940,7 +947,7 @@ else
 fi
 
 VERS="1.0.0"
-read -dr '' sdef <<EOF
+sdef=$(cat <<EOF
 {
   "label": "UseHello",
   "description": "Multi-dependency Service pattern",
@@ -973,9 +980,10 @@ read -dr '' sdef <<EOF
   ]
 }
 EOF
+)
 echo -e "Register usehello service pattern $VERS:"
 
-  RES=$(echo "$sdef" | curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/susehello" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data "$sdef" "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/susehello" | jq -r '.')
 
 results "$RES"
 
@@ -1012,7 +1020,7 @@ sdef=$(cat $KEY_TEST_DIR/pattern_sloc.json)
 
 echo -e "Register location service pattern $VERS:"
 
-RES=$(echo "$sdef" | curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sloc" | jq -r '.')
+RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data "$sdef" "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sloc" | jq -r '.')
 
 results "$RES"
 
@@ -1025,7 +1033,7 @@ else
   CAS=600
 fi
 VERS="1.5.0"
-read -dr '' sdef <<EOF
+sdef=$(cat <<EOF
 {
   "label": "Weather",
   "description": "a weather pattern",
@@ -1088,9 +1096,10 @@ read -dr '' sdef <<EOF
   ]
 }
 EOF
+)
 echo -e "Register weather service pattern $VERS:"
 
-  RES=$(echo "$sdef" | curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/spws" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data "$sdef" "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/spws" | jq -r '.')
 
 results "$RES"
 
@@ -1103,7 +1112,7 @@ else
   CAS=600
 fi
 K8SVERS="1.0.0"
-read -dr '' sdef <<EOF
+sdef=$(cat <<EOF
 {
   "label": "K8s",
   "description": "a k8s pattern",
@@ -1131,15 +1140,16 @@ read -dr '' sdef <<EOF
   ]
 }
 EOF
+)
 echo -e "Register k8s service pattern $K8SVERS:"
 
-  RES=$(echo "$sdef" | curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sk8s" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data "$sdef" "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sk8s" | jq -r '.')
 
 results "$RES"
 
 # k8s pattern with cluster namespace
 K8SVERS="1.0.0"
-read -dr '' sdef <<EOF
+sdef=$(cat <<EOF
 {
   "label": "K8s",
   "description": "a k8s pattern",
@@ -1168,15 +1178,16 @@ read -dr '' sdef <<EOF
   ]
 }
 EOF
+)
 echo -e "Register k8s service pattern $K8SVERS:"
 
-  RES=$(echo "$sdef" | curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sk8s-with-cluster-ns" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data "$sdef" "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sk8s-with-cluster-ns" | jq -r '.')
 
 results "$RES"
 
 # k8s pattern with service has embedded ns
 K8SVERS="1.0.0"
-read -dr '' sdef <<EOF
+sdef=$(cat <<EOF
 {
   "label": "K8s",
   "description": "k8s pattern with service that has embedded ns",
@@ -1204,9 +1215,10 @@ read -dr '' sdef <<EOF
   ]
 }
 EOF
+)
 echo -e "Register k8s service with embedded namesapce pattern $K8SVERS:"
 
-  RES=$(echo "$sdef" | curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sk8s-with-embedded-ns" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data "$sdef" "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sk8s-with-embedded-ns" | jq -r '.')
 
 results "$RES"
 
@@ -1218,7 +1230,7 @@ if [ "${NOVAULT}" != "1" ]; then
 
   echo -e "Register k8s service with secret pattern $K8SVERS:"
 
-  RES=$(echo "$sdef" | curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sk8s-with-secrets" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data "$sdef" "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sk8s-with-secrets" | jq -r '.')
 
   results "$RES"
 fi
@@ -1272,7 +1284,7 @@ fi
 
 echo -e "Register service based all pattern:"
 
-  RES=$(echo "$msdef" | curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sall" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data "$msdef" "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sall" | jq -r '.')
 
 results "$RES"
 
@@ -1314,7 +1326,7 @@ RES=$(cat $KEY_TEST_DIR/policy_location.json | curl -sLX POST "${CERT_VAR[@]}" -
 results "$RES"
 
 # gpstest policy
-read -dr '' bpgpstestdef <<EOF
+bpgpstestdef=$(cat <<EOF
 {
   "label": "business policy for gpstest",
   "description": "for gpstest",
@@ -1351,13 +1363,14 @@ read -dr '' bpgpstestdef <<EOF
   ]
 }
 EOF
+)
 echo -e "Register business policy for gpstest:"
 
-  RES=$(echo "$bpgpstestdef" | curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_gpstest" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data "$bpgpstestdef" "${EXCH_URL}/orgs/userdev/business/policies/bp_gpstest" | jq -r '.')
 
 results "$RES"
 
-read -dr '' bppwsdef <<EOF
+bppwsdef=$(cat <<EOF
 {
   "label": "business policy for personal weather station",
   "description": "for pws",
@@ -1441,16 +1454,17 @@ read -dr '' bppwsdef <<EOF
   ]
 }
 EOF
+)
 echo -e "Register business policy for pws:"
 
-  RES=$(echo "$bppwsdef" | curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_pws" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data "$bppwsdef" "${EXCH_URL}/orgs/userdev/business/policies/bp_pws" | jq -r '.')
 
 results "$RES"
 
 if [ "${NOHZNDEV}" == "1" ] && [ "${NOHELLO}" = "1" ] && [ "${TEST_PATTERNS}" != "susehello" ]; then
     echo -e "Skipping usehello policy creation"
 else
-  read -dr '' bphellodef <<EOF
+  bphellodef=$(cat <<EOF
 {
   "label": "business policy for usehello",
   "description": "for usehello",
@@ -1489,14 +1503,15 @@ else
   ]
 }
 EOF
+)
   echo -e "Register business policy for usehelllo:"
 
-  RES=$(echo "$bphellodef" | curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_usehello" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data "$bphellodef" "${EXCH_URL}/orgs/userdev/business/policies/bp_usehello" | jq -r '.')
 
   results "$RES"
 fi
 
-read -dr '' bpk8ssvc1def <<EOF
+bpk8ssvc1def=$(cat <<EOF
 {
   "label": "business policy for k8s-service1",
   "description": "for gpstest",
@@ -1531,13 +1546,14 @@ read -dr '' bpk8ssvc1def <<EOF
   ]
 }
 EOF
+)
 echo -e "Register business policy bp_k8s for k8s-service1:"
 
-  RES=$(echo "$bpk8ssvc1def" | curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_k8s" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data "$bpk8ssvc1def" "${EXCH_URL}/orgs/userdev/business/policies/bp_k8s" | jq -r '.')
 
 results "$RES"
 
-read -dr '' bpk8swithembeddednsdef <<EOF
+bpk8swithembeddednsdef=$(cat <<EOF
 {
   "label": "business policy for k8s-service-embedded-ns",
   "description": "for k8s embedded namespace test",
@@ -1572,14 +1588,15 @@ read -dr '' bpk8swithembeddednsdef <<EOF
   ]
 }
 EOF
+)
 echo -e "Register business policy bp_k8s_embedded_ns for k8s-service-embedded-ns:"
 
-  RES=$(echo "$bpk8swithembeddednsdef" | curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_k8s_embedded_ns" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data "$bpk8swithembeddednsdef" "${EXCH_URL}/orgs/userdev/business/policies/bp_k8s_embedded_ns" | jq -r '.')
 
 results "$RES"
 
 if [ "${NOVAULT}" != "1" ]; then
-  read -dr '' bpk8ssvc1def <<EOF
+  bpk8ssvc1def=$(cat <<EOF
 {
   "label": "business policy for k8s-hello-secret",
   "description": "Deployment Policy for k8s-hello-secret using a secret",
@@ -1636,14 +1653,15 @@ if [ "${NOVAULT}" != "1" ]; then
   ]
 }
 EOF
+)
   echo -e "Register business policy bp_k8s_secret for k8s-hello-secret:"
 
-  RES=$(echo "$bpk8ssvc1def" | curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_k8s_secret" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data "$bpk8ssvc1def" "${EXCH_URL}/orgs/userdev/business/policies/bp_k8s_secret" | jq -r '.')
 
   results "$RES"
 fi
 
-read -dr '' bpk8smmsdef <<EOF
+bpk8smmsdef=$(cat <<EOF
 {
   "label": "business policy for k8s-hello-mms",
   "description": "Deployment Policy for k8s-hello-mms",
@@ -1678,15 +1696,16 @@ read -dr '' bpk8smmsdef <<EOF
   ]
 }
 EOF
+)
 
 echo -e "Register business policy bp_k8s_mms for k8s-hello-mms service:"
 
-  RES=$(echo "$bpk8smmsdef" | curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_k8s_mms" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data "$bpk8smmsdef" "${EXCH_URL}/orgs/userdev/business/policies/bp_k8s_mms" | jq -r '.')
 
 results "$RES"
 
 # ======================= Service Policies that use top level services ======================
-read -dr '' nspoldef <<EOF
+nspoldef=$(cat <<EOF
 {
   "properties": [
       {
@@ -1703,13 +1722,14 @@ read -dr '' nspoldef <<EOF
   ]
 }
 EOF
+)
 echo -e "Register service policy for netspeed:"
 
-  RES=$(echo "$nspoldef" | curl -sLX PUT "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services/bluehorizon.network-services-netspeed_2.3.0_${ARCH}/policy" | jq -r '.')
+  RES=$(curl -sLX PUT "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data "$nspoldef" "${EXCH_URL}/orgs/e2edev@somecomp.com/services/bluehorizon.network-services-netspeed_2.3.0_${ARCH}/policy" | jq -r '.')
 
 results "$RES"
 
-read -dr '' gpstestpoldef <<EOF
+gpstestpoldef=$(cat <<EOF
 {
   "properties": [
       {
@@ -1726,13 +1746,14 @@ read -dr '' gpstestpoldef <<EOF
   ]
 }
 EOF
+)
 echo -e "Register service policy for gpstest:"
 
-  RES=$(echo "$gpstestpoldef" | curl -sLX PUT "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services/bluehorizon.network-services-gpstest_1.0.0_${ARCH}/policy" | jq -r '.')
+  RES=$(curl -sLX PUT "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data "$gpstestpoldef" "${EXCH_URL}/orgs/e2edev@somecomp.com/services/bluehorizon.network-services-gpstest_1.0.0_${ARCH}/policy" | jq -r '.')
 
 results "$RES"
 
-read -dr '' locpoldef <<EOF
+locpoldef=$(cat <<EOF
 {
   "properties": [
       {
@@ -1749,9 +1770,10 @@ read -dr '' locpoldef <<EOF
   ]
 }
 EOF
+)
 echo -e "Register service policy for location:"
 
-  RES=$(echo "$locpoldef" | curl -sLX PUT "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services/bluehorizon.network-services-location_2.0.6_${ARCH}/policy" | jq -r '.')
+  RES=$(curl -sLX PUT "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data "$locpoldef" "${EXCH_URL}/orgs/e2edev@somecomp.com/services/bluehorizon.network-services-location_2.0.6_${ARCH}/policy" | jq -r '.')
 
 results "$RES"
 

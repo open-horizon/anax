@@ -9,7 +9,7 @@ echo -e "Pattern is set to $PATTERN"
 
 if [ "$PATTERN" == "spws" ] || [ "$PATTERN" == "sall" ] || [ "$PATTERN" = "" ]
 then
-  read -dr '' nodeui <<EOF
+  nodeui=$(cat <<EOF
 [
     {
       "serviceOrgid": "e2edev@somecomp.com",
@@ -56,10 +56,10 @@ then
       ]
     }
 ]
-
 EOF
+)
   echo "Adding service configuration for weather with /node/userinput api..."
-  RES=$(echo "$nodeui" | curl -sS -X PATCH -w "%{http_code}" -H "Content-Type: application/json" --data @- "$ANAX_API/node/userinput")
+  RES=$(curl -sS -X PATCH -w "%{http_code}" -H "Content-Type: application/json" --data "$nodeui" "$ANAX_API/node/userinput")
   if [ "$RES" = "" ]
   then
     echo -e "$nodeui \nresulted in empty response"

@@ -77,7 +77,7 @@ publish_new_netspeed_service() {
 
 update_sns_pattern() {
     echo -e "\n${PREFIX} updating pattern sns with netspeed service 2.4.0..."
-    read -dr '' sns <<EOF
+    sns=$(cat <<EOF
 {
     "label": "Netspeed",
     "description": "a netspeed service based pattern",
@@ -204,6 +204,7 @@ update_sns_pattern() {
     ]
 }
 EOF
+)
     if [ "${NOVAULT}" = "1" ]; then
       sns=$(echo "$sns" |jq 'del(.secretBinding)')
     fi
@@ -216,7 +217,7 @@ EOF
 
 update_ns_policy() {
     echo -e "\n${PREFIX} updating deployment policy bp_netspeed with netspeed service 2.4.0..."
-    read -dr '' bp_ns <<EOF
+    bp_ns=$(cat <<EOF
 {
     "label": "business policy for netspeed",
     "description": "for netspeed",
@@ -359,6 +360,7 @@ update_ns_policy() {
     ]
 }
 EOF
+)
     if [ "${NOVAULT}" = "1" ]; then
       bp_ns=$(echo "$bp_ns" |jq 'del(.secretBinding)')
     fi
