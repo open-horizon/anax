@@ -195,7 +195,7 @@ fi
 echo -e "\nNo netspeed setting is $NONS"
 if [ "$NONS" != "1" ]
 then
-  if ! ./ns_apireg.sh; then
+  if ! ./gov/ns_apireg.sh; then
     exit 2
   fi
 fi
@@ -211,7 +211,7 @@ fi
 echo -e "\nNo gpstest setting is $NOGPS"
 if [ "$NOGPS" != "1" ]
 then
-    if ! ./gpstest_apireg.sh; then
+    if ! ./gov/gpstest_apireg.sh; then
         exit 2
     fi
 fi
@@ -219,17 +219,17 @@ fi
 echo -e "\nNo pws setting is $NOPWS"
 if [ "$NOPWS" != "1" ]
 then
-  if ! ./pws_apireg.sh; then
+  if ! ./gov/pws_apireg.sh; then
     exit 2
   fi
 fi
 
-if ! ./hello_apireg.sh; then
+if ! ./gov/hello_apireg.sh; then
   exit 2
 fi
 
 echo -e "\nCompleting node registration"
-if ! ./cs_apireg.sh; then
+if ! ./gov/cs_apireg.sh; then
   echo -e "Error setting up to run workloads"
   exit 2
 else

@@ -30,7 +30,7 @@ curl_debug() {
 
 # include node status verification function
 # shellcheck source=test/gov/check_node_status.sh
-source ./check_node_status.sh
+source ./gov/gov/check_node_status.sh
 
 PREFIX="Verifying agreements:"
 

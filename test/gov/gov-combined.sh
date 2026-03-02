@@ -56,31 +56,31 @@ run_delete_loops() {
     sleep 240
 
     echo "Starting device delete agreement script"
-    ./del_loop.sh &
+    ./gov/del_loop.sh &
 
     # Give the device script time to get started and get into it's 10 min cycle. Wait 5 mins
     # and then start the agbot delete cycle, so that it is interleaved with the device cycle.
     sleep 300
-    ./agbot_del_loop.sh &
+    ./gov/agbot_del_loop.sh &
   else
     echo -e "Deletion loop tests set to only run once."
 
     if [ "${PATTERN}" == "sall" ] || [ "${PATTERN}" == "sloc" ] || [ "${PATTERN}" == "sns" ] || [ "${PATTERN}" == "sgps" ] || [ "${PATTERN}" == "spws" ] || [ "${PATTERN}" == "susehello" ] || [ "${PATTERN}" = "shelm" ]; then
       echo -e "Starting service pattern verification scripts"
       if [ "$NOLOOP" = "1" ]; then
-        if ! ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh; then echo "Verify agreement failure."; exit 1; fi
+        if ! ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./gov/verify_agreements.sh; then echo "Verify agreement failure."; exit 1; fi
          echo -e "No cancellation setting is $NOCANCEL"
         if [ "$NOCANCEL" != "1" ]; then
-          if ! ./del_loop.sh; then echo "Agreement deletion failure."; exit 1; fi
+          if ! ./gov/del_loop.sh; then echo "Agreement deletion failure."; exit 1; fi
           echo -e "Sleeping for 30s between device and agbot agreement deletion"
           sleep 30
-          if ! ./agbot_del_loop.sh; then echo "Agbot agreement deletion failure."; exit 1; fi
-          if ! ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh; then echo "Agreement restart failure."; exit 1; fi
+          if ! ./gov/agbot_del_loop.sh; then echo "Agbot agreement deletion failure."; exit 1; fi
+          if ! ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./gov/verify_agreements.sh; then echo "Agreement restart failure."; exit 1; fi
         else
           echo -e "Cancellation tests are disabled"
         fi
       else
-        ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh &
+        ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./gov/verify_agreements.sh &
       fi
     else
       echo -e "Verifying policy based workload deployment"
@@ -90,19 +90,19 @@ run_delete_loops() {
           echo "Skipping agreement verification"
           sleep 30
         else
-          if ! ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh; then echo "Verify agreement failure."; exit 1; fi
+          if ! ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./gov/verify_agreements.sh; then echo "Verify agreement failure."; exit 1; fi
         fi
-        if ! ./del_loop.sh; then echo "Agreement deletion failure."; exit 1; fi
+        if ! ./gov/del_loop.sh; then echo "Agreement deletion failure."; exit 1; fi
         echo -e "Sleeping for 30s between device and agbot agreement deletion"
         sleep 30
-        if ! ./agbot_del_loop.sh; then echo "Agbot agreement deletion failure."; exit 1; fi
+        if ! ./gov/agbot_del_loop.sh; then echo "Agbot agreement deletion failure."; exit 1; fi
       else
         echo -e "Cancellation tests are disabled"
       fi
       if [ "$NONS" == "1" ] || [ "$NOPWS" == "1" ] || [ "$NOLOC" == "1" ] || [ "$NOGPS" == "1" ] || [ "$NOHELLO" == "1" ] || [ "$NOK8S" = "1" ]; then
         echo "Skipping agreement verification"
       else
-        if ! ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh; then echo "Verify agreement failure."; exit 1; fi
+        if ! ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./gov/verify_agreements.sh; then echo "Verify agreement failure."; exit 1; fi
       fi
     fi
   fi
@@ -136,7 +136,7 @@ cd /root || { echo "Error: gov-combined.sh - ln 134 - Failure to change director
 
 # Build an old anax if we need it
 if [ "$OLDANAX" = "1" ]; then
-  if ! ./build_old_anax.sh; then
+  if ! ./gov/build_old_anax.sh; then
     exit 255
   fi
 fi
@@ -151,7 +151,7 @@ fi
 # Start the API Key tests if it has been set
 #if [ ${API_KEY} != "0" ]; then
 #  echo -e "Starting API Key test."
-#  ./api_key.sh
+#  ./gov/api_key.sh
 #  if [ $? -ne 0 ]
 #  then
 #    echo -e "API Key test failure."
@@ -161,7 +161,7 @@ fi
 
 # test the CSS API
 
-if ! ./sync_service_test.sh
+if ! ./gov/sync_service_test.sh
 then
   echo -e "Model management sync service test failure."
   exit 255
@@ -202,7 +202,7 @@ then
 
   TESTFAIL="0"
   echo "Running API tests"
-  if ! ./apitest.sh
+  if ! ./gov/apitest.sh
   then
     echo "API Test failure."
     TESTFAIL="1"
@@ -261,7 +261,7 @@ then
   set_exports
   export PATTERN=""
 
-  if ! ./start_node.sh
+  if ! ./gov/start_node.sh
   then
     echo "Node start failure."
     TESTFAIL="1"
@@ -276,7 +276,7 @@ then
 
   if [ "$NOSVC_CONFIGSTATE" != "1" ]; then
 
-    if ! ./service_configstate_test.sh
+    if ! ./gov/service_configstate_test.sh
     then
       echo "Service configstate test failure."
       TESTFAIL="1"
@@ -308,7 +308,7 @@ elif [ "$TESTFAIL" != "1" ]; then
     set_exports "$pat"
 
     # start main agent
-    if ! ./start_node.sh
+    if ! ./gov/start_node.sh
     then
       echo "Node start failure."
       TESTFAIL="1"
@@ -317,7 +317,7 @@ elif [ "$TESTFAIL" != "1" ]; then
 
     # start multiple agents
     # shellcheck source=test/gov/multiple_agents.sh
-    source ./multiple_agents.sh
+    source ./gov/multiple_agents.sh
     if [ -n "$MULTIAGENTS" ] && [ "$MULTIAGENTS" != "0" ]; then
       echo "Starting multiple agents with pattern ${ma_pattern} ..."
       if ! PATTERN=${ma_pattern} startMultiAgents; then
@@ -344,7 +344,7 @@ elif [ "$TESTFAIL" != "1" ]; then
     fi
 
     if [ "$NORETRY" != "1" ]; then
-      if ! ./service_retry_test.sh
+      if ! ./gov/service_retry_test.sh
       then
         echo "Service retry failure."
         TESTFAIL="1"
@@ -353,7 +353,7 @@ elif [ "$TESTFAIL" != "1" ]; then
     fi
 
     if [ "$NOSVC_CONFIGSTATE" != "1" ]; then
-      if ! ./service_configstate_test.sh
+      if ! ./gov/service_configstate_test.sh
       then
         echo "Service configstate test failure."
         TESTFAIL="1"
@@ -370,7 +370,7 @@ elif [ "$TESTFAIL" != "1" ]; then
       mv /tmp/anax.log "/tmp/anax_$pat.log"
 
       echo -e "Unregister the node. Anax will be shutdown."
-      if ! ./unregister.sh; then
+      if ! ./gov/unregister.sh; then
         exit 1
       else
         sleep 10
@@ -383,20 +383,20 @@ fi
 
 if [ "$NOCOMPCHECK" != "1" ] && [ "$TESTFAIL" != "1" ]; then
   if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" = "" ]; then
-    if ! ./agbot_apitest.sh
+    if ! ./gov/agbot_apitest.sh
     then
       echo "Policy compatibility test using Agbot API failure."
       exit 1
     fi
 
-    if ! ./hzn_compcheck.sh
+    if ! ./gov/hzn_compcheck.sh
     then
       echo "Policy compatibility test using hzn command failure."
       exit 1
     fi
 
     if [ "$NOVAULT" != "1" ]; then
-      if ! ./hzn_secretsmanager.sh
+      if ! ./gov/hzn_secretsmanager.sh
       then
         echo "hzn secretsmanager command test failure."
         exit 1
@@ -407,7 +407,7 @@ if [ "$NOCOMPCHECK" != "1" ] && [ "$TESTFAIL" != "1" ]; then
 fi
 
 # if [ "$NOAGENTAUTO" != "1" ] && [ "$TESTFAIL" != "1" ]; then
-#   ./hzn_nmp.sh
+#   ./gov/hzn_nmp.sh
 #   if [ $? -ne 0 ]; then
 #     echo "Agent Auto Upgrade test using hzn command failure."
 #     exit 1
@@ -416,25 +416,25 @@ fi
 
 if [ "$NOSURFERR" != "1" ] && [ "$TESTFAIL" != "1" ] && [ ${REMOTE_HUB} -eq 0 ]; then
   if { [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" == "" ]; } && [ "$NOLOOP" == "1" ] && [ "$NONS" == "" ] && [ "$NOGPS" == "" ] && [ "$NOPWS" == "" ] && [ "$NOLOC" == "" ] && [ "$NOHELLO" == "" ] && [ "$NOK8S" = "" ]; then
-    if ! ./verify_surfaced_error.sh; then echo "Verify surfaced error failure."; exit 1; fi
+    if ! ./gov/verify_surfaced_error.sh; then echo "Verify surfaced error failure."; exit 1; fi
   fi
 fi
 
 if [ "$NOSURFERR" != "1" ] && [ "$TESTFAIL" != "1" ] && [ ${REMOTE_HUB} -eq 0 ]; then
   if [ "$TEST_PATTERNS" == "" ] && [ "$NOLOOP" == "1" ] && [ "$NONS" == "" ] && [ "$NOGPS" == "" ] && [ "$NOPWS" == "" ] && [ "$NOLOC" == "" ] && [ "$NOHELLO" == "" ] && [ "$NOK8S" = "" ]; then
-    if ! ./policy_change.sh; then echo "Policy change test failure."; exit 1; fi
+    if ! ./gov/policy_change.sh; then echo "Policy change test failure."; exit 1; fi
   fi
 fi
 
 if [ "$NOUPGRADE" != "1" ] && [ "$TESTFAIL" != "1" ] && [ ${REMOTE_HUB} -eq 0 ]; then
   if [ "$TEST_PATTERNS" = "sall" ]; then
-    if ! ./service_upgrading_downgrading_test.sh; then echo "Service upgrading/downgrading test failure."; exit 1; fi
+    if ! ./gov/service_upgrading_downgrading_test.sh; then echo "Service upgrading/downgrading test failure."; exit 1; fi
   fi
 fi
 
 if [ "$NOVAULT" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "$NOLOOP" == "1" ] && [ "$NONS" == "" ] && [ "$NOGPS" == "" ] && [ "$NOPWS" == "" ] && [ "$NOLOC" == "" ] && [ "$NOHELLO" == "" ] && [ "$NOK8S" = "" ]; then
   if [ "$TEST_PATTERNS" = "" ]; then
-    if ! ./service_secrets_test.sh; then echo "Service secret test failure."; exit 1; fi
+    if ! ./gov/service_secrets_test.sh; then echo "Service secret test failure."; exit 1; fi
   fi
 fi
 
@@ -443,7 +443,7 @@ if [ "$NOHZNREG" != "1" ] && [ "$TESTFAIL" != "1" ]; then
     echo "Sleeping 15 seconds..."
     sleep 15
 
-    if ! ./hzn_reg.sh; then
+    if ! ./gov/hzn_reg.sh; then
       echo "Failed registering and unregistering tests with hzn commands."
       exit 1
     fi
@@ -451,7 +451,7 @@ if [ "$NOHZNREG" != "1" ] && [ "$TESTFAIL" != "1" ]; then
 fi
 
 if [ "$TEST_PATTERNS" = "sall" ] && [ "$NOHZNLOG" != "1" ] && [ "$NOHZNREG" != "1" ] && [ "$TESTFAIL" != "1" ]; then
-  if ! ./service_log_test.sh; then
+  if ! ./gov/service_log_test.sh; then
     echo "Failed hzn service log tests."
     exit 1
   fi
@@ -459,7 +459,7 @@ fi
 
 if [ "$NOPATTERNCHANGE" != "1" ] && [ "$TESTFAIL" != "1" ]; then
   if [ "$TEST_PATTERNS" = "sall" ]; then
-    if ! ./pattern_change.sh; then
+    if ! ./gov/pattern_change.sh; then
       echo "Failed node pattern change tests."
       exit 1
     fi
@@ -474,14 +474,14 @@ then
   sleep 120
 
   echo "Starting device unconfigure script"
-  ./unconfig_loop.sh &
+  ./gov/unconfig_loop.sh &
 else
   echo -e "Unconfig loop tests are disabled."
 fi
 
 # HA test
 if [ "$HA" = "1" ]; then
-  if ! ./ha_test.sh; then
+  if ! ./gov/ha_test.sh; then
     echo "HA tests failure."
     exit 1
   fi

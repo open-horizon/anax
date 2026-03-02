@@ -15,7 +15,7 @@ KEY_TEST_DIR="/tmp/keytest"
 export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
 
 # shellcheck source=test/gov/utils.sh
-source ./utils.sh
+source ./gov/utils.sh
 
 CPU_URL="https://bluehorizon.network/service-cpu"
 CPU_ORG="e2edev@somecomp.com"

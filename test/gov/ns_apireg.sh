@@ -6,7 +6,7 @@ if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
 fi
 
 # shellcheck source=test/gov/utils.sh
-source ./utils.sh
+source ./gov/utils.sh
 
 echo -e "\nBC setting is $BC"
 

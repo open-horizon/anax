@@ -308,7 +308,7 @@ export SERVICE_ORG="organization"
 export SERVICE_NAME="name"
 export SERVICE_VERSION="version"
 
-if ! ./metering_apitest.sh; then
+if ! ./gov/metering_apitest.sh; then
   echo -e "Metering tests failed"
   TESTFAIL="1"
   exit 2
@@ -316,7 +316,7 @@ else
   echo -e "Metering tests SUCCESSFUL"
 fi
 
-if ! ./agp_apitest.sh; then
+if ! ./gov/agp_apitest.sh; then
   echo -e "Agreementprotocol tests failed"
   TESTFAIL="1"
   exit 2
@@ -324,7 +324,7 @@ else
   echo -e "Agreementprotocol tests SUCCESSFUL"
 fi
 
-if ! ./service_apitest.sh; then
+if ! ./gov/service_apitest.sh; then
   echo -e "Service config tests failed"
   TESTFAIL="1"
   exit 2
@@ -332,7 +332,7 @@ else
   echo -e "Service config tests SUCCESSFUL"
 fi
 
-if ! ./cs_apitest.sh; then
+if ! ./gov/cs_apitest.sh; then
   echo -e "Configstate API tests failed"
   TESTFAIL="1"
   exit 2

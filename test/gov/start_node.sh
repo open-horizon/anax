@@ -42,7 +42,7 @@ EOF
 
 }
 
-nohup ./start_anax_loop.sh 1 &>/dev/null &
+nohup ./gov/start_anax_loop.sh 1 &>/dev/null &
 
 sleep 5
 
@@ -61,7 +61,7 @@ then
     # create an HA group
     create_HA_group
 
-    if ! ./apireg.sh
+    if ! ./gov/apireg.sh
     then
         echo "HA registration failed"
         exit 2
@@ -76,18 +76,18 @@ then
         export ANAX_API="http://localhost:${HZN_AGENT_PORT}"
 
         # start anax2
-        nohup ./start_anax_loop.sh 2 &>/dev/null &
+        nohup ./gov/start_anax_loop.sh 2 &>/dev/null &
 
         sleep 5
 
-        if ! ./apireg.sh
+        if ! ./gov/apireg.sh
         then
             exit 2
         fi
     fi
 
 else
-    if ! ./apireg.sh
+    if ! ./gov/apireg.sh
     then
         exit 2
     fi

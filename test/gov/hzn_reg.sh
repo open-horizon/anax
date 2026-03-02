@@ -168,7 +168,7 @@ unreg_node() {
 # $1 - org ID for node check
 # $2 - auth for node check
 verify_agreements() {
-  if ! ORG_ID=$1 ADMIN_AUTH=$2 HZN_REG_TEST=1 ./verify_agreements.sh; then
+  if ! ORG_ID=$1 ADMIN_AUTH=$2 HZN_REG_TEST=1 ./gov/verify_agreements.sh; then
     echo -e "${PREFIX} Failed to verify agreement."
     exit 1
   fi
@@ -278,7 +278,7 @@ if [ "$TEST_PATTERNS" = "sall" ]; then
   cmd="hzn register -n an12345:Abcdefghijklmno1 -f /tmp/reg_userinput_all.json -p sall"
   reg_node "$cmd"
 
-  if ! ORG_ID="e2edev@somecomp.com" ADMIN_AUTH="e2edevadmin:e2edevadminpw" ./verify_agreements.sh; then
+  if ! ORG_ID="e2edev@somecomp.com" ADMIN_AUTH="e2edevadmin:e2edevadminpw" ./gov/verify_agreements.sh; then
     echo -e "${PREFIX} Failed to verify agreement."
     exit 1
   fi

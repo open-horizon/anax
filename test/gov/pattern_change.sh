@@ -279,7 +279,7 @@ results() {
 # $1 - org ID for node check
 # $2 - admin auth for node check
 verify_agreements() {
-  if ! ORG_ID=$1 ADMIN_AUTH=$2 HZN_REG_TEST=1 ./verify_agreements.sh; then
+  if ! ORG_ID=$1 ADMIN_AUTH=$2 HZN_REG_TEST=1 ./gov/verify_agreements.sh; then
     echo -e "${PREFIX} Failed to verify agreement."
     exit 1
   fi
@@ -374,7 +374,7 @@ sleep 60
 
 # the pattern should have change on local node
 checkNodePattern "e2edev@somecomp.com/sall"
-if ! ORG_ID="e2edev@somecomp.com" ADMIN_AUTH="e2edevadmin:e2edevadminpw" ./verify_agreements.sh; then
+if ! ORG_ID="e2edev@somecomp.com" ADMIN_AUTH="e2edevadmin:e2edevadminpw" ./gov/verify_agreements.sh; then
   echo -e "${PREFIX} Failed to verify agreement."
   exit 1
 fi

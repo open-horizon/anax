@@ -81,7 +81,7 @@ do
   # Simulate the auto-restart of anax and reconfig of the node.
   echo "Node unconfigured. Restart and reconfig node."
 
-  if ! ./apireg.sh; then
+  if ! ./gov/apireg.sh; then
     echo "Node reconfig failed."
     exit 2
   fi
@@ -163,7 +163,7 @@ do
   # Simulate the auto-restart of anax and reconfig of the node.
   echo "Node unconfigured. Restart and reconfig node."
 
-  if ! ./apireg.sh; then
+  if ! ./gov/apireg.sh; then
     echo "Node reconfig failed."
     exit 2
   fi

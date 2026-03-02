@@ -373,7 +373,7 @@ EOF
 # and they were upgraded one by one 
 verify_rolling_upgrade() {
     # shellcheck disable=SC1091
-    source ./utils.sh
+    source ./gov/utils.sh
 
     NS_ORG=$1
     NS_URL="https://bluehorizon.network/services/netspeed"
