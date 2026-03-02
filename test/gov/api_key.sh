@@ -161,5 +161,5 @@ echo "Deleting API key ${APIKEY_ID} for ${E2EDEV_ADMIN_USER} in org ${API_KEY_OR
 curl -sSL -X DELETE \
     --header 'Accept: application/json' \
     -u "${API_KEY_ORG}/${E2EDEV_ADMIN_AUTH}" \
-    "${EXCH_APP_HOST}/orgs/${API_KEY_ORG}/users/${E2EDEV_ADMIN_USER}/keys/${APIKEY_ID}"
+    "${EXCH_APP_HOST}/orgs/${API_KEY_ORG}/users/${E2EDEV_ADMIN_USER}/apikeys/${APIKEY_ID}"
 echo "API key cleanup complete."
