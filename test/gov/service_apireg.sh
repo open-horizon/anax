@@ -28,7 +28,7 @@ else
 fi
 
 # check if the hub is all-in-1 management hub or not
-if [[ ${EXCH_APP_HOST} = *"://exchange-api:"* ]]; then
+if [[ ${EXCH_APP_HOST} = *"://127.0.0.1:"* ]]; then
   export REMOTE_HUB=0
 else
   export REMOTE_HUB=1
