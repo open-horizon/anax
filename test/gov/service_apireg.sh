@@ -49,7 +49,7 @@ export CPU_IMAGE_TAG="${DOCKER_CPU_TAG}"
 export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
 
 # Register services via the hzn dev exchange commands
-if ! ./hzn_dev_services.sh "${EXCH_URL}" ${E2EDEV_ADMIN_AUTH} 0
+if ! ./gov/hzn_dev_services.sh "${EXCH_URL}" ${E2EDEV_ADMIN_AUTH} 0
 then
     echo -e "hzn service and pattern registration with hzn dev failed."
     exit 1
