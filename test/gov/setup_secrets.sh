@@ -23,6 +23,8 @@ fi
 
 USERDEV_ORG="userdev"
 USERDEV_ADMIN_AUTH="userdev/userdevadmin:userdevadminpw"
+# Agbot credentials for secrets manager API
+AGBOT_AUTH="IBM/agbot1:${AGBOT_TOKEN:-Abcdefghijklmno1}"
 
 CREATE_ORG_SECRET1="netspeed-secret1"
 CREATE_ORG_SECRET2="netspeed-secret2"
@@ -44,11 +46,11 @@ export HZN_AGBOT_URL=${AGBOT_SAPI_URL}
 
 # Create secrets in userdev org
 echo -e "Create netspeed secret1"
-CMD="hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE1} ${CREATE_ORG_SECRET1} -O"
+CMD="hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${AGBOT_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE1} ${CREATE_ORG_SECRET1} -O"
 echo "$CMD"
 
-# check for erroneous return 
-if ! RES=$(hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE1} ${CREATE_ORG_SECRET1} -O)
+# check for erroneous return
+if ! RES=$(hzn secretsmanager secret add -o ${USERDEV_ORG} -u "${AGBOT_AUTH}" --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE1} ${CREATE_ORG_SECRET1} -O)
 then
   echo -e "Error: the creation command resulted in an error when it should not have: \n"
   exit 2
@@ -57,11 +59,11 @@ fi
 echo "$RES"
 
 echo -e "Create netspeed secret2"
-CMD="hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE2} ${CREATE_ORG_SECRET2} -O"
+CMD="hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${AGBOT_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE2} ${CREATE_ORG_SECRET2} -O"
 echo "$CMD"
 
-# check for erroneous return 
-if ! RES=$(hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE2} ${CREATE_ORG_SECRET2} -O)
+# check for erroneous return
+if ! RES=$(hzn secretsmanager secret add -o ${USERDEV_ORG} -u "${AGBOT_AUTH}" --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE2} ${CREATE_ORG_SECRET2} -O)
 then
   echo -e "Error: the creation command resulted in an error when it should not have: \n"
   exit 2
@@ -70,27 +72,27 @@ fi
 echo "$RES"
 
 echo -e "Create netspeed secret3"
-CMD="hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE2} ${CREATE_ORG_SECRET3} -O"
+CMD="hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${AGBOT_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE2} ${CREATE_ORG_SECRET3} -O"
 echo "$CMD"
-RES=$(hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE2} ${CREATE_ORG_SECRET3} -O)
+RES=$(hzn secretsmanager secret add -o ${USERDEV_ORG} -u "${AGBOT_AUTH}" --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE2} ${CREATE_ORG_SECRET3} -O)
 
 # create secrets for k8s secret test
 echo -e "Create k8s secret"
-CMD="hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE3} ${CREATE_ORG_SECRET5} -O"
+CMD="hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${AGBOT_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE3} ${CREATE_ORG_SECRET5} -O"
 echo "$CMD"
-RES=$(hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE3} ${CREATE_ORG_SECRET5} -O)
+RES=$(hzn secretsmanager secret add -o ${USERDEV_ORG} -u "${AGBOT_AUTH}" --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE3} ${CREATE_ORG_SECRET5} -O)
 
-CMD="hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE4} ${CREATE_ORG_SECRET6} -O"
+CMD="hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${AGBOT_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE4} ${CREATE_ORG_SECRET6} -O"
 echo "$CMD"
-RES=$(hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE4} ${CREATE_ORG_SECRET6} -O)
+RES=$(hzn secretsmanager secret add -o ${USERDEV_ORG} -u "${AGBOT_AUTH}" --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE4} ${CREATE_ORG_SECRET6} -O)
 
 # creating secrets for compcheck tests
 echo -e "Create org secret sqltoken"
-CMD="hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey sqltoken -d mysqltoken ${CREATE_ORG_SECRET4} -O"
+CMD="hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${AGBOT_AUTH} --secretKey sqltoken -d mysqltoken ${CREATE_ORG_SECRET4} -O"
 echo "$CMD"
 
-# check for erroneous return 
-if ! RES=$(hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey sqltoken -d mysqltoken ${CREATE_ORG_SECRET4} -O)
+# check for erroneous return
+if ! RES=$(hzn secretsmanager secret add -o ${USERDEV_ORG} -u "${AGBOT_AUTH}" --secretKey sqltoken -d mysqltoken ${CREATE_ORG_SECRET4} -O)
 then
   echo -e "Error: the creation command resulted in an error when it should not have: \n"
   exit 2

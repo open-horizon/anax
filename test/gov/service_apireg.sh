@@ -6,7 +6,8 @@ if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
 fi
 
 # Base directory for test resources (test/ directory - current working directory when script is called).
-export E2EDEV_ROOT="$(pwd)"
+E2EDEV_ROOT="$(pwd)"
+export E2EDEV_ROOT
 
 # $1 - results
 # $2 -
@@ -1301,7 +1302,7 @@ else
 
 fi
 
-cat ${NS_DP} | envsubst > $KEY_TEST_DIR/policy_netspeed.json
+cat "${NS_DP}" | envsubst > $KEY_TEST_DIR/policy_netspeed.json
 
 echo -e "Register business policy for netspeed:"
 
@@ -1317,7 +1318,7 @@ else
   NS_DP="${E2EDEV_ROOT}/gov/deployment_policies/userdev/location.json"
 fi
 
-cat ${NS_DP} | envsubst > $KEY_TEST_DIR/policy_location.json
+cat "${NS_DP}" | envsubst > $KEY_TEST_DIR/policy_location.json
 
 echo -e "Register business policy for netspeed:"
 
