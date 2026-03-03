@@ -5,7 +5,7 @@
 
 # Get script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PARENT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+PARENT_DIR="$(pwd)"
 
 # Source test framework
 source "${SCRIPT_DIR}/test_config.sh"

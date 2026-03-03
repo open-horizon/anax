@@ -79,7 +79,7 @@ Wrapper scripts source framework files from their own directory:
 
 ```bash
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PARENT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+PARENT_DIR="$(pwd)"
 
 # Source framework files from same directory
 source "${SCRIPT_DIR}/test_config.sh"
@@ -147,7 +147,7 @@ When creating new test wrappers in the framework directory:
 
 # Source test framework
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PARENT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+PARENT_DIR="$(pwd)"
 source "${SCRIPT_DIR}/test_config.sh"
 source "${SCRIPT_DIR}/test_utils.sh"
 
