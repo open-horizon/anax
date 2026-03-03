@@ -374,7 +374,7 @@ test-no-clean: $(ANAX_SOURCE)/anax run-mgmthub run-dockerreg
 	$(TEST_VARS) ARCH=$(arch) CERT_LOC=$(CERT_LOC) ./gov/run_kube.sh $(E2EDEVTEST_TEMPFS) $(ANAX_SOURCE) $(EXCH_ROOTPW) $(DOCKER_TEST_NETWORK) $(E2EDEV_HOST_IP)
 	@echo -e  "\nStarting tests"
 	# docker exec $(DOCKER_TEST_CNAME) bash -c "export $(TEST_VARS); /root/gov-combined.sh"
-	export $(TEST_VARS); ./gov/gov-combined.sh
+	export $(TEST_VARS); ./gov/framework/gov-combined-new.sh
 
 test: clean test-no-clean
 
