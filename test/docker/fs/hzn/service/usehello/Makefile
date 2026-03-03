@@ -5,6 +5,8 @@ VER = 1.0
 BASE = localhost:443
 IMAGE = $(ARCH)_usehello
 
+HZN_DEV_HOST_IP ?=127.0.0.1
+
 default: build run check
 
 build: Dockerfile start.sh
@@ -18,9 +20,10 @@ horizonstop:
 	hzn -v dev service stop
 
 run:
-	docker run --name $(IMAGE) -e MY_VAR1='outside' -e HZN_ARCH=$(ARCH) -d -t $(BASE)/$(IMAGE):$(VER)
+	docker run --name $(IMAGE) --network=hzn_horizonnet -e MY_VAR1='outside' -e HZN_ARCH=$(ARCH) -d -t $(BASE)/$(IMAGE):$(VER)
 
 check:
+	docker ps -a --filter name=$(IMAGE)
 	docker logs $(IMAGE)
 
 stop:

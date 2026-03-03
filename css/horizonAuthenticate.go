@@ -192,8 +192,8 @@ func (auth *HorizonAuthenticate) authenticateWithExchange(otherOrg string, appKe
 			if trace.IsLogging(logger.TRACE) {
 				trace.Debug("%s", cssALS(fmt.Sprintf("attempting authentication request as a user %v", appKey)))
 			}
-			// appkey: {org}/{username} or {org}/iamapikey.
-			// parts[1] is {username} or iamapikey, parts[0] is {orgId}
+			// appkey: {org}/{username} or {org}/apikey.
+			// parts[1] is {username} or apikey, parts[0] is {orgId}
 			if exchangeRole, username, err := auth.verifyUserIdentity(parts[1], parts[0], appSecret, ExchangeURL()); err != nil {
 				if log.IsLogging(logger.WARNING) {
 					log.Warning("%s", cssALS(fmt.Sprintf("unable to verify identity %v as user, error %v", appKey, err)))
@@ -321,7 +321,7 @@ func (auth *HorizonAuthenticate) verifyUserIdentity(id string, orgId string, app
 					// exchange org admin should be authAdmin in CSS
 					return EX_ORG_ADMIN, exUsername, nil
 				} else if exOrgId == orgId {
-					// authUser for regular user {org}/iamapikey:{apikey} ({org}/{username}:{pwd})
+					// authUser for regular user {org}/apikey:{apikey} ({org}/{username}:{pwd})
 					return "", exUsername, nil
 				} else {
 					return "", "", errors.New(fmt.Sprintf("no exchange user found %v", apiMsg))

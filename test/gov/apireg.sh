@@ -1,16 +1,42 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
+# debug() - Print a debug message to stderr when DEBUG=1 or RUNNER_DEBUG=1.
+debug() {
+    if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+        echo "[DEBUG] [${BASH_SOURCE[0]##*/}:${BASH_LINENO[0]}] $*" >&2
+    fi
+}
+
+# curl_debug() - Run curl, log method/URL/HTTP-code/body to stderr, return body on stdout.
+# Usage: result=$(curl_debug METHOD URL [extra curl args...])
+curl_debug() {
+    local method="$1" url="$2"
+    shift 2
+    local out http_code body
+    out=$(curl -sS -w "\n%{http_code}" -X "${method}" "$@" "${url}")
+    http_code=$(echo "${out}" | tail -1)
+    body=$(echo "${out}" | head -n -1)
+    if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+        echo "[DEBUG] [${BASH_SOURCE[0]##*/}:${BASH_LINENO[0]}] ${method} ${url} -> HTTP ${http_code} body=${body:0:300}" >&2
+    fi
+    echo "${body}"
+}
+
 echo -e "\nBC setting is $BC"
 echo -e "\nPATTERN setting is $PATTERN\n"
+debug "apireg: ANAX_API=${ANAX_API} DEVICE_ID=${DEVICE_ID} DEVICE_ORG=${DEVICE_ORG} TOKEN=${TOKEN:0:4}***"
 
-if [ "$HA" == "1" ]; then
+if [ "$HA" = "1" ]; then
     if [ "$PATTERN" = "sgps" ] || [ "$PATTERN" = "sloc" ] || [ "$PATTERN" = "sall" ] || [ "$PATTERN" = "susehello" ] || [ "$PATTERN" = "shelm" ]; then
         echo -e "Pattern $PATTERN is not supported with HA tests, only sns and spws are supported."
         exit 2
     fi
 fi
-
-EMAIL="foo@goo.com"
 
 echo "Calling node API"
 
@@ -19,8 +45,7 @@ if [[ "$PATTERN" != "" ]]; then
     pat="e2edev@somecomp.com/$PATTERN"
 fi
 
-
-read -d '' newhzndevice <<EOF
+read -dr '' newhzndevice <<EOF
 {
   "id": "$DEVICE_ID",
   "token": "$TOKEN",
@@ -32,19 +57,20 @@ EOF
 
 while :
 do
-  echo -e "\n[D] hzndevice payload: $newhzndevice"
-
   echo "Updating horizon with id and token"
+  debug "apireg: POST ${ANAX_API}/node"
 
-  ERR=$(echo "$newhzndevice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/node" | jq -r '.error')
+  ERR=$(echo "$newhzndevice" | curl_debug POST "${ANAX_API}/node" -H "Content-Type: application/json" --data @- | jq -r '.error')
+  debug "apireg: POST ${ANAX_API}/node -> error=${ERR}"
   echo -e "the error $ERR"
-  if [ "$ERR" == "null" ]
+  if [ "$ERR" = "null" ]
   then
     break
   fi
 
-  if [ "${ERR:0:19}" == "Node is restarting," ]
+  if [ "${ERR:0:19}" = "Node is restarting," ]
   then
+    debug "apireg: node restarting, retrying in 5s"
     sleep 5
   else
     echo -e "error occured: $ERR"
@@ -60,45 +86,45 @@ sleep 30
 # Set a node policy indicating the testing purpose of the node.
 
 constraint2=""
-if [ "$NONS" == "1" ]; then 
+if [ "$NONS" = "1" ]; then 
     constraint2="NONS==true"
 else
     constraint2="NONS==false"
 fi
-if [ "$NOGPS" == "1" ]; then 
+if [ "$NOGPS" = "1" ]; then 
     constraint2="$constraint2 || NOGPS == true"
 else
     constraint2="$constraint2 || NOGPS == false"
 fi
-if [ "$NOLOC" == "1" ]; then 
+if [ "$NOLOC" = "1" ]; then 
     constraint2="$constraint2 || NOLOC == true"
 else
     constraint2="$constraint2 || NOLOC == false"
 fi
-if [ "$NOPWS" == "1" ]; then 
+if [ "$NOPWS" = "1" ]; then 
     constraint2="$constraint2 || NOPWS == true"
 else
     constraint2="$constraint2 || NOPWS == false"
 fi
-if [ "$NOHELLO" == "1" ]; then 
+if [ "$NOHELLO" = "1" ]; then 
     constraint2="$constraint2 || NOHELLO == true"
 else
     constraint2="$constraint2 || NOHELLO == false"
 fi
-if [ "$NOK8S" == "1" ]; then 
+if [ "$NOK8S" = "1" ]; then 
     constraint2="$constraint2 || NOK8S == true"
 else
     constraint2="$constraint2 || NOK8S == false"
 fi
 
 constraint3=""
-if [ "$NOAGENTAUTO" == "1" ]; then 
+if [ "$NOAGENTAUTO" = "1" ]; then 
     constraint3="NOAGENTAUTO==true"
 else
     constraint3="NOAGENTAUTO==false"
 fi
 
-read -d '' newhznpolicy <<EOF
+read -dr '' newhznpolicy <<EOF
 {
   "deployment": {
     "properties": [
@@ -131,45 +157,45 @@ read -d '' newhznpolicy <<EOF
 }
 EOF
 
-
 echo "Adding policy to the node using node/policy API"
-RES=$(echo "$newhznpolicy" | curl -sS -X PUT -w "%{http_code}" -H "Content-Type: application/json" --data @- "$ANAX_API/node/policy")
+debug "apireg: PUT ${ANAX_API}/node/policy constraint2=${constraint2} constraint3=${constraint3}"
+RES=$(echo "$newhznpolicy" | curl_debug PUT "${ANAX_API}/node/policy" -w "%{http_code}" -H "Content-Type: application/json" --data @-)
+debug "apireg: PUT ${ANAX_API}/node/policy -> RES=${RES}"
 
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$newhznpolicy \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r '.' | tail -1)
+ERR=$(echo "$RES" | jq -r '.' | tail -1)
 if [ "$ERR" != "201" ]
 then
     echo -e "$newhznpolicy \nresulted in incorrect response: $RES"
 
     echo -e "Wait for 30 seconds and try again"
     sleep 30
-    RES=$(echo "$newhznpolicy" | curl -sS -X PUT -H "Content-Type: application/json" --data @- "$ANAX_API/node/policy")
-    ERR=$(echo $RES | jq -r '.' | tail -1)
+    debug "apireg: PUT ${ANAX_API}/node/policy (retry)"
+    RES=$(echo "$newhznpolicy" | curl_debug PUT "${ANAX_API}/node/policy" -H "Content-Type: application/json" --data @-)
+    debug "apireg: PUT ${ANAX_API}/node/policy (retry) -> RES=${RES}"
+    ERR=$(echo "$RES" | jq -r '.' | tail -1)
     if [ "$ERR" != "201" ]
     then
         echo -e "$newhznpolicy \nsecond try resulted in incorrect response: $RES"
         exit 2
     else
-        echo -e "found expected response in second try: $RES" 
+        echo -e "found expected response in second try: $RES"
     fi
 else
   echo -e "found expected response: $RES"
 fi
-
 
 # =======================================================================
 # Setup some services/workloads
 echo -e "\nNo netspeed setting is $NONS"
 if [ "$NONS" != "1" ]
 then
-  ./ns_apireg.sh
-  if [ $? -ne 0 ]
-  then
+  if ! ./gov/ns_apireg.sh; then
     exit 2
   fi
 fi
@@ -177,9 +203,7 @@ fi
 echo -e "\nNo location setting is $NOLOC"
 if [ "$NOLOC" != "1" ]
 then
-    ./loc2_apireg.sh
-    if [ $? -ne 0 ]
-    then
+    if ! ./loc2_apireg.sh; then
         exit 2
     fi
 fi
@@ -187,36 +211,26 @@ fi
 echo -e "\nNo gpstest setting is $NOGPS"
 if [ "$NOGPS" != "1" ]
 then
-    ./gpstest_apireg.sh
-    if [ $? -ne 0 ]
-    then
+    if ! ./gov/gpstest_apireg.sh; then
         exit 2
-   fi
+    fi
 fi
 
 echo -e "\nNo pws setting is $NOPWS"
 if [ "$NOPWS" != "1" ]
 then
-  ./pws_apireg.sh
-  if [ $? -ne 0 ]
-  then
+  if ! ./gov/pws_apireg.sh; then
     exit 2
   fi
 fi
 
-./hello_apireg.sh
-if [ $? -ne 0 ]
-then
+if ! ./gov/hello_apireg.sh; then
   exit 2
 fi
 
 echo -e "\nCompleting node registration"
-./cs_apireg.sh
-
-if [ $? -ne 0 ]
-then
+if ! ./gov/cs_apireg.sh; then
   echo -e "Error setting up to run workloads"
-  TESTFAIL="1"
   exit 2
 else
   echo -e "Workload setup SUCCESSFUL"

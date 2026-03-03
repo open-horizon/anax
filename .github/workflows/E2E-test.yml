@@ -27,6 +27,9 @@ jobs:
     env:
       GOPATH: /home/runner/work/anax/anax/go
       DOCKER_CONFIG: /home/runner/.docker-config
+      # Note: GitHub Actions automatically sets RUNNER_DEBUG=1 in the environment when
+      # step debug logging is enabled (via ACTIONS_STEP_DEBUG=true repository secret).
+      # Test scripts check RUNNER_DEBUG to enable set -x tracing and debug() output.
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -36,29 +39,242 @@ jobs:
           path: go/src/github.com/${{github.repository}}
     
       # Prepares the environment by setting up golang
+      # cache: true caches $GOPATH/pkg/mod keyed on go.sum for faster dependency resolution
       - name: Set up golang 1.24
         uses: actions/setup-go@v5
         with:
           go-version: '1.24'
           check-latest: true
+          cache: true
+          cache-dependency-path: go/src/github.com/${{github.repository}}/go.sum
+
+      # Cache the Go build cache (~/.cache/go-build) to speed up compilation of anax binaries.
+      # The key includes the Go version and a hash of all Go source files so the cache is
+      # invalidated whenever source code changes. The restore-key falls back to any prior
+      # build cache for the same OS/Go version, allowing incremental reuse even on cache miss.
+      - name: Cache Go build cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/go-build
+          key: go-build-${{ runner.os }}-go1.24-${{ hashFiles('**/*.go') }}
+          restore-keys: |
+            go-build-${{ runner.os }}-go1.24-
+
+      # Create the custom DOCKER_CONFIG directory so Docker and hzn tools can find credentials.
+      # Without this, hzn dev service start fails with "no such file or directory" when reading
+      # config.json, producing invalid image tag format errors.
+      - name: Create Docker config directory
+        run: mkdir -p "${DOCKER_CONFIG}" && echo '{}' > "${DOCKER_CONFIG}/config.json"
 
       - name: Verify Docker version
         run: docker --version
 
+      # Set up Docker Buildx to enable BuildKit and layer caching support
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       # Build anax binaries
       - name: Build anax binaries
         run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make
-          
-      # Build the e2edev docker images 
-      - name: Build the e2edev docker images
-        run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make -C test build-remote
+
+      # Cache the Docker registry image (pinned by digest - key is constant so always hits after first run)
+      - name: Cache Docker registry image
+        id: cache-registry-image
+        uses: actions/cache@v4
+        with:
+          path: /tmp/registry-image.tar
+          key: registry-image-${{ runner.os }}-sha256-7d081088e4bfd632a88e3f3bcd9e007ef44a796fddfe3261407a3f9f04abe1e7
+
+      - name: Restore Docker registry image from cache
+        if: steps.cache-registry-image.outputs.cache-hit == 'true'
+        run: docker load -i /tmp/registry-image.tar
+
+      - name: Pull and save Docker registry image to cache
+        if: steps.cache-registry-image.outputs.cache-hit != 'true'
+        run: |
+          docker pull registry@sha256:7d081088e4bfd632a88e3f3bcd9e007ef44a796fddfe3261407a3f9f04abe1e7
+          docker save registry@sha256:7d081088e4bfd632a88e3f3bcd9e007ef44a796fddfe3261407a3f9f04abe1e7 -o /tmp/registry-image.tar
+
+      # Cache the e2edev service images built from test/docker/fs/ Dockerfiles.
+      # These images (cpu, leaf, hello, usehello, helm/hello) are built at test runtime
+      # by hzn_dev_services.sh via 'make ARCH=amd64' in each service directory.
+      # Key is based on all service Dockerfiles so cache is invalidated on any change.
+      - name: Cache e2edev service images
+        id: cache-service-images
+        uses: actions/cache@v4
+        with:
+          path: /tmp/e2edev-service-images.tar
+          key: e2edev-service-images-${{ runner.os }}-${{ hashFiles('go/src/github.com/**/test/docker/fs/hzn/**', 'go/src/github.com/**/test/docker/fs/helm/**') }}
+          restore-keys: |
+            e2edev-service-images-${{ runner.os }}-
+
+      - name: Restore e2edev service images from cache
+        if: steps.cache-service-images.outputs.cache-hit == 'true'
+        run: docker load -i /tmp/e2edev-service-images.tar
 
       - name: Verify Built Container Images
         run: docker images
 
+      # Compute a weekly date string used as part of cache keys for mutable image tags
+      # (testing, latest, e2edev). This ensures those images are refreshed once per week
+      # while still being reused across all runs within the same week.
+      - name: Compute weekly cache key date
+        id: date
+        run: echo "week=$(date -u +'%Y-%U')" >> "$GITHUB_OUTPUT"
+
+      # Cache each management hub image separately so changing one tag only invalidates
+      # that image's cache entry. All management hub images (exchange, agbot, CSS, mongo,
+      # postgres, vault) are built or pulled by deploy-mgmt-hub.sh at test runtime.
+      # We restore them before the test so deploy-mgmt-hub.sh finds them already present
+      # in the Docker daemon (avoiding registry pulls), then save them after the test.
+      # Mutable tags (testing, latest, e2edev) use a weekly key; pinned tags use a stable key.
+
+      - name: Cache Exchange image
+        id: cache-exchange-image
+        uses: actions/cache@v4
+        with:
+          path: /tmp/exchange-image.tar
+          key: exchange-image-${{ runner.os }}-testing-${{ steps.date.outputs.week }}
+          restore-keys: |
+            exchange-image-${{ runner.os }}-testing-
+
+      - name: Restore Exchange image from cache
+        if: steps.cache-exchange-image.outputs.cache-hit == 'true'
+        run: docker load -i /tmp/exchange-image.tar
+
+      - name: Cache Agbot image
+        id: cache-agbot-image
+        uses: actions/cache@v4
+        with:
+          path: /tmp/agbot-image.tar
+          key: agbot-image-${{ runner.os }}-e2edev-${{ steps.date.outputs.week }}
+          restore-keys: |
+            agbot-image-${{ runner.os }}-e2edev-
+
+      - name: Restore Agbot image from cache
+        if: steps.cache-agbot-image.outputs.cache-hit == 'true'
+        run: docker load -i /tmp/agbot-image.tar
+
+      - name: Cache CSS image
+        id: cache-css-image
+        uses: actions/cache@v4
+        with:
+          path: /tmp/css-image.tar
+          key: css-image-${{ runner.os }}-latest-${{ steps.date.outputs.week }}
+          restore-keys: |
+            css-image-${{ runner.os }}-latest-
+
+      - name: Restore CSS image from cache
+        if: steps.cache-css-image.outputs.cache-hit == 'true'
+        run: docker load -i /tmp/css-image.tar
+
+      - name: Cache MongoDB image
+        id: cache-mongo-image
+        uses: actions/cache@v4
+        with:
+          path: /tmp/mongo-image.tar
+          key: mongo-image-${{ runner.os }}-4.0.6
+          restore-keys: |
+            mongo-image-${{ runner.os }}-
+
+      - name: Restore MongoDB image from cache
+        if: steps.cache-mongo-image.outputs.cache-hit == 'true'
+        run: docker load -i /tmp/mongo-image.tar
+
+      - name: Cache PostgreSQL image
+        id: cache-postgres-image
+        uses: actions/cache@v4
+        with:
+          path: /tmp/postgres-image.tar
+          key: postgres-image-${{ runner.os }}-17
+          restore-keys: |
+            postgres-image-${{ runner.os }}-
+
+      - name: Restore PostgreSQL image from cache
+        if: steps.cache-postgres-image.outputs.cache-hit == 'true'
+        run: docker load -i /tmp/postgres-image.tar
+
+      - name: Cache Vault image
+        id: cache-vault-image
+        uses: actions/cache@v4
+        with:
+          path: /tmp/vault-image.tar
+          key: vault-image-${{ runner.os }}-testing-${{ steps.date.outputs.week }}
+          restore-keys: |
+            vault-image-${{ runner.os }}-testing-
+
+      - name: Restore Vault image from cache
+        if: steps.cache-vault-image.outputs.cache-hit == 'true'
+        run: docker load -i /tmp/vault-image.tar
+
       - name: E2E Development Test
         id: test-runner
-        run: cd ${GOPATH}/src/github.com/${{ github.repository }} && make -C test test-no-clean TEST_VARS=${{matrix.tests}}
+        run: cd ${GOPATH}/src/github.com/open-horizon/anax && make -C test test-no-clean TEST_VARS=${{matrix.tests}}
+
+      # Save service images built during the test run for future cache hits.
+      # Images are tagged as localhost:443/amd64_*:1.0 and hello:1.0 by the service Makefiles.
+      # continue-on-error so a partial test run (some images missing) does not block failure diagnostics.
+      - name: Save e2edev service images to cache
+        if: steps.cache-service-images.outputs.cache-hit != 'true'
+        continue-on-error: true
+        run: |
+          images=$(docker images --format '{{.Repository}}:{{.Tag}}' | grep -E '^(localhost:443/amd64_|hello:1\.0)')
+          if [ -n "$images" ]; then
+            # shellcheck disable=SC2086
+            docker save $images -o /tmp/e2edev-service-images.tar
+          fi
+
+      # Save management hub images pulled/built during the test run for future cache hits.
+      # deploy-mgmt-hub.sh pulls exchange, agbot, CSS, mongo, postgres, vault images.
+      # Each image is saved to its own tar so individual cache entries can be invalidated
+      # independently when tags change. continue-on-error so missing images don't block diagnostics.
+      - name: Save Exchange image to cache
+        if: steps.cache-exchange-image.outputs.cache-hit != 'true'
+        continue-on-error: true
+        run: |
+          if docker image inspect quay.io/openhorizon/amd64_exchange-api:testing > /dev/null 2>&1; then
+            docker save quay.io/openhorizon/amd64_exchange-api:testing -o /tmp/exchange-image.tar
+          fi
+
+      - name: Save Agbot image to cache
+        if: steps.cache-agbot-image.outputs.cache-hit != 'true'
+        continue-on-error: true
+        run: |
+          if docker image inspect openhorizon/amd64_agbot:e2edev > /dev/null 2>&1; then
+            docker save openhorizon/amd64_agbot:e2edev -o /tmp/agbot-image.tar
+          fi
+
+      - name: Save CSS image to cache
+        if: steps.cache-css-image.outputs.cache-hit != 'true'
+        continue-on-error: true
+        run: |
+          if docker image inspect openhorizon/amd64_cloud-sync-service:latest > /dev/null 2>&1; then
+            docker save openhorizon/amd64_cloud-sync-service:latest -o /tmp/css-image.tar
+          fi
+
+      - name: Save MongoDB image to cache
+        if: steps.cache-mongo-image.outputs.cache-hit != 'true'
+        continue-on-error: true
+        run: |
+          if docker image inspect mongo:4.0.6 > /dev/null 2>&1; then
+            docker save mongo:4.0.6 -o /tmp/mongo-image.tar
+          fi
+
+      - name: Save PostgreSQL image to cache
+        if: steps.cache-postgres-image.outputs.cache-hit != 'true'
+        continue-on-error: true
+        run: |
+          if docker image inspect postgres:17 > /dev/null 2>&1; then
+            docker save postgres:17 -o /tmp/postgres-image.tar
+          fi
+
+      - name: Save Vault image to cache
+        if: steps.cache-vault-image.outputs.cache-hit != 'true'
+        continue-on-error: true
+        run: |
+          if docker image inspect openhorizon/amd64_vault:testing > /dev/null 2>&1; then
+            docker save openhorizon/amd64_vault:testing -o /tmp/vault-image.tar
+          fi
       
       - name: Test Failure Catch - Check Docker Images
         continue-on-error: true
@@ -69,6 +285,25 @@ jobs:
         continue-on-error: true
         if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
         run: docker ps -a
+      
+      - name: Test Failure Catch - Capture Agent Service Container Logs
+        continue-on-error: true
+        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
+        run: |
+          docker ps -a --format "{{.ID}}  {{.Image}}  {{.Names}}"
+          echo ""
+          docker ps -a --format "{{.Names}}" | grep -v -E "^(agbot|css-api|exchange-api|e2edevtest|e2edevregistry|fdo-owner-services|bao|postgres|postgres-fdo-owner-service|mongo)$"
+          echo ""
+          echo "=== Agent Service Container Logs ==="
+          for container in $(docker ps -a --format "{{.Names}}" | grep -v -E "^(agbot|css-api|exchange-api|e2edevtest|e2edevregistry|fdo-owner-services|bao|postgres|postgres-fdo-owner-service|mongo)$"); do
+            echo ""
+            echo "=========================================="
+            echo "Container: $container"
+            echo "Status: $(docker inspect --format='{{.State.Status}}' $container 2>/dev/null || echo 'unknown')"
+            echo "=========================================="
+            docker logs "$container" 2>&1 || echo "Failed to get logs for $container"
+            echo ""
+          done
 
       - name: Test Failure Catch - Check Agbot Docker Log
         continue-on-error: true
@@ -85,38 +320,6 @@ jobs:
         if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
         run: docker logs exchange-api
       
-      - name: Test Failure Catch - Check Infrastructure Container Logs
-        continue-on-error: true
-        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: |
-          echo "=== Infrastructure Container Logs ==="
-          for container in e2edevregistry fdo-owner-services bao postgres postgres-fdo-owner-service mongo; do
-            if docker ps -a --format "{{.Names}}" | grep -q "^${container}$"; then
-              echo ""
-              echo "=========================================="
-              echo "Container: $container"
-              echo "Status: $(docker inspect --format='{{.State.Status}}' $container 2>/dev/null || echo 'unknown')"
-              echo "=========================================="
-              docker logs $container 2>&1 | tail -100 || echo "Failed to get logs for $container"
-              echo ""
-            fi
-          done
-
-      - name: Test Failure Catch - Capture Agent Service Container Logs
-        continue-on-error: true
-        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: |
-          echo "=== Agent Service Container Logs ==="
-          for container in $(docker ps -a --format "{{.Names}}" | grep -v -E "^(agbot|css-api|exchange-api|e2edevtest|e2edevregistry|fdo-owner-services|bao|postgres|postgres-fdo-owner-service|mongo)$"); do
-            echo ""
-            echo "=========================================="
-            echo "Container: $container"
-            echo "Status: $(docker inspect --format='{{.State.Status}}' $container 2>/dev/null || echo 'unknown')"
-            echo "=========================================="
-            docker logs $container 2>&1 | tail -100 || echo "Failed to get logs for $container"
-            echo ""
-          done
-
       - name: Test Failure Catch - Check k8s Pods
         continue-on-error: true
         if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
@@ -141,99 +344,3 @@ jobs:
         continue-on-error: true
         if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
         run: sudo -E snap run microk8s kubectl logs -l app=agent --all-pods=true --all-containers=true -n agent-namespace
-
-      - name: Test Failure Catch - Check k8s Events
-        continue-on-error: true
-        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: sudo -E snap run microk8s kubectl get events -n agent-namespace --sort-by='.lastTimestamp'
-
-      - name: Test Failure Catch - Check k8s Deployments
-        continue-on-error: true
-        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: sudo -E snap run microk8s kubectl get deployments -n agent-namespace -o wide
-
-      - name: Test Failure Catch - Check k8s ReplicaSets
-        continue-on-error: true
-        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: sudo -E snap run microk8s kubectl get replicasets -n agent-namespace -o wide
-
-      - name: Test Failure Catch - Check k8s ConfigMaps
-        continue-on-error: true
-        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: sudo -E snap run microk8s kubectl get configmaps -n agent-namespace
-
-      - name: Test Failure Catch - Check k8s Secrets
-        continue-on-error: true
-        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: sudo -E snap run microk8s kubectl get secrets -n agent-namespace
-
-      - name: Test Failure Catch - Check k8s PersistentVolumeClaims
-        continue-on-error: true
-        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: sudo -E snap run microk8s kubectl get pvc -n agent-namespace
-
-      - name: Test Failure Catch - Check k8s Resource Usage
-        continue-on-error: true
-        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: sudo -E snap run microk8s kubectl top pods -n agent-namespace || echo "Metrics server not available"
-
-      - name: Test Failure Catch - Check All k8s Namespaces
-        continue-on-error: true
-        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: sudo -E snap run microk8s kubectl get namespaces
-
-      - name: Test Failure Catch - Print Test Framework Summary Report
-        continue-on-error: true
-        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: |
-          echo "=== Test Framework Summary Report ==="
-          docker exec e2edevtest bash -c "if [ -f /root/framework/test_results/test_summary.txt ]; then cat /root/framework/test_results/test_summary.txt; else echo 'No test summary report found'; fi"
-
-      - name: Test Failure Catch - Print Test Framework Detailed Report
-        continue-on-error: true
-        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: |
-          echo "=== Test Framework Detailed Report ==="
-          docker exec e2edevtest bash -c "if [ -f /root/framework/test_results/test_report.txt ]; then cat /root/framework/test_results/test_report.txt; else echo 'No detailed test report found'; fi"
-
-      - name: Test Failure Catch - Print Test Framework XML Report
-        continue-on-error: true
-        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: |
-          echo "=== Test Framework XML Report ==="
-          docker exec e2edevtest bash -c "if [ -f /root/framework/test_results/test_results.xml ]; then cat /root/framework/test_results/test_results.xml; else echo 'No XML test report found'; fi"
-
-      - name: Test Failure Catch - Print Test Framework JSON Report
-        continue-on-error: true
-        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: |
-          echo "=== Test Framework JSON Report ==="
-          docker exec e2edevtest bash -c "if [ -f /root/framework/test_results/test_results.json ]; then cat /root/framework/test_results/test_results.json; else echo 'No JSON test report found'; fi"
-
-      - name: Test Failure Catch - List All Test Framework Output Files
-        continue-on-error: true
-        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: |
-          echo "=== Test Framework Output Files ==="
-          docker exec e2edevtest bash -c "if [ -d /root/framework/test_results ]; then ls -lah /root/framework/test_results/; else echo 'No test results directory found'; fi"
-
-      - name: Test Failure Catch - Print Passed Test Logs
-        continue-on-error: true
-        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: |
-          echo "=== Passed Test Logs ==="
-          docker exec e2edevtest bash -c "if [ -d /root/framework/test_results ]; then for log in /root/framework/test_results/*.log; do if [ -f \"\$log\" ]; then test_name=\$(basename \"\$log\" .log); if [ ! -f \"/root/framework/test_results/failure_\${test_name}.txt\" ]; then echo \"--- \$(basename \$log) ---\"; cat \"\$log\"; echo \"\"; fi; fi; done; else echo 'No test log files found'; fi"
-
-      - name: Test Failure Catch - Print Failed Test Logs
-        continue-on-error: true
-        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: |
-          echo "=== Failed Test Logs ==="
-          docker exec e2edevtest bash -c "if [ -d /root/framework/test_results ]; then for log in /root/framework/test_results/*.log; do if [ -f \"\$log\" ]; then test_name=\$(basename \"\$log\" .log); if [ -f \"/root/framework/test_results/failure_\${test_name}.txt\" ]; then echo \"--- \$(basename \$log) ---\"; cat \"\$log\"; echo \"\"; fi; fi; done; else echo 'No test log files found'; fi"
-
-      - name: Test Failure Catch - Print Test Failure Reports
-        continue-on-error: true
-        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: |
-          echo "=== Test Failure Reports ==="
-          docker exec e2edevtest bash -c "if [ -d /root/framework/test_results ]; then for report in /root/framework/test_results/failure_*.txt; do if [ -f \"\$report\" ]; then echo \"========================================\"; echo \"Report: \$(basename \$report)\"; echo \"========================================\"; cat \"\$report\"; echo \"\"; echo \"\"; fi; done; else echo 'No failure reports found'; fi"

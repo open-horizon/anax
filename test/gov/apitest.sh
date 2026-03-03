@@ -1,6 +1,9 @@
 #!/bin/bash
 
-EMAIL="foo@goo.com"
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
 
 TESTFAIL="0"
 
@@ -12,7 +15,8 @@ ORG="e2edev@somecomp.com"
 # missing org
 echo "Testing node API"
 
-read -d '' newhzndevice <<EOF
+# shellcheck disable=SC2153  # DEVICE_NAME is set externally as an environment variable
+read -dr '' newhzndevice <<EOF
 {
   "id": "$DEVICE_ID",
   "name": "$DEVICE_NAME",
@@ -23,13 +27,13 @@ EOF
 echo "Testing for missing organization in node API"
 RES=$(echo "$newhzndevice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/node")
 
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$newhzndevice \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "$ERR" != "null and must not be" ]
 then
   echo -e "$newhzndevice \nresulted in incorrect response: $RES"
@@ -39,7 +43,7 @@ else
 fi
 
 # undefined org
-read -d '' newhzndevice <<EOF
+read -dr '' newhzndevice <<EOF
 {
   "id": "$DEVICE_ID",
   "name": "$DEVICE_NAME",
@@ -51,13 +55,13 @@ EOF
 echo "Testing for undefined organization in node API"
 RES=$(echo "$newhzndevice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/node")
 
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$newhzndevice \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "${ERR:0:39}" != "organization fred not found in exchange" ]
 then
   echo -e "$newhzndevice \nresulted in incorrect response: $RES"
@@ -67,7 +71,7 @@ else
 fi
 
 # undefined pattern
-read -d '' newhzndevice <<EOF
+read -dr '' newhzndevice <<EOF
 {
   "id": "$DEVICE_ID",
   "name": "$DEVICE_NAME",
@@ -80,13 +84,13 @@ EOF
 echo "Testing for undefined pattern in node API"
 RES=$(echo "$newhzndevice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/node")
 
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$newhzndevice \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "${ERR:0:54}" != "pattern e2edev@somecomp.com/fred not found in exchange" ]
 then
   echo -e "$newhzndevice \nresulted in incorrect response: $RES"
@@ -101,7 +105,7 @@ fi
 # node not registered yet
 echo "Testing Configstate API"
 
-read -d '' newhzndevice <<EOF
+read -dr '' newhzndevice <<EOF
 {
   "state": "configuring"
 }
@@ -110,13 +114,13 @@ EOF
 echo "Testing for not registered device in configstate API"
 RES=$(echo "$newhzndevice" | curl -sS -X PUT -H "Content-Type: application/json" --data @- "$ANAX_API/node/configstate")
 
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$newhzndevice \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "${ERR:0:34}" != "Exchange registration not recorded" ]
 then
   echo -e "$newhzndevice \nresulted in incorrect response: $RES"
@@ -133,13 +137,13 @@ fi
 echo "Testing for missing input on node/policy API"
 RES=$(curl -sS -X POST -H "Content-Type: application/json" "$ANAX_API/node/policy")
 
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "Missing input in node/policy test resulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "${ERR:0:36}" != "Input body could not be deserialized" ]
 then
   echo -e "Missing input in node/policy test resulted in incorrect response: $RES"
@@ -152,13 +156,13 @@ fi
 echo "Testing for missing input on node/policy API"
 RES=$(curl -sS -X PUT -H "Content-Type: application/json" "$ANAX_API/node/policy")
 
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "Missing input in node/policy test resulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "${ERR:0:36}" != "Input body could not be deserialized" ]
 then
   echo -e "Missing input in node/policy test resulted in incorrect response: $RES"
@@ -168,7 +172,7 @@ else
 fi
 
 # Incorrect input (not demarshallable) on POST
-read -d '' newhznpolicy <<EOF
+read -dr '' newhznpolicy <<EOF
 {
   "properties": [{name":"prop1"}],
   "constraints": ""
@@ -178,13 +182,13 @@ EOF
 echo "Testing for not demarshallable input on node/policy API"
 RES=$(echo "$newhznpolicy" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/node/policy")
 
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$newhznpolicy \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "${ERR:0:36}" != "Input body could not be deserialized" ]
 then
   echo -e "$newhznpolicy \nresulted in incorrect response: $RES"
@@ -194,7 +198,7 @@ else
 fi
 
 # Incorrect input (wrong field types) on PUT
-read -d '' newhznpolicy <<EOF
+read -dr '' newhznpolicy <<EOF
 {
   "properties": 11,
   "constraints": 0
@@ -204,13 +208,13 @@ EOF
 echo "Testing for incorrect input field types on node/policy API"
 RES=$(echo "$newhznpolicy" | curl -sS -X PUT -H "Content-Type: application/json" --data @- "$ANAX_API/node/policy")
 
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$newhznpolicy \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "${ERR:0:36}" != "Input body could not be deserialized" ]
 then
   echo -e "$newhznpolicy \nresulted in incorrect response: $RES"
@@ -223,13 +227,13 @@ fi
 echo "Testing for delete on node/policy API when node is not defined"
 RES=$(curl -sS -X DELETE -H "Content-Type: application/json" "$ANAX_API/node/policy")
 
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "Testing for delete when node is not defined."
   exit 2
 fi
 
-err=$(echo $RES | jq -r ".error")
+err=$(echo "$RES" | jq -r ".error")
 if [ "$err" != "Exchange registration not recorded. Complete account and node registration with an exchange and then record node registration using this API's /node path." ]
 then
   echo -e "Testing for delete when node not defined resulted in incorrect response: $RES"
@@ -243,10 +247,8 @@ fi
 
 echo "Calling node API"
 
-curl -sS -H "Content-Type: application/json" "$ANAX_API/node" | jq -er '. | .account.id' > /dev/null
-
-if [[ $? -eq 0 ]]; then
-  read -d '' updatehzntoken <<EOF
+if curl -sS -H "Content-Type: application/json" "$ANAX_API/node" | jq -er '. | .account.id' > /dev/null; then
+  read -dr '' updatehzntoken <<EOF
 {
   "token": "$TOKEN",
   "id": "$DEVICE_ID",
@@ -263,7 +265,7 @@ EOF
 
 else
 
-  read -d '' newhzndevice <<EOF
+  read -dr '' newhzndevice <<EOF
 {
   "id": "$DEVICE_ID",
   "name": "$DEVICE_NAME",
@@ -282,14 +284,14 @@ EOF
 fi
 
 echo -e "Response:\n$RES"
-PAT=$(echo $RES | jq -r '.pattern')
+PAT=$(echo "$RES" | jq -r '.pattern')
 if [ "$PAT" != "$PATTERN" ]
 then
   echo -e "$newhzndevice \nresulted in incorrect response, wrong pattern: $RES"
   exit 2
 fi
 
-O=$(echo $RES | jq -r '.organization')
+O=$(echo "$RES" | jq -r '.organization')
 if [ "$O" != "$ORG" ]
 then
   echo -e "$newhzndevice \nresulted in incorrect response, wrong organization: $RES"
@@ -306,9 +308,7 @@ export SERVICE_ORG="organization"
 export SERVICE_NAME="name"
 export SERVICE_VERSION="version"
 
-./metering_apitest.sh
-if [ $? -ne 0 ]
-then
+if ! ./gov/metering_apitest.sh; then
   echo -e "Metering tests failed"
   TESTFAIL="1"
   exit 2
@@ -316,9 +316,7 @@ else
   echo -e "Metering tests SUCCESSFUL"
 fi
 
-./agp_apitest.sh
-if [ $? -ne 0 ]
-then
+if ! ./gov/agp_apitest.sh; then
   echo -e "Agreementprotocol tests failed"
   TESTFAIL="1"
   exit 2
@@ -326,9 +324,7 @@ else
   echo -e "Agreementprotocol tests SUCCESSFUL"
 fi
 
-  ./service_apitest.sh
-if [ $? -ne 0 ]
-then
+if ! ./gov/service_apitest.sh; then
   echo -e "Service config tests failed"
   TESTFAIL="1"
   exit 2
@@ -336,9 +332,7 @@ else
   echo -e "Service config tests SUCCESSFUL"
 fi
 
-./cs_apitest.sh
-if [ $? -ne 0 ]
-then
+if ! ./gov/cs_apitest.sh; then
   echo -e "Configstate API tests failed"
   TESTFAIL="1"
   exit 2

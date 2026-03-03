@@ -1,17 +1,21 @@
 #!/bin/bash
 
-if [[ "$NOKUBE" == "1" ]]; then
+if [[ "$NOKUBE" = "1" ]]; then
   echo "Skipping $0"
   exit
 fi
 
-# set -x
+
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
 
 PREFIX="Cluster scoped agent test:"
 E2EDEVTEST_TEMPFS=$1
 ANAX_SOURCE=$2
 EXCH_ROOTPW=$3
-DOCKER_TEST_NETWORK=$4
+# $4 (DOCKER_TEST_NETWORK) is reserved for future use
 HZN_LISTEN_IP=$5
 
 AGENT_NAME_SPACE="agent-namespace"
@@ -32,7 +36,7 @@ isRoot=$(id -u)
 cprefix="sudo -E"
 sudoprefix="sudo"
 
-if [ "${isRoot}" == "0" ]
+if [ "${isRoot}" = "0" ]
 then
 	cprefix=""
 	sudoprefix=""
@@ -88,12 +92,10 @@ sleep 5
 # Copy binaries and other files that are needed inside the agent container.
 #
 echo "Grab binaries and config files needed inside the container"
-cp ${ANAX_SOURCE}/anax ${ANAX_SOURCE}/cli/hzn ${E2EDEVTEST_TEMPFS}/etc/agent-in-kube
-if [ $? -ne 0 ]; then echo "Failure copying binaries"; exit 1; fi
+if ! cp "${ANAX_SOURCE}/anax" "${ANAX_SOURCE}/cli/hzn" "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube"; then echo "Failure copying binaries"; exit 1; fi
 
-if [ ${CERT_LOC} -eq "1" ]; then
-	cp ${E2EDEVTEST_TEMPFS}/certs/css.crt ${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/hub.crt
-	if [ $? -ne 0 ]; then echo "Failure copying CSS SSL cert"; exit 1; fi
+if [ "${CERT_LOC}" -eq 1 ]; then
+	if ! cp "${E2EDEVTEST_TEMPFS}/certs/css.crt" "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/hub.crt"; then echo "Failure copying CSS SSL cert"; exit 1; fi
 fi
 
 #
@@ -105,27 +107,25 @@ EX_IP=${HZN_LISTEN_IP}
 CSS_IP=${HZN_LISTEN_IP}
 AGBOT_IP=${HZN_LISTEN_IP}
 
-if [ "${EX_IP}" == "" ] || [ "${CSS_IP}" == "" ] || [ "${AGBOT_IP}" == "" ]
+if [ "${EX_IP}" == "" ] || [ "${CSS_IP}" == "" ] || [ "${AGBOT_IP}" = "" ]
 then
 	echo "Failure obtaining host IP addresses for exchange, CSS and agbot"
 	exit 1
 fi
 
-EX_IP=${EX_IP} CSS_IP=${CSS_IP} AGBOT_IP=${AGBOT_IP} envsubst < "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/horizon.env" > "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/horizon"
-if [ $? -ne 0 ]; then echo "Failure configuring agent env var file"; exit 1; fi
+if ! EX_IP=${EX_IP} CSS_IP=${CSS_IP} AGBOT_IP=${AGBOT_IP} envsubst < "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/horizon.env" > "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/horizon"; then echo "Failure configuring agent env var file"; exit 1; fi
 
-if [ ${CERT_LOC} -eq "1" ]; then
+if [ "${CERT_LOC}" -eq 1 ]; then
 	depl_file="${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/deployment.yaml.tmpl"
 else
 	# remove HZN_MGMT_HUB_CERT_PATH from the horizon env file
-	sed -i '/HZN_MGMT_HUB_CERT_PATH/d' ${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/horizon
+	sed -i '/HZN_MGMT_HUB_CERT_PATH/d' "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/horizon"
 
 	depl_file="${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/deployment_nocert.yaml.tmpl"
 fi
 
 # create deployment.yaml file
-ARCH=${ARCH} envsubst < ${depl_file} > "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/deployment.yaml"
-if [ $? -ne 0 ]; then echo "Failure configuring k8s agent deployment template file"; exit 1; fi
+if ! ARCH=${ARCH} envsubst < "${depl_file} "> "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/deployment.yaml"; then echo "Failure configuring k8s agent deployment template file"; exit 1; fi
 
 echo "Enable kube dns"
 $cprefix microk8s.enable dns
@@ -149,8 +149,7 @@ fi
 # Copy the agent container into the local kube container registry so that kube knows where to find it.
 #
 echo "Move agent container into microk8s container registry"
-docker save openhorizon/${ARCH}_anax_k8s:testing > /tmp/agent-in-kube.tar
-if [ $? -ne 0 ]; then echo "Failure tar-ing agent container to file"; exit 1; fi
+if ! docker save "openhorizon/${ARCH}_anax_k8s:testing" > /tmp/agent-in-kube.tar; then echo "Failure tar-ing agent container to file"; exit 1; fi
 
 #
 # Wait for containerd to start
@@ -195,7 +194,7 @@ fi
 
 # Create a configmap based on ${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/horizon
 echo "Create configmap to mount horizon env file"
-$cprefix microk8s.kubectl create configmap ${CONFIGMAP_NAME} --from-file=${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/horizon -n ${AGENT_NAME_SPACE}
+$cprefix microk8s.kubectl create configmap ${CONFIGMAP_NAME} --from-file="${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/horizon" -n ${AGENT_NAME_SPACE}
 RC=$?
 if [ $RC -ne 0 ]
 then
@@ -205,9 +204,9 @@ then
 fi
 
 # Create a secret based on ${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/hub.crt
-if [ ${CERT_LOC} -eq "1" ]; then
+if [ "${CERT_LOC}" -eq 1 ]; then
 	echo "Create secret to mount cert file"
-	$cprefix microk8s.kubectl create secret generic ${SECRET_NAME} --from-file=${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/hub.crt -n ${AGENT_NAME_SPACE}
+	$cprefix microk8s.kubectl create secret generic ${SECRET_NAME} --from-file="${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/hub.crt" -n ${AGENT_NAME_SPACE}
 	RC=$?
 	if [ $RC -ne 0 ]
 	then
@@ -219,7 +218,7 @@ fi
 
 # Create a persistent volume claim
 echo "Create persistent volume claim to mount db file"
-$cprefix microk8s.kubectl apply -f ${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/persistent-claim.yaml
+$cprefix microk8s.kubectl apply -f "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/persistent-claim.yaml"
 RC=$?
 if [ $RC -ne 0 ]
 then
@@ -233,7 +232,7 @@ sleep 2
 echo "Deploy the agent"
 # Debug help = microk8s.kubectl describe pod <pod-name> -n ${AGENT_NAME_SPACE}
 # Debug help = microk8s.kubectl exec <pod-name> -it -n ${AGENT_NAME_SPACE} /bin/bash
-$cprefix microk8s.kubectl apply -f ${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/deployment.yaml
+$cprefix microk8s.kubectl apply -f "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/deployment.yaml"
 RC=$?
 if [ $RC -ne 0 ]
 then
@@ -268,20 +267,20 @@ done
 echo "Configuring agent for policy"
 
 POD=$($cprefix microk8s.kubectl get pod -l app=agent -n ${AGENT_NAME_SPACE} -o jsonpath="{.items[0].metadata.name}")
-if [ $POD == "" ]
+if [ "$POD" = "" ]
 then
 	echo "Unable to find agent POD"
 	exit 1
 fi
 
-$cprefix microk8s.kubectl cp $PWD/gov/deployment_policies/userdev/bp_k8s_update.json ${AGENT_NAME_SPACE}/${POD}:/home/agentuser/.
-$cprefix microk8s.kubectl cp $PWD/gov/deployment_policies/userdev/bp_k8s_embedded_ns_update.json ${AGENT_NAME_SPACE}/${POD}:/home/agentuser/.
+$cprefix microk8s.kubectl cp "$PWD/gov/deployment_policies/userdev/bp_k8s_update.json" "${AGENT_NAME_SPACE}/${POD}:/home/agentuser/."
+$cprefix microk8s.kubectl cp "$PWD/gov/deployment_policies/userdev/bp_k8s_embedded_ns_update.json" "${AGENT_NAME_SPACE}/${POD}:/home/agentuser/."
 
-$cprefix microk8s.kubectl cp $PWD/gov/input_files/k8s_deploy/topservice-operator/node.policy.json ${AGENT_NAME_SPACE}/${POD}:/home/agentuser/node.policy.k8s.svc1.json
-$cprefix microk8s.kubectl cp $PWD/gov/input_files/k8s_deploy/topservice-operator-with-embedded-ns/node.policy.json ${AGENT_NAME_SPACE}/${POD}:/home/agentuser/node.policy.k8s.embedded.svc.json
+$cprefix microk8s.kubectl cp "$PWD/gov/input_files/k8s_deploy/topservice-operator/node.policy.json" "${AGENT_NAME_SPACE}/${POD}:/home/agentuser/node.policy.k8s.svc1.json"
+$cprefix microk8s.kubectl cp "$PWD/gov/input_files/k8s_deploy/topservice-operator-with-embedded-ns/node.policy.json" "${AGENT_NAME_SPACE}/${POD}:/home/agentuser/node.policy.k8s.embedded.svc.json"
 
-$cprefix microk8s.kubectl cp $PWD/gov/input_files/k8s_deploy/topservice-operator/node_ui.json ${AGENT_NAME_SPACE}/${POD}:/home/agentuser/node_ui_k8s_svc1.json
-$cprefix microk8s.kubectl cp $PWD/gov/input_files/k8s_deploy/topservice-operator-with-embedded-ns/node_ui.json ${AGENT_NAME_SPACE}/${POD}:/home/agentuser/node_ui_k8s_embedded_svc.json
+$cprefix microk8s.kubectl cp "$PWD/gov/input_files/k8s_deploy/topservice-operator/node_ui.json" "${AGENT_NAME_SPACE}/${POD}:/home/agentuser/node_ui_k8s_svc1.json"
+$cprefix microk8s.kubectl cp "$PWD/gov/input_files/k8s_deploy/topservice-operator-with-embedded-ns/node_ui.json" "${AGENT_NAME_SPACE}/${POD}:/home/agentuser/node_ui_k8s_embedded_svc.json"
 
 
 # cluster agent pattern test
@@ -299,14 +298,14 @@ $cprefix microk8s.kubectl cp $PWD/gov/input_files/k8s_deploy/topservice-operator
 #   4. business policy has "clusterNamespace": "ns-in-policy", policy constraints match the node. service deploy to "ns-in-policy" (update bp_k8s)
 # After test, the cluster agent will register with userdev/bp_k8s, service pod will be deployed in "ns-in-policy"
 
+# shellcheck source=test/gov/verify_edge_cluster.sh
 source gov/verify_edge_cluster.sh
 kubecmd="$cprefix microk8s.kubectl"
 
 if [ "${TEST_PATTERNS}" != "" ]; then
 	# pattern case
 	# pattern name: e2edev@somecomp.com/sk8s-with-cluster-ns
-	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn register -f /home/agentuser/node_ui_k8s_svc1.json -p e2edev@somecomp.com/sk8s-with-cluster-ns -u root/root:${EXCH_ROOTPW}
-	if [ $? -eq 0 ]; then
+	if ! $cprefix microk8s.kubectl exec "${POD}" -it -n ${AGENT_NAME_SPACE} -- env ARCH="${ARCH}" /usr/bin/hzn register -f /home/agentuser/node_ui_k8s_svc1.json -p e2edev@somecomp.com/sk8s-with-cluster-ns -u "root/root:${EXCH_ROOTPW}"; then
 		echo -e "${PREFIX} cluster agent should return error when register a patter that has non-empty cluster namespace"
   		exit 2
 	else
@@ -314,7 +313,7 @@ if [ "${TEST_PATTERNS}" != "" ]; then
 	fi
 
 
-	result=$($cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn node list | jq -r '.configstate.state')
+	result=$($cprefix microk8s.kubectl exec "${POD}" -it -n ${AGENT_NAME_SPACE} -- env ARCH="${ARCH}" /usr/bin/hzn node list | jq -r '.configstate.state')
 	if [ "$result" != "unconfigured" ]; then
 		echo -e "${PREFIX} anax-in-kube configstate.state is $result, should be in 'unconfigured' state"
   		exit 2
@@ -323,8 +322,7 @@ if [ "${TEST_PATTERNS}" != "" ]; then
 	fi
 
 	# pattern name: e2edev@somecomp.com/sk8s-with-embedded-ns
-	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn register -f /home/agentuser/node_ui_k8s_embedded_svc.json -p e2edev@somecomp.com/sk8s-with-embedded-ns -u root/root:${EXCH_ROOTPW}
-	if [ $? -ne 0 ]; then
+	if ! $cprefix microk8s.kubectl exec "${POD}" -it -n ${AGENT_NAME_SPACE} -- env ARCH="${ARCH}" /usr/bin/hzn register -f /home/agentuser/node_ui_k8s_embedded_svc.json -p e2edev@somecomp.com/sk8s-with-embedded-ns -u "root/root:${EXCH_ROOTPW}"; then
 		echo -e "${PREFIX} cluster agent failed to register pattern e2edev@somecomp.com/sk8s-with-embedded-ns"
   		exit 2
 	else
@@ -333,24 +331,21 @@ if [ "${TEST_PATTERNS}" != "" ]; then
 
 	# wait 30s for agreement to comeup
 	sleep 30
-	checkAndWaitForActiveAgreementForPattern "e2edev@somecomp.com/sk8s-with-embedded-ns" $ANAX_API "$kubecmd" $POD $AGENT_NAME_SPACE
-	if [ $? -ne 0 ]; then
+	if ! checkAndWaitForActiveAgreementForPattern "e2edev@somecomp.com/sk8s-with-embedded-ns" $ANAX_API "$kubecmd" "$POD" $AGENT_NAME_SPACE; then
 		echo -e "${PREFIX} cluster agent failed to check agreement for e2edev@somecomp.com/sk8s-with-embedded-ns"
   		exit 2
 	fi
 
-	checkDeploymentInNamespace "$kubecmd" $OPERATOR_DEPLOYMENT_NAME $SVC_EMBEDDED_NAMESPACE
-	if [ $? -ne 0 ]; then
+	if ! checkDeploymentInNamespace "$kubecmd" $OPERATOR_DEPLOYMENT_NAME "$SVC_EMBEDDED_NAMESPACE"; then
 		echo -e "${PREFIX} cluster agent failed to check deployment for e2edev@somecomp.com/sk8s-with-embedded-ns"
   		exit 2
 	fi
 
 	echo -e "${PREFIX} cluster agent successfully registered with pattern e2edev@somecomp.com/sk8s-with-embedded-ns, unregistering... "
-	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn unregister -f
+	$cprefix microk8s.kubectl exec "${POD}" -it -n ${AGENT_NAME_SPACE} -- env ARCH="${ARCH}" /usr/bin/hzn unregister -f
 
 	# pattern name: e2edev@somecomp.com/sk8s
-	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn register -f /home/agentuser/node_ui_k8s_svc1.json -p e2edev@somecomp.com/sk8s -u root/root:${EXCH_ROOTPW}
-	if [ $? -ne 0 ]; then
+	if ! $cprefix microk8s.kubectl exec "${POD}" -it -n ${AGENT_NAME_SPACE} -- env ARCH="${ARCH} "/usr/bin/hzn register -f /home/agentuser/node_ui_k8s_svc1.json -p e2edev@somecomp.com/sk8s -u "root/root:${EXCH_ROOTPW}"; then
 		echo -e "${PREFIX} cluster agent failed to register pattern e2edev@somecomp.com/sk8s"
   		exit 2
 	else
@@ -358,13 +353,11 @@ if [ "${TEST_PATTERNS}" != "" ]; then
 	fi
 
 	sleep 30
-	checkAndWaitForActiveAgreementForPattern "e2edev@somecomp.com/sk8s" $ANAX_API "$kubecmd" $POD $AGENT_NAME_SPACE
-	if [ $? -ne 0 ]; then
+	if ! checkAndWaitForActiveAgreementForPattern "e2edev@somecomp.com/sk8s" $ANAX_API "$kubecmd" "$POD" $AGENT_NAME_SPACE; then
 		echo -e "${PREFIX} cluster agent failed to check agreement for e2edev@somecomp.com/sk8s"
   		exit 2
 	fi
-	checkDeploymentInNamespace "$kubecmd" $OPERATOR_DEPLOYMENT_NAME $AGENT_NAME_SPACE
-	if [ $? -ne 0 ]; then
+	if ! checkDeploymentInNamespace "$kubecmd" $OPERATOR_DEPLOYMENT_NAME $AGENT_NAME_SPACE; then
 		echo -e "${PREFIX} cluster agent failed to check deployment for e2edev@somecomp.com/sk8s"
   		exit 2
 	fi
@@ -374,8 +367,7 @@ else
 	# policy case
 	# policy: userdev/bp_k8s_embedded_ns
 	echo -e "${PREFIX} cluster agent registers with deployment policy userdev/bp_k8s_embedded_ns"
-	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn register -f /home/agentuser/node_ui_k8s_embedded_svc.json --policy /home/agentuser/node.policy.k8s.embedded.svc.json -u root/root:${EXCH_ROOTPW}
-	if [ $? -ne 0 ]; then
+	if ! $cprefix microk8s.kubectl exec "${POD}" -it -n ${AGENT_NAME_SPACE} -- env ARCH="${ARCH}" /usr/bin/hzn register -f /home/agentuser/node_ui_k8s_embedded_svc.json --policy /home/agentuser/node.policy.k8s.embedded.svc.json -u "root/root:${EXCH_ROOTPW}"; then
 		echo -e "${PREFIX} cluster agent failed to register with deployment policy userdev/bp_k8s_embedded_ns"
   		exit 2
 	else
@@ -384,22 +376,19 @@ else
 
 	sleep 30
 	echo -e "kubecmd is: $kubecmd" #sudo -E microk8s.kubectl
-	checkAndWaitForActiveAgreementForPolicy "userdev/bp_k8s_embedded_ns" $ANAX_API "$kubecmd" $POD $AGENT_NAME_SPACE
-	if [ $? -ne 0 ]; then
+	if ! checkAndWaitForActiveAgreementForPolicy "userdev/bp_k8s_embedded_ns" $ANAX_API "$kubecmd" "$POD" $AGENT_NAME_SPACE; then
 		echo -e "${PREFIX} cluster agent failed to check agreement for userdev/bp_k8s_embedded_ns"
   		exit 2
 	fi
 
-	checkDeploymentInNamespace "$kubecmd" $OPERATOR_DEPLOYMENT_NAME $SVC_EMBEDDED_NAMESPACE
-	if [ $? -ne 0 ]; then
+	if ! checkDeploymentInNamespace "$kubecmd" $OPERATOR_DEPLOYMENT_NAME $SVC_EMBEDDED_NAMESPACE; then
 		echo -e "${PREFIX} cluster agent failed to check deployment for userdev/bp_k8s_embedded_ns"
   		exit 2
 	fi
 
 	# update policy userdev/bp_k8s_embedded_ns
 	echo -e "Updating deployment policy userdev/bp_k8s_embedded_ns to set \"clusterNamespace\": \"$NAMESPACE_IN_POLICY\""
-	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- /usr/bin/hzn exchange business updatepolicy -f bp_k8s_embedded_ns_update.json bp_k8s_embedded_ns -u $USERDEV_ADMIN_AUTH
-	if [ $? -ne 0 ]; then
+	if ! $cprefix microk8s.kubectl exec "${POD}" -it -n ${AGENT_NAME_SPACE} -- /usr/bin/hzn exchange business updatepolicy -f bp_k8s_embedded_ns_update.json bp_k8s_embedded_ns -u $USERDEV_ADMIN_AUTH; then
 		echo -e "${PREFIX} cluster agent failed to update deployment policy userdev/bp_k8s_embedded_ns"
   		exit 2
 	fi
@@ -407,33 +396,29 @@ else
 	echo -e "${PREFIX} sleep 30s to allow cluster agent agreement to be cancelled and re-negotiated"
 	sleep 30
 	echo -e "${PREFIX} verify agreement is archived for deployment policy userdev/bp_k8s_embedded_ns"
-	checkArchivedAgreementForPolicy "userdev/bp_k8s_embedded_ns" $ANAX_API "$kubecmd" $POD $AGENT_NAME_SPACE
-	if [ $? -ne 0 ]; then
+	if ! checkArchivedAgreementForPolicy "userdev/bp_k8s_embedded_ns" $ANAX_API "$kubecmd" "$POD" $AGENT_NAME_SPACE; then
 		echo -e "${PREFIX} cluster agent failed to check archived agreement for userdev/bp_k8s_embedded_ns"
   		exit 2
 	fi
 
 	echo -e "${PREFIX} verify new agreement is active for deployment policy userdev/bp_k8s_embedded_ns"
-	checkAndWaitForActiveAgreementForPolicy "userdev/bp_k8s_embedded_ns" $ANAX_API "$kubecmd" $POD $AGENT_NAME_SPACE
-	if [ $? -ne 0 ]; then
+	if ! checkAndWaitForActiveAgreementForPolicy "userdev/bp_k8s_embedded_ns" $ANAX_API "$kubecmd" "$POD" $AGENT_NAME_SPACE; then
 		echo -e "${PREFIX} cluster agent failed to check agreement for userdev/bp_k8s_embedded_ns"
   		exit 2
 	fi
 
 	echo -e "${PREFIX} verify service for deployment policy userdev/bp_k8s_embedded_ns are created under namespace \"$NAMESPACE_IN_POLICY\""
-	checkDeploymentInNamespace "$kubecmd" $OPERATOR_DEPLOYMENT_NAME $NAMESPACE_IN_POLICY
-	if [ $? -ne 0 ]; then
+	if ! checkDeploymentInNamespace "$kubecmd" $OPERATOR_DEPLOYMENT_NAME $NAMESPACE_IN_POLICY; then
 		echo -e "${PREFIX} cluster agent failed to check deployment for userdev/bp_k8s_embedded_ns"
   		exit 2
 	fi
 
 	echo -e "${PREFIX} cluster agent successfully registered with deployment policy userdev/bp_k8s_embedded_ns, unregistering... "
-	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn unregister -f
-	
+	$cprefix microk8s.kubectl exec "${POD}" -it -n ${AGENT_NAME_SPACE} -- env ARCH="${ARCH}" /usr/bin/hzn unregister -f
+
 	# policy name: userdev/bp_k8s
 	echo -e "${PREFIX} cluster agent registers with deployment policy userdev/bp_k8s"
-	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn register -f /home/agentuser/node_ui_k8s_svc1.json --policy /home/agentuser/node.policy.k8s.svc1.json -u root/root:${EXCH_ROOTPW}
-	if [ $? -ne 0 ]; then
+	if ! $cprefix microk8s.kubectl exec "${POD}" -it -n ${AGENT_NAME_SPACE} -- env ARCH="${ARCH}" /usr/bin/hzn register -f /home/agentuser/node_ui_k8s_svc1.json --policy /home/agentuser/node.policy.k8s.svc1.json -u "root/root:${EXCH_ROOTPW}"; then
 		echo -e "${PREFIX} cluster agent failed to register with deployment policy userdev/bp_k8s"
   		exit 2
 	else
@@ -441,22 +426,19 @@ else
 	fi
 
 	sleep 30
-	checkAndWaitForActiveAgreementForPolicy "userdev/bp_k8s" $ANAX_API "$kubecmd" $POD $AGENT_NAME_SPACE
-	if [ $? -ne 0 ]; then
+	if ! checkAndWaitForActiveAgreementForPolicy "userdev/bp_k8s" $ANAX_API "$kubecmd" "$POD" $AGENT_NAME_SPACE; then
 		echo -e "${PREFIX} cluster agent failed to check agreement for userdev/bp_k8s"
   		exit 2
 	fi
 
-	checkDeploymentInNamespace "$kubecmd" $OPERATOR_DEPLOYMENT_NAME $AGENT_NAME_SPACE
-	if [ $? -ne 0 ]; then
+	if ! checkDeploymentInNamespace "$kubecmd" $OPERATOR_DEPLOYMENT_NAME $AGENT_NAME_SPACE; then
 		echo -e "${PREFIX} cluster agent failed to check deployment for userdev/bp_k8s"
   		exit 2
 	fi
 
 	# update policy userdev/bp_k8s
 	echo -e "Updating deployment policy userdev/bp_k8s to set \"clusterNamespace\": \"$NAMESPACE_IN_POLICY\""
-	$cprefix microk8s.kubectl exec ${POD} -it -n ${AGENT_NAME_SPACE} -- /usr/bin/hzn exchange business updatepolicy -f bp_k8s_update.json bp_k8s -u $USERDEV_ADMIN_AUTH
-	if [ $? -ne 0 ]; then
+	if ! $cprefix microk8s.kubectl exec "${POD}" -it -n ${AGENT_NAME_SPACE} -- /usr/bin/hzn exchange business updatepolicy -f bp_k8s_update.json bp_k8s -u $USERDEV_ADMIN_AUTH; then
 		echo -e "${PREFIX} cluster agent failed to update deployment policy userdev/bp_k8s"
   		exit 2
 	fi
@@ -464,22 +446,19 @@ else
 	echo -e "${PREFIX} sleep 30s to allow cluster agent agreement to be cancelled and re-negotiated"
 	sleep 30
 	echo -e "${PREFIX} verify agreement is archived for deployment policy userdev/bp_k8s"
-	checkArchivedAgreementForPolicy "userdev/bp_k8s" $ANAX_API "$kubecmd" $POD $AGENT_NAME_SPACE
-	if [ $? -ne 0 ]; then
+	if ! checkArchivedAgreementForPolicy "userdev/bp_k8s" $ANAX_API "$kubecmd" "$POD" $AGENT_NAME_SPACE; then
 		echo -e "${PREFIX} cluster agent failed to check archived agreement for userdev/bp_k8s"
   		exit 2
 	fi
 
 	echo -e "${PREFIX} verify new agreement is active for deployment policy userdev/bp_k8s"
-	checkAndWaitForActiveAgreementForPolicy "userdev/bp_k8s" $ANAX_API "$kubecmd" $POD $AGENT_NAME_SPACE
-	if [ $? -ne 0 ]; then
+	if ! checkAndWaitForActiveAgreementForPolicy "userdev/bp_k8s" $ANAX_API "$kubecmd" "$POD" $AGENT_NAME_SPACE; then
 		echo -e "${PREFIX} cluster agent failed to check agreement for userdev/bp_k8s"
   		exit 2
 	fi
 
 	echo -e "${PREFIX} verify service for deployment policy userdev/bp_k8s are created under namespace \"$NAMESPACE_IN_POLICY\""
-	checkDeploymentInNamespace "$kubecmd" $OPERATOR_DEPLOYMENT_NAME $NAMESPACE_IN_POLICY
-	if [ $? -ne 0 ]; then
+	if ! checkDeploymentInNamespace "$kubecmd" $OPERATOR_DEPLOYMENT_NAME $NAMESPACE_IN_POLICY; then
 		echo -e "${PREFIX} cluster agent failed to check deployment for userdev/bp_k8s"
   		exit 2
 	fi

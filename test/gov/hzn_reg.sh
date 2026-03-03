@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 PREFIX="hzn reg test:"
 
 echo ""
@@ -142,32 +147,28 @@ cat <<EOF > /tmp/reg_userinput_all.json
 }
 EOF
 
-function reg_node {
+reg_node() {
   cmd=$1
   echo -e "$cmd"
-  ${cmd}
-  if [ $? -ne 0 ]; then 
+  if ! ${cmd}; then
     echo -e "${PREFIX} Failed to register node with hzn register"
     exit 1
   fi
 }
 
 # unregister the node using hzn
-function unreg_node {
-  hzn unregister -f
-  if [ $? -ne 0 ]; then
+unreg_node() {
+  if ! hzn unregister -f; then
     echo -e "${PREFIX} Failed to unregister the node."
     exit 1
   fi
 }
 
-
 # make sure agreements are up and running
 # $1 - org ID for node check
 # $2 - auth for node check
-function verify_agreements {
-  ORG_ID=$1 ADMIN_AUTH=$2 HZN_REG_TEST=1 ./verify_agreements.sh
-  if [ $? -ne 0 ]; then
+verify_agreements() {
+  if ! ORG_ID=$1 ADMIN_AUTH=$2 HZN_REG_TEST=1 ./gov/verify_agreements.sh; then
     echo -e "${PREFIX} Failed to verify agreement."
     exit 1
   fi
@@ -175,16 +176,14 @@ function verify_agreements {
 
 ## first unregister the node
 echo -e "${PREFIX} Testing 'hzn unregister -fr'"
-hzn unregister -fr
-if [ $? -ne 0 ]; then
+if ! hzn unregister -fr; then
 	echo -e "${PREFIX} Failed to unregister the node."
 	exit 1
 fi
 
 ## test unregister while the node is already unregistered
 echo -e "${PREFIX} Testing 'hzn unregister' while the node is not registered."
-ret=$(hzn unregister -f)
-if [ $? != 0 ]; then
+if ! ret=$(hzn unregister -f); then
   echo -e "${PREFIX} Error: 'hzn unregister' should have return 0. $ret"
   exit 1
 elif [[ $ret != *"The node is not registered"* ]]; then
@@ -199,8 +198,7 @@ fi
 echo -e "${PREFIX} Testing 'hzn register' with conflicting inputs"
 cmd="hzn register -u $USERDEV_ADMIN_AUTH -n an12345:Abcdefghijklmno1 -o userdev -f /tmp/reg_userinput.json --policy /tmp/node_policy.json e2edev@somecomp.com sns"
 echo -e "$cmd"
-ret=`$cmd 2>&1`
-if [ $? -eq 0 ]; then
+if ! ret=$($cmd 2>&1); then
   echo -e "${PREFIX} 'hzn register' should have failed because of the conflict input."
   exit 1
 elif [[ $ret != *"-o and -p are mutually exclusive with <nodeorg> and <pattern> arguments"* ]]; then
@@ -219,8 +217,7 @@ verify_agreements "userdev" "userdevadmin:userdevadminpw"
 echo -e "${PREFIX} Verify node token cannot be changed after node is registered"
 cmd="hzn exchange node settoken an12345 an12345token -o userdev -u $USERDEV_ADMIN_AUTH"
 echo -e "$cmd"
-ret=`$cmd 2>&1`
-if [ $? -eq 0 ]; then
+if ! ret=$($cmd 2>&1); then
   echo -e "${PREFIX} 'hzn exchange node settoken' should have failed because node public key is already set."
   exit 1
 elif [[ $ret != *"public key is set for node 'userdev/an12345', cannot set a token"* ]]; then
@@ -231,8 +228,7 @@ fi
 
 ## test register while the node is registered
 echo -e "${PREFIX} Testing 'hzn register' while the node is registered."
-ret=$(hzn register -u $USERDEV_ADMIN_AUTH -n an12345:Abcdefghijklmno1 -o userdev -f /tmp/reg_userinput.json --policy /tmp/node_policy.json 2>&1)
-if [ $? -eq 0 ]; then
+if ! ret=$(hzn register -u $USERDEV_ADMIN_AUTH -n an12345:Abcdefghijklmno1 -o userdev -f /tmp/reg_userinput.json --policy /tmp/node_policy.json 2>&1); then
   echo -e "${PREFIX} 'hzn register' should have failed because the node is registered already."
   exit 1
 elif [[ $ret != *"this Horizon node is already registered or in the process of being registered"* ]]; then
@@ -243,7 +239,7 @@ else
   echo -e "$ret"
 fi
 
-if [ "$TEST_PATTERNS" == "sall" ]; then
+if [ "$TEST_PATTERNS" = "sall" ]; then
   ## register pattern sns, node will be created by this command
   unreg_node
   hzn exchange -u e2edevadmin:e2edevadminpw -o e2edev@somecomp.com node remove an12345 -f 
@@ -268,7 +264,7 @@ if [ "$TEST_PATTERNS" == "sall" ]; then
 
   # make sure node has pattern associated.
   ret=$(hzn node list |jq '.pattern')
-  if [ $ret != '"e2edev@somecomp.com/sns"' ]; then
+  if [ "$ret" != '"e2edev@somecomp.com/sns"' ]; then
     echo -e "${PREFIX} the node should have pattern e2edev@somecomp.com/sns, but got: $ret"
     exit 1
   fi
@@ -282,8 +278,7 @@ if [ "$TEST_PATTERNS" == "sall" ]; then
   cmd="hzn register -n an12345:Abcdefghijklmno1 -f /tmp/reg_userinput_all.json -p sall"
   reg_node "$cmd"
 
-  ORG_ID="e2edev@somecomp.com" ADMIN_AUTH="e2edevadmin:e2edevadminpw" ./verify_agreements.sh
-  if [ $? -ne 0 ]; then 
+  if ! ORG_ID="e2edev@somecomp.com" ADMIN_AUTH="e2edevadmin:e2edevadminpw" ./gov/verify_agreements.sh; then
     echo -e "${PREFIX} Failed to verify agreement."
     exit 1
   fi

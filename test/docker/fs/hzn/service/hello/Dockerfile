@@ -9,4 +9,4 @@ COPY server /usr/local/bin/
 RUN alias dir='ls -la'
 
 WORKDIR /tmp
-CMD ["/root/start.sh"]
+CMD [ "/root/start.sh" ]

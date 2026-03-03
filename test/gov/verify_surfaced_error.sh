@@ -1,3 +1,10 @@
+#!/bin/bash
+
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 CPU_IMAGE_NAME="${DOCKER_CPU_INAME}"
 CPU_IMAGE_TAG="${DOCKER_CPU_TAG}"
 
@@ -10,18 +17,13 @@ export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
 echo "Waiting to ensure that all surfaced errors from previous tests are resolved before proceeding..."
 NUM_ERRS=1
 TIMEOUT=0
-while [[ $NUM_ERRS -ge 1 ]] && [[ $TIMEOUT -le 40 ]]
+while [[ $NUM_ERRS -ge 1 ]] && [[ $TIMEOUT -le 25 ]]
 do
   ERRS=$(hzn eventlog surface)
-  NUM_ERRS=$(echo ${ERRS} | jq -r '. | length')
+  NUM_ERRS=$(echo "${ERRS}" | jq -r '. | length')
   sleep 5s
   ((TIMEOUT++))
-  if [[ $TIMEOUT == 41 ]]; then 
-    echo -e "surface errors failed to resolve after 200s"
-    echo -e "Current surfaced errors: $ERRS"
-    hzn eventlog list | tail -50
-    exit 2
-  fi
+  if [[ $TIMEOUT = 26 ]]; then echo -e "surface errors failed to resolve"; exit 2; fi
 done
 
 echo -e "All surfaced errors resolved, test can proceed."
@@ -57,17 +59,13 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
 }
 EOF
 echo -e "Re-register e2edev@somecomp.com/cpu $VERS service with a deployment error:"
-hzn exchange service publish -I -O -u $ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
-if [ $? -ne 0 ]
+if ! hzn exchange service publish -I -O -u $ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 then
     echo -e "hzn exchange service publish failed for e2edev@somecomp.com/cpu."
     exit 2
 fi
 
-hzn agreement list | jq ' .[] | .current_agreement_id' | sed 's/"//g' | while read word ; do hzn agreement cancel $word ; done
-
-echo "Waiting for agreement cancellations to complete..."
-sleep 10
+hzn agreement list | jq ' .[] | .current_agreement_id' | sed 's/"//g' | while read -r word ; do hzn agreement cancel "$word" ; done
 
 echo "Waiting on error to surface"
 NUM_ERRS=0
@@ -75,7 +73,7 @@ TIMEOUT=0
 while [[ $NUM_ERRS -le 0 ]] && [[ $TIMEOUT -le 300 ]]
 do
   ERRS=$(hzn eventlog surface)
-  NUM_ERRS=$(echo ${ERRS} | jq -r '. | length')
+  NUM_ERRS=$(echo "${ERRS}" | jq -r '. | length')
   sleep 1s
   ((TIMEOUT++))
   if [[ $TIMEOUT -ge 300 ]]; then echo -e "surface error failed to appear"; hzn eventlog list; docker ps -a; docker network ls; exit 2; fi
@@ -113,38 +111,24 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
 }
 EOF
 echo -e "Re-register e2edev@somecomp.com/cpu $VERS service without a deployment error:"
-hzn exchange service publish -I -O -u $ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
-if [ $? -ne 0 ]
+if ! hzn exchange service publish -I -O -u $ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 then
     echo -e "hzn exchange service publish failed for e2edev@somecomp.com/cpu."
     exit 2
 fi
 
-hzn agreement list | jq ' .[] | .current_agreement_id' | sed 's/"//g' | while read word ; do hzn agreement cancel $word ; done
-
-echo "Waiting for agreement cancellations to complete..."
-sleep 10
+hzn agreement list | jq ' .[] | .current_agreement_id' | sed 's/"//g' | while read -r word ; do hzn agreement cancel "$word" ; done
 
 echo "Waiting on the surfaced error to be resolved"
 NUM_ERRS=1
 TIMEOUT=0
-while [[ $NUM_ERRS -ge 1 ]] && [[ $TIMEOUT -le 60 ]]
+while [[ $NUM_ERRS -ge 1 ]] && [[ $TIMEOUT -le 50 ]]
 do
   ERRS=$(hzn eventlog surface)
-  NUM_ERRS=$(echo ${ERRS} | jq -r '. | length')
+  NUM_ERRS=$(echo "${ERRS}" | jq -r '. | length')
   sleep 5s
   ((TIMEOUT++))
-  if [[ $TIMEOUT -ge 60 ]]; then 
-    echo -e "surface error failed to resolve after 300s"
-    echo -e "Remaining surfaced errors: $ERRS"
-    echo -e "\nRecent event log entries:"
-    hzn eventlog list | tail -50
-    echo -e "\nAgreement status:"
-    hzn agreement list
-    echo -e "\nContainer status:"
-    docker ps -a | grep -E "(cpu|netspeed)"
-    exit 2
-  fi
+  if [[ $TIMEOUT -ge 50 ]]; then echo -e "surface error failed to resolve"; exit 2; fi
 done
 
 echo -e "All surfaced errors resolved"

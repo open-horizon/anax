@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
+# Base directory for test resources (test/ directory, one level up from this script).
+E2EDEV_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
 # Reusable functions
 
 # Verify a response. The inputs are:
@@ -7,14 +15,15 @@
 # $2 - expected result with docker legacy build
 # $3 - expected result with DOCKER_BUILDKIT
 # $4 - error message
-function verify {
+verify() {
     local resp=$1
-    respContains=$(echo $resp | grep "$2")
-    if [ "${respContains}" == "" ]; then
+    echo -e "$resp"
+    respContains=$(echo "$resp" | grep "$2")
+    if [ "${respContains}" = "" ]; then
         echo -e "Didn't find \"$2\" in the response, check \"$3\" in response"
         # with DOCKER_BUILDKIT, message is: # writing image sha256:[0-9A-Za-z]* done
-        respContains=$(echo $resp | grep -E "$3")
-        if [ "${respContains}" == "" ]; then
+        respContains=$(echo "$resp" | grep -E "$3")
+        if [ "${respContains}" = "" ]; then
             echo -e "\nERROR: $4. Output was:"
             echo -e "$resp"
             exit 1
@@ -34,66 +43,60 @@ function verify {
 # $9 - deployment config service name
 # $10 - MaxMemory config
 # $11 - NanoCpus config
-function createProject {
+createProject() {
     echo -e "Building $2 service container."
-    cd $1
+    cd "$1" || { echo "Error: hzn_dev_services.sh - ln ${LINENO} - Failure to change directories"; exit 1; }
 
     buildOut=$(make ARCH="${ARCH}" 2>&1)
 
     verify "${buildOut}" "Successfully built" "writing image sha256:[0-9A-Za-z\.[:space:]]* done" "$2 container did not build"
-    if [ $? -ne 0 ]; then exit $?; fi
 
     verify "${buildOut}" "$3" "$2 container did not produce output"
-    if [ $? -ne 0 ]; then exit $?; fi
 
-    buildStop=$(make stop ARCH="${ARCH}" 2>&1)
+    make stop ARCH="${ARCH}" > /dev/null 2>&1
 
     echo -e "Removing any existing working directory content"
-    rm -rf $1/horizon
+    rm -rf "$1/horizon"
 
     echo -e "Creating Horizon $2 service project."
 
-    newProject=$(hzn dev service new -s $4 -V 1.0.0 -i "localhost:443/${ARCH}_$9:1.0" --noImageGen --noPattern 2>&1)
+    newProject=$(hzn dev service new -d "$1/horizon" -s "$4" -V 1.0.0 -i "localhost:443/${ARCH}_$9:1.0" --noImageGen --noPattern 2>&1)
     verify "${newProject}" "Created horizon metadata" "Horizon project was not created"
-    if [ $? -ne 0 ]; then exit $?; fi
 
     echo -e "Editing $2 project metadata."
     serviceDef=$1/horizon/service.definition.json
-    userInput=$1/horizon/userinput.json
-    serviceURL=$4
 
-    sed -e 's|"label": "$SERVICE_NAME for $ARCH"|"label": "'$2'service"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
-    sed -e 's|"description": ""|"description": "'$2' service"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
-    sed -e 's|"public": false|"public": true|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
-    sed -e 's|"sharable": "multiple"|"sharable": "'$5'"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
-    sed -e 's|"name": ""|"name": "'$6'"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
-    sed -e 's|"type": ""|"type": "'$7'"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
-    sed -e 's|"label": ""|"label": "'$6'"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
-    sed -e 's|"defaultValue": ""|"defaultValue": "'$8'"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
+    sed -e "s|\"label\": \"${SERVICE_NAME} for ${ARCH}\"|\"label\": \"$2service\"|" "${serviceDef}" > "${serviceDef}.tmp" && mv "${serviceDef}.tmp" "${serviceDef}"
+    sed -e 's|"description": ""|"description": "'"$2"' service"|' "${serviceDef}" > "${serviceDef}.tmp" && mv "${serviceDef}.tmp" "${serviceDef}"
+    sed -e 's|"public": false|"public": true|' "${serviceDef}" > "${serviceDef}.tmp" && mv "${serviceDef}.tmp" "${serviceDef}"
+    sed -e 's|"sharable": "multiple"|"sharable": "'"$5"'"|' "${serviceDef}" > "${serviceDef}.tmp" && mv "${serviceDef}.tmp" "${serviceDef}"
+    sed -e 's|"name": ""|"name": "'"$6"'"|' "${serviceDef}" > "${serviceDef}.tmp" && mv "${serviceDef}.tmp" "${serviceDef}"
+    sed -e 's|"type": ""|"type": "'"$7"'"|' "${serviceDef}" > "${serviceDef}.tmp" && mv "${serviceDef}.tmp" "${serviceDef}"
+    sed -e 's|"label": ""|"label": "'"$6"'"|' "${serviceDef}" > "${serviceDef}.tmp" && mv "${serviceDef}.tmp" "${serviceDef}"
+    sed -e 's|"defaultValue": ""|"defaultValue": "'"$8"'"|' "${serviceDef}" > "${serviceDef}.tmp" && mv "${serviceDef}.tmp" "${serviceDef}"
 
     if [ "${10}" != "" ]; then
       jq_filter=.deployment.services.${ARCH}_$9.max_memory_mb=${10}
-      jq $jq_filter ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
+      jq "$jq_filter" "${serviceDef}" > "${serviceDef}.tmp" && mv "${serviceDef}.tmp" "${serviceDef}"
     fi
 
     if [ "${11}" != "" ]; then
       jq_filter=.deployment.services.${ARCH}_$9.max_cpus=${11}
-      jq $jq_filter ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
+      jq "$jq_filter" "${serviceDef}" > "${serviceDef}.tmp" && mv "${serviceDef}.tmp" "${serviceDef}"
     fi
 
     echo -e "Verifying the $2 project."
-    verifyProject=$(hzn dev service verify -v 2>&1)
+    verifyProject=$(hzn dev service verify -d "$1/horizon" -u "${E2EDEV_ADMIN_AUTH}" -v 2>&1)
 
     verify "${verifyProject}" "verified" "Horizon $2 project was not verifiable"
-    if [ $? -ne 0 ]; then exit $?; fi
 }
 
 # Stop the services that are started in the hzn dev test environment. Implicitly uses
 # the horizon project in PWD.
-function stopServices {
+stopServices() {
     echo -e "Stopping the top level service in the Horizon test environment."
     stopDev=$(hzn dev service stop -v 2>&1)
-    stoppedServices=$(echo ${stopDev} | grep -c "Stopped service.")
+    stoppedServices=$(echo "${stopDev}" | grep -c "Stopped service.")
     if [ "${stoppedServices}" != "1" ]; then
         echo -e "${stoppedServices}"
         echo -e "\nERROR: Did not detect services stopped. Output was:"
@@ -105,11 +108,11 @@ function stopServices {
 # Deploy a new hzn dev service project. The inputs are:
 # $1 - project directory
 # $2 - project name
-function deploy {
-    cd $1
-    deploy=$(hzn exchange service publish -v -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem -f ./horizon/service.definition.json 2>&1)
-    deploying=$(echo ${deploy} | grep "HTTP code: 201")
-    if [ "${deploying}" == "" ]; then
+deploy() {
+    cd "$1" || { echo "Error: hzn_dev_services.sh - ln ${LINENO} - Failure to change directories"; exit 1; }
+    deploy=$(hzn exchange service publish -v -u "${E2EDEV_ADMIN_AUTH}" -k "${KEY_TEST_DIR}"/*private.key -K "${KEY_TEST_DIR}"/*public.pem -f ./horizon/service.definition.json 2>&1)
+    deploying=$(echo "${deploy}" | grep "HTTP code: 201")
+    if [ "${deploying}" = "" ]; then
         echo -e "\nERROR: $2 did not deploy. Output was:"
         echo -e "${deploy}"
         exit 1
@@ -122,22 +125,22 @@ function deploy {
 # $1 - project directory
 # $2 - project name
 # $3 - service name
-function deployWithPull {
-    cd $1
+deployWithPull() {
+    cd "$1" || { echo "Error: hzn_dev_services.sh - ln ${LINENO} - Failure to change directories"; exit 1; }
 
     # First remove the existing docker image.
-    removeImage=$(docker rmi localhost:443/${ARCH}_${3}:1.0)
-    removed=$(echo ${removeImage} | grep "Deleted:")
-    if [ "${removed}" == "" ]; then
+    removeImage=$(docker rmi "localhost:443/${ARCH}_${3}:1.0")
+    removed=$(echo "${removeImage}" | grep "Deleted:")
+    if [ "${removed}" = "" ]; then
         echo -e "\nERROR: image localhost:443/${ARCH}_${3}:1.0 was not removed from local repository. Output was:"
         echo -e "${removeImage}"
         exit 1
     fi
 
     # Redeploy by pulling the image and extracting the image digest. Also overwrite the previous deployment.
-    deploy=$(hzn exchange service publish -vOP -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem -f ./horizon/service.definition.json 2>&1)
-    deploying=$(echo ${deploy} | grep "HTTP code: 201")
-    if [ "${deploying}" == "" ]; then
+    deploy=$(hzn exchange service publish -vOP -u "${E2EDEV_ADMIN_AUTH}" -k "${KEY_TEST_DIR}"/*private.key -K "${KEY_TEST_DIR}"/*public.pem -f ./horizon/service.definition.json 2>&1)
+    deploying=$(echo "${deploy}" | grep "HTTP code: 201")
+    if [ "${deploying}" = "" ]; then
         echo -e "\nERROR: $2 did not deploy. Output was:"
         echo -e "${deploy}"
         exit 1
@@ -147,8 +150,8 @@ function deployWithPull {
 
 # Undeploy a new hzn dev service project. The input is:
 # $1 - service
-function undeploy {
-    undeploy=$(hzn exchange service remove -f $1)
+undeploy() {
+    hzn exchange service remove -u "${E2EDEV_ADMIN_AUTH}" -f "$1" > /dev/null
     echo -e "$1 service undeployed."
 }
 
@@ -156,18 +159,18 @@ function undeploy {
 # $1 - service
 # $2 - expected MaxMemory
 # $3 - expected NanoCpus
-function checkMemoryAndCpus {
+checkMemoryAndCpus() {
     echo -e "Checking custom MaxMemory and NanoCpus for $1."
     service_id=$(docker ps -qf "name=$1")
-    svc_memory=$(docker inspect $service_id | jq -r '.[0].HostConfig.Memory')
-    svc_nano_cpus=$(docker inspect $service_id | jq -r '.[0].HostConfig.NanoCpus')
+    svc_memory=$(docker inspect "$service_id" | jq -r '.[0].HostConfig.Memory')
+    svc_nano_cpus=$(docker inspect "$service_id" | jq -r '.[0].HostConfig.NanoCpus')
 
-    if [ "$svc_memory" -ne $2 ]; then
+    if [ "$svc_memory" -ne "$2" ]; then
       echo -e "${PREFIX} MaxMemory verification for $1 service failed."
       stopServices
       exit 1
     fi
-    if [ "$svc_nano_cpus" -ne $3 ]; then
+    if [ "$svc_nano_cpus" -ne "$3" ]; then
       echo -e "${PREFIX} MaxCPUs verification for $1 service failed."
       stopServices
       exit 1
@@ -177,9 +180,10 @@ function checkMemoryAndCpus {
 # ============= Main =================================================
 #
 
-if [ "${NOHZNDEV}" == "1" ] && [ "${NOHELLO}" == "1" ] && [ "${TEST_PATTERNS}" != "sall" ] && [ "${TEST_PATTERNS}" != "susehello" ]; then
-    echo -e "Skipping hzn dev tests"
-    exit 0
+if [ "${NOHZNDEV}" == "1" ] && [ "${NOHELLO}" = "1" ] && [ "${TEST_PATTERNS}" != "sall" ] && [ "${TEST_PATTERNS}" != "susehello" ]
+then
+  echo -e "Skipping hzn dev tests"
+  exit 0
 fi
 
 echo -e "Begin hzn dev service testing."
@@ -190,7 +194,8 @@ export ARCH=${ARCH}
 E2EDEV_ADMIN_AUTH=$2
 CLEAN_UP=$3
 
-PROJECT_HOME="/root/hzn/service"
+TEST_ROOT=$(pwd)
+PROJECT_HOME="${TEST_ROOT}/docker/fs/hzn/service"
 
 LEAF_HOME=${PROJECT_HOME}/leaf
 CPU_HOME=${PROJECT_HOME}/cpu
@@ -203,62 +208,56 @@ USEHELLO_HOME=${PROJECT_HOME}/usehello
 NUMBER_SERVICES=0
 
 createProject "${LEAF_HOME}" "LEAF" "\"leaf\":" "my.company.com.services.leaf" "singleton" "MY_LEAF_VAR" "string" "leafVarValue" "leaf"
-if [ $? -ne 0 ]; then exit $?; fi
-let "NUMBER_SERVICES+=1"
+NUMBER_SERVICES=$(( NUMBER_SERVICES + 1 ))
 
 createProject "${CPU_HOME}" "CPU" "\"cpu\":" "my.company.com.services.cpu2" "singleton" "MY_CPU_VAR" "string" "cpuVarValue" "cpu"
-if [ $? -ne 0 ]; then exit $?; fi
-let "NUMBER_SERVICES+=1"
+NUMBER_SERVICES=$(( NUMBER_SERVICES + 1 ))
 
 createProject "${HELLO_HOME}" "Hello" "Star Wars" "my.company.com.services.hello2" "multiple" "MY_S_VAR1" "string" "inside" "helloservice"
-if [ $? -ne 0 ]; then exit $?; fi
-let "NUMBER_SERVICES+=1"
+NUMBER_SERVICES=$(( NUMBER_SERVICES + 1 ))
 
 createProject "${USEHELLO_HOME}" "UseHello" "variables verified." "my.company.com.services.usehello2" "singleton" "MY_VAR1" "string" "inside" "usehello" "512" "0.5"
-if [ $? -ne 0 ]; then exit $?; fi
-let "NUMBER_SERVICES+=1"
+NUMBER_SERVICES=$(( NUMBER_SERVICES + 1 ))
 
 # ============= Connect dependencies =================================
 
 echo -e "Creating dependencies."
 
-cd ${CPU_HOME}
-depCreate=$(hzn dev dependency fetch -p ${LEAF_HOME}/horizon -v 2>&1)
+cd "${CPU_HOME}" || { echo "Error: hzn_dev_services.sh - ln ${LINENO} - Failure to change directories"; exit 1; }
+depCreate=$(hzn dev dependency fetch -d "${CPU_HOME}/horizon" -p "${LEAF_HOME}/horizon" -u "${E2EDEV_ADMIN_AUTH}" -v 2>&1)
 verify "${depCreate}" "New dependency created" "Could not create CPU dependency on leaf."
 
-cd ${HELLO_HOME}
+cd "${HELLO_HOME}" || { echo "Error: hzn_dev_services.sh - ln ${LINENO} - Failure to change directories"; exit 1; }
 
-depCreate=$(hzn dev dependency fetch -p ${CPU_HOME}/horizon -v 2>&1)
+depCreate=$(hzn dev dependency fetch -d "${HELLO_HOME}/horizon" -p "${CPU_HOME}/horizon" -u "${E2EDEV_ADMIN_AUTH}" -v 2>&1)
 verify "${depCreate}" "New dependency created" "Could not create hello dependency on CPU."
 
-depCreate=$(hzn dev dependency fetch -p ${LEAF_HOME}/horizon -v 2>&1)
+depCreate=$(hzn dev dependency fetch -d "${HELLO_HOME}/horizon" -p "${LEAF_HOME}/horizon" -u "${E2EDEV_ADMIN_AUTH}" -v 2>&1)
 verify "${depCreate}" "New dependency created" "Could not create hello dependency on leaf."
 
 echo -e "Verifying the Hello project."
-verifyProject=$(hzn dev service verify -v 2>&1)
+verifyProject=$(hzn dev service verify -u "${E2EDEV_ADMIN_AUTH}" -v 2>&1)
 
 verify "${verifyProject}" "verified" "Horizon Hello project was not verifiable"
-if [ $? -ne 0 ]; then exit $?; fi
 
-cd ${USEHELLO_HOME}
-depCreate=$(hzn dev dependency fetch -p ${CPU_HOME}/horizon -v 2>&1)
+cd "${USEHELLO_HOME}" || { echo "Error: hzn_dev_services.sh - ln ${LINENO} - Failure to change directories"; exit 1; }
+depCreate=$(hzn dev dependency fetch -d "${USEHELLO_HOME}/horizon" -p "${CPU_HOME}/horizon" -u "${E2EDEV_ADMIN_AUTH}" -v 2>&1)
 verify "${depCreate}" "New dependency created" "Could not create usehello dependency on CPU."
 
-depCreate=$(hzn dev dependency fetch -p ${HELLO_HOME}/horizon -v 2>&1)
+depCreate=$(hzn dev dependency fetch -d "${USEHELLO_HOME}/horizon" -p "${HELLO_HOME}/horizon" -u "${E2EDEV_ADMIN_AUTH}" -v 2>&1)
 verify "${depCreate}" "New dependency created" "Could not create usehello dependency on hello."
 
 echo -e "Verifying the UseHello project."
-verifyProject=$(hzn dev service verify -v 2>&1)
+verifyProject=$(hzn dev service verify -u "${E2EDEV_ADMIN_AUTH}" -v 2>&1)
 
 verify "${verifyProject}" "verified" "Horizon UseHello project was not verifiable"
-if [ $? -ne 0 ]; then exit $?; fi
 
 # ============= Start the top level service in the hzn test environment ============
 
 echo -e "Starting the top level service in the Horizon test environment."
 
-startDev=$(hzn dev service start -v -m /root/resources/private/basicres/basicres.tgz -m /root/resources/private/multires/multires.tgz -t model 2>&1)
-startedServices=$(echo ${startDev} | sed 's/Running service./Running service.\n/g' | grep -c "Running service.")
+startDev=$(hzn dev service start -u "${E2EDEV_ADMIN_AUTH}" -v -m "${E2EDEV_ROOT}"/docker/fs/resources/private/basicres/basicres.tgz -m "${E2EDEV_ROOT}"/docker/fs/resources/private/multires/multires.tgz -t model 2>&1)
+startedServices=$(echo "${startDev}" | sed 's/Running service./Running service.\n/g' | grep -c "Running service.")
 if [ "${startedServices}" != "${NUMBER_SERVICES}" ]; then
     echo -e "${startedServices}"
     echo -e "\nERROR: Did not detect ${NUMBER_SERVICES} services started. Output was:"
@@ -271,7 +270,7 @@ echo -e "Waiting for services to run a bit before stopping them."
 sleep 60
 
 containers=$(docker ps -a)
-restarting=$(echo ${containers} | grep "Restarting")
+restarting=$(echo "${containers}" | grep "Restarting")
 if [ "${restarting}" != "" ]; then
     echo -e "\nERROR: One of the containers is restarting. Output was:"
     echo -e "${containers}"
@@ -280,7 +279,7 @@ if [ "${restarting}" != "" ]; then
 fi
 
 # make sure max memory and max CPUs for usehello service are configured correctly (512 MB & 0.5 CPUs)
-checkMemoryAndCpus ${ARCH}_usehello 536870912 500000000
+checkMemoryAndCpus "${ARCH}_usehello" 536870912 500000000
 
 stopServices
 
@@ -289,17 +288,15 @@ stopServices
 echo -e "Deploying services."
 
 KEY_TEST_DIR="/tmp/keytest"
-mkdir -p $KEY_TEST_DIR
+mkdir -p "${KEY_TEST_DIR}"
 
-cd $KEY_TEST_DIR
-ls *.key &> /dev/null
-if [ $? -eq 0 ]
+cd "$KEY_TEST_DIR" || { echo "Error: hzn_dev_services.sh - ln ${LINENO} - Failure to change directories"; exit 1; }
+if ls ./*.key > /dev/null 2>&1
 then
     echo -e "Using existing key"
 else
   echo -e "Generate new signing keys:"
-  hzn key create -l 4096 e2edev@somecomp.com e2edev@gmail.com -d .
-  if [ $? -ne 0 ]
+  if ! hzn key create -l 4096 e2edev@somecomp.com e2edev@gmail.com -d .
   then
     echo -e "hzn key create failed."
     exit 2
@@ -307,49 +304,42 @@ else
 fi
 
 echo -e "Logging into the e2edev@somecomp.com docker registry."
-echo ${DOCKER_REG_PW} | docker login -u=${DOCKER_REG_USER} --password-stdin localhost:443
-
-if [ $? -ne 0 ]
+if ! echo "${DOCKER_REG_PW}" | docker login -u="${DOCKER_REG_USER}" --password-stdin localhost:443
 then
     echo -e "docker login failed."
     exit 1
 fi
 
-deploy ${LEAF_HOME} "LEAF"
-if [ $? -ne 0 ]; then exit $?; fi
+deploy "${LEAF_HOME}" "LEAF"
 
-echo -e "Redploying, but this time with the docker pull option."
-deployWithPull ${LEAF_HOME} "LEAF" "leaf"
-if [ $? -ne 0 ]; then exit $?; fi
+echo -e "Redeploying, but this time with the docker pull option."
+deployWithPull "${LEAF_HOME}" "LEAF" "leaf"
 
-deploy ${CPU_HOME} "CPU"
-if [ $? -ne 0 ]; then exit $?; fi
+deploy "${CPU_HOME}" "CPU"
 
-deploy ${HELLO_HOME} "Hello"
-if [ $? -ne 0 ]; then exit $?; fi
+deploy "${HELLO_HOME}" "Hello"
 
-deploy ${USEHELLO_HOME} "UseHello"
-if [ $? -ne 0 ]; then exit $?; fi
+deploy "${USEHELLO_HOME}" "UseHello"
 
 sleep 5
 
 # ============= Clean Up ==================================
 
-if [ $CLEAN_UP -ne 0 ]
+if [ "$CLEAN_UP" -ne 0 ]
 then
 
   echo -e "Undeploying services."
 
-  undeploy my.company.com.services.leaf_1.0.0_${ARCH}
-  undeploy my.company.com.services.cpu2_1.0.0_${ARCH}
-  undeploy my.company.com.services.hello2_1.0.0_${ARCH}
-  undeploy my.company.com.services.usehello2_1.0.0_${ARCH}
+  undeploy "my.company.com.services.leaf_1.0.0_${ARCH}"
+  undeploy "my.company.com.services.cpu2_1.0.0_${ARCH}"
+  undeploy "my.company.com.services.hello2_1.0.0_${ARCH}"
+  undeploy "my.company.com.services.usehello2_1.0.0_${ARCH}"
 
   echo -e "Removing keys"
 
   rm -rf $KEY_TEST_DIR/*public.pem
   rm -rf $KEY_TEST_DIR/*private.key
-  rm -rf /root/.colonus/*public.pem
+  rm -rf "${HOME}"/.colonus/*public.pem
 
 fi
 

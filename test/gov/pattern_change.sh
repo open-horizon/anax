@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
 E2EDEV_ADMIN_AUTH="e2edev@somecomp.com/e2edevadmin:e2edevadminpw"
 USERDEV_ADMIN_AUTH="userdev/userdevadmin:userdevadminpw"
@@ -262,7 +267,7 @@ cat <<EOF > /tmp/userinput_for_sall.json
 }
 EOF
 
-function results {
+results() {
   if [ "$(echo "$1" | jq -r '.code')" != "ok" ]
   then
     echo -e "Error: $(echo "$1" | jq -r '.msg')"
@@ -273,24 +278,22 @@ function results {
 # make sure agreements are up and running
 # $1 - org ID for node check
 # $2 - admin auth for node check
-function verify_agreements {
-  ORG_ID=$1 ADMIN_AUTH=$2 HZN_REG_TEST=1 ./verify_agreements.sh
-  if [ $? -ne 0 ]; then
+verify_agreements() {
+  if ! ORG_ID=$1 ADMIN_AUTH=$2 HZN_REG_TEST=1 ./gov/verify_agreements.sh; then
     echo -e "${PREFIX} Failed to verify agreement."
     exit 1
   fi
 }
 
 # check if current node pattern is the same as the given pattern
-function checkNodePattern {
+checkNodePattern() {
     pattern=$1
 
     echo "Checking if device has the new pattern name $pattern."
-    ret=$(hzn node list |jq '.pattern')
-    if [ $? -ne 0 ]; then
+    if ! ret=$(hzn node list |jq '.pattern'); then
         echo -e "${PREFIX} Error: failed getting node. $ret"
         exit 1
-    elif [ $ret != "\"$pattern\"" ]; then
+    elif [ "$ret" != "\"$pattern\"" ]; then
         echo -e "${PREFIX} Error: the node pattern has not changed. $ret"
         exit 1
     else
@@ -298,20 +301,19 @@ function checkNodePattern {
     fi
 }
 
-if [ ${CERT_LOC} -eq "1" ]; then
+if [ "${CERT_LOC}" -eq 1 ]; then
   CERT_VAR="--cacert /certs/css.crt"
 else
-  CERT_VAR=""
+  CERT_VAR=(--silent)
 fi
 
 # get the node org, it can be userdev or e2edev@somecomp.com
-ret=$(hzn node list |jq '.organization')
-if [ $? -ne 0 ]; then
+if ! ret=$(hzn node list |jq '.organization'); then
     echo -e "${PREFIX} Failed getting node. $ret"
     exit 1
 fi
 
-if [ $ret == '"userdev"' ]; then
+if [ "$ret" = '"userdev"' ]; then
     org="userdev"
     auth=${USERDEV_ADMIN_AUTH}
 else
@@ -321,14 +323,13 @@ fi
 
 # change the exchange node pattern to sns
 echo -e "${PREFIX} Change the userinput for node in ${org}"
-ret=$(hzn userinput add -f /tmp/userinput_for_sns.json)
-if [ $? -ne 0 ]; then
+if ! ret=$(hzn userinput add -f /tmp/userinput_for_sns.json); then
     echo -e "${PREFIX} Failed changing the user input for local node. $ret"
     exit 1
 fi
 
 echo -e "${PREFIX} change node pattern on the exchange to sns"
-RES=$(curl -sLX PATCH $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json'  -u $auth  -d  '{"pattern":"e2edev@somecomp.com/sns"}' "${HZN_EXCHANGE_URL}/orgs/$org/nodes/an12345")
+RES=$(curl -sLX PATCH "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json'  -u $auth  -d  '{"pattern":"e2edev@somecomp.com/sns"}' "${HZN_EXCHANGE_URL}/orgs/$org/nodes/an12345")
 results "$RES"
 
 echo "Sleeping 90 seconds..."
@@ -337,27 +338,24 @@ sleep 90
 checkNodePattern "e2edev@somecomp.com/sns"
 verify_agreements "e2edev@somecomp.com" "e2edevadmin:e2edevadminpw"
 
-
 # now change the pattern to sall, this will fail because there is not enough user input
 echo -e "${PREFIX} change node pattern back on the exchange to sall"
-RES=$(curl -sLX PATCH $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json'  -u $auth  -d  '{"pattern":"e2edev@somecomp.com/sall"}' "${HZN_EXCHANGE_URL}/orgs/$org/nodes/an12345")
+RES=$(curl -sLX PATCH "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json'  -u $auth  -d  '{"pattern":"e2edev@somecomp.com/sall"}' "${HZN_EXCHANGE_URL}/orgs/$org/nodes/an12345")
 results "$RES"
 
 echo "Sleeping 30 seconds..."
 sleep 30
 
-ret=$(hzn eventlog list | grep 'Error validating new node pattern e2edev@somecomp.com/sall')
-if [ $? -ne 0 ]; then
+if ! ret=$(hzn eventlog list | grep 'Error validating new node pattern e2edev@somecomp.com/sall'); then
     echo -e "${PREFIX} New pattern verifcation should have failed, but it did not"
     exit 1
 fi
 
 # make sure the node still use the old pattern
-ret=$(hzn node list |jq '.pattern')
-if [ $? -ne 0 ]; then
+if ! ret=$(hzn node list |jq '.pattern'); then
     echo -e "${PREFIX} Error: failed getting node. $ret"
     exit 1
-elif [ $ret != "\"e2edev@somecomp.com/sns\"" ]; then
+elif [ "$ret" != "\"e2edev@somecomp.com/sns\"" ]; then
     echo -e "${PREFIX} Error: the node pattern should stays the same but got changed to  $ret"
     exit 1
 else
@@ -366,8 +364,7 @@ fi
 
 # now assign correct user input for pattern sall
 echo -e "${PREFIX} Change the userinput for node"
-ret=$(hzn exchange node update -u $auth -o $org an12345 -f /tmp/userinput_for_sall.json)
-if [ $? -ne 0 ]; then
+if ! ret=$(hzn exchange node update -u $auth -o $org an12345 -f /tmp/userinput_for_sall.json); then
     echo -e "${PREFIX} Failed changing the user input for local node. $ret"
     exit 1
 fi
@@ -377,8 +374,7 @@ sleep 60
 
 # the pattern should have change on local node
 checkNodePattern "e2edev@somecomp.com/sall"
-ORG_ID="e2edev@somecomp.com" ADMIN_AUTH="e2edevadmin:e2edevadminpw" ./verify_agreements.sh
-if [ $? -ne 0 ]; then
+if ! ORG_ID="e2edev@somecomp.com" ADMIN_AUTH="e2edevadmin:e2edevadminpw" ./gov/verify_agreements.sh; then
   echo -e "${PREFIX} Failed to verify agreement."
   exit 1
 fi

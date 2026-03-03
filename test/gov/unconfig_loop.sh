@@ -1,15 +1,20 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 # The purpose of this test is to verify that the DELETE /node API works correctly in a full
 # runtime context. Some parts of this test simulate the fact that anax is configured to auto-restart
 # when it terminates.
 
 EXCH_URL="${EXCH_APP_HOST}"
 
-if [ ${CERT_LOC} -eq "1" ]; then
+if [ "${CERT_LOC}" -eq 1 ]; then
   CERT_VAR="--cacert /certs/css.crt"
 else
-  CERT_VAR=""
+  CERT_VAR=(--silent)
 fi
 
 for (( ; ; ))
@@ -18,10 +23,11 @@ do
   # The node is already running, so start with the blocking form of the unconfig API. The API should always be
   # successful and should always be empty.
   echo "Unconfig node, blocking"
-  DEL=$(curl -sSLX DELETE $ANAX_API/node)
-  if [ $? -ne 0 ]
+  DEL=$(curl -sSLX DELETE "$ANAX_API/node")
+  rc=$?
+  if [ $rc -ne 0 ]
   then
-    echo -e "Error return from DELETE: $?"
+    echo -e "Error return from DELETE: $rc"
     exit 2
   fi
   if [ "$DEL" != "" ]
@@ -32,7 +38,7 @@ do
 
   # Following the API call, the node's entry in the exchange should have some changes in it. The messaging key should be empty,
   # and the list of registered microservices should be empty.
-  NST=$(curl -sSL $CERT_VAR --header 'Accept: application/json' -u "e2edev@somecomp.com/e2edevadmin:e2edevadminpw" "${EXCH_URL}/orgs/$DEVICE_ORG/nodes/an12345" | jq -r '.')
+  NST=$(curl -sSL "${CERT_VAR[@]}" --header 'Accept: application/json' -u "e2edev@somecomp.com/e2edevadmin:e2edevadminpw" "${EXCH_URL}/orgs/$DEVICE_ORG/nodes/an12345" | jq -r '.')
   PK=$(echo "$NST" | jq -r '.publicKey')
   if [ "$PK" != "null" ]
   then
@@ -50,7 +56,6 @@ do
   # This part of the test is to ensure that anax actually terminates. We will give anax 2 mins to terminate which should be
   # much more time than it needs. Normal behavior should be termination in seconds.
   echo -e "Making sure old anax has ended."
-  COUNT=1
   while :
   do
     # Wait for the "connection refused" message
@@ -60,7 +65,7 @@ do
     else
       echo -e "Is anax up yet: $GET"
       CS=$(echo "$GET" | jq -r '.configstate.state')
-      if [ "$CS" == "unconfigured" ]; then
+      if [ "$CS" = "unconfigured" ]; then
         break
       fi
     fi
@@ -76,11 +81,8 @@ do
   # Simulate the auto-restart of anax and reconfig of the node.
   echo "Node unconfigured. Restart and reconfig node."
 
-  ./apireg.sh
-  if [ $? -ne 0 ]
-  then
+  if ! ./gov/apireg.sh; then
     echo "Node reconfig failed."
-    TESTFAIL="1"
     exit 2
   fi
 
@@ -92,21 +94,22 @@ do
 
   # Log the current state of agreements and previous agreements before we unconfigure again.
   echo -e "Current agreements"
-  ACT=$(curl -sSL $ANAX_API/agreement | jq -r '.agreements.active' | grep "current_agreement_id")
-  echo $ACT
+  ACT=$(curl -sSL "$ANAX_API/agreement" | jq -r '.agreements.active' | grep "current_agreement_id")
+  echo "$ACT"
 
   echo -e "Previous terminations"
-  ARC=$(curl -sSL $ANAX_API/agreement | jq -r '.agreements.archived' | grep "terminated_description" | awk '{print $0,"\n"}')
-  echo $ARC
+  ARC=$(curl -sSL "$ANAX_API/agreement" | jq -r '.agreements.archived' | grep "terminated_description" | awk '{print $0,"\n"}')
+  echo "$ARC"
 
   # =======================================================================================================================
   # This is phase 2 of the main test loop. The node is already running, so this time use the non-blocking form of the
   # unconfig API. This form requires that we poll GET /node to figure out when unconfiguration is complete.
   echo "Unconfig node, non-blocking"
   DEL=$(curl -sSLX DELETE "$ANAX_API/node?block=false")
-  if [ $? -ne 0 ]
+  rc=$?
+  if [ $rc -ne 0 ]
   then
-    echo -e "Error return from DELETE: $?"
+    echo -e "Error return from DELETE: $rc"
     exit 2
   fi
   if [ "$DEL" != "" ]
@@ -118,7 +121,6 @@ do
   # Start polling for unconfig completion. Unconfig could take several minutes if we are running this test with a blockchain
   # configuration.
   echo -e "Polling anax API for completion of device unconfigure."
-  COUNT=1
   while :
   do
     GET=$(curl -sSL "$ANAX_API/node")
@@ -128,7 +130,7 @@ do
       echo -e "Is anax still up: $GET"
 
       CS=$(echo "$GET" | jq -r '.configstate.state')
-      if [ "$CS" == "unconfigured" ]; then
+      if [ "$CS" = "unconfigured" ]; then
         break
       fi
     fi
@@ -139,7 +141,7 @@ do
 
   # Following the API call, the node's entry in the exchange should have some changes in it. The messaging key should be empty,
   # and the list of registered microservices should be empty.
-  NST=$(curl -sSL $CERT_VAR --header 'Accept: application/json' -u "e2edev@somecomp.com/e2edevadmin:e2edevadminpw" "${EXCH_URL}/orgs/$DEVICE_ORG/nodes/an12345" | jq -r '.')
+  NST=$(curl -sSL "${CERT_VAR[@]}" --header 'Accept: application/json' -u "e2edev@somecomp.com/e2edevadmin:e2edevadminpw" "${EXCH_URL}/orgs/$DEVICE_ORG/nodes/an12345" | jq -r '.')
   PK=$(echo "$NST" | jq -r '.publicKey')
   if [ "$PK" != "null" ]
   then
@@ -161,11 +163,8 @@ do
   # Simulate the auto-restart of anax and reconfig of the node.
   echo "Node unconfigured. Restart and reconfig node."
 
-  ./apireg.sh
-  if [ $? -ne 0 ]
-  then
+  if ! ./gov/apireg.sh; then
     echo "Node reconfig failed."
-    TESTFAIL="1"
     exit 2
   fi
 
@@ -177,11 +176,11 @@ do
 
   # Log the current state of agreements and previous agreements before we unconfigure again.
   echo -e "Current agreements"
-  ACT=$(curl -sSL $ANAX_API/agreement | jq -r '.agreements.active' | grep "current_agreement_id")
-  echo $ACT
+  ACT=$(curl -sSL "$ANAX_API/agreement" | jq -r '.agreements.active' | grep "current_agreement_id")
+  echo "$ACT"
 
   echo -e "Previous terminations"
-  ARC=$(curl -sSL $ANAX_API/agreement | jq -r '.agreements.archived' | grep "terminated_description" | awk '{print $0,"\n"}')
-  echo $ARC
+  ARC=$(curl -sSL "$ANAX_API/agreement" | jq -r '.agreements.archived' | grep "terminated_description" | awk '{print $0,"\n"}')
+  echo "$ARC"
 
 done

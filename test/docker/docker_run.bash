@@ -19,10 +19,10 @@ elif [[ "$(eval "$base_cmd")" != "" ]]; then
   fi
 fi
 
-eval "${@:2}"
+"${@:2}"
 
 # check that container is now running, if not exit with > 1
-if [[ "$(eval "$running_cmd")" == "" ]]; then
+if [[ "$(eval "$running_cmd")" = "" ]]; then
   (>&2 echo "Failure to ensure $container_name is running or to start it")
   exit 2
 fi
