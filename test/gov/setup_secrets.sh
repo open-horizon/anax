@@ -1,5 +1,7 @@
 #!/bin/bash
 
+AGBOT_SAPI_URL=${AGBOT_SAPI_URL:-http://127.0.0.1:3110}
+
 # Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
 if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
     set -x
