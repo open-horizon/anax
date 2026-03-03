@@ -115,12 +115,14 @@ jobs:
       - name: Verify Built Container Images
         run: docker images
 
-      # Compute a weekly date string used as part of cache keys for mutable image tags
-      # (testing, latest, e2edev). This ensures those images are refreshed once per week
-      # while still being reused across all runs within the same week.
-      - name: Compute weekly cache key date
+      # Compute daily and weekly date strings for cache keys.
+      # Daily keys for 'testing' tags ensure fresher images (updated within 24 hours).
+      # Weekly keys for 'latest' and 'e2edev' tags balance freshness with cache efficiency.
+      - name: Compute cache key dates
         id: date
-        run: echo "week=$(date -u +'%Y-%U')" >> "$GITHUB_OUTPUT"
+        run: |
+          echo "day=$(date -u +'%Y-%m-%d')" >> "$GITHUB_OUTPUT"
+          echo "week=$(date -u +'%Y-%U')" >> "$GITHUB_OUTPUT"
 
       # Cache each management hub image separately so changing one tag only invalidates
       # that image's cache entry. All management hub images (exchange, agbot, CSS, mongo,
@@ -134,7 +136,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /tmp/exchange-image.tar
-          key: exchange-image-${{ runner.os }}-testing-${{ steps.date.outputs.week }}
+          key: exchange-image-${{ runner.os }}-testing-${{ steps.date.outputs.day }}
           restore-keys: |
             exchange-image-${{ runner.os }}-testing-
 
@@ -199,7 +201,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /tmp/vault-image.tar
-          key: vault-image-${{ runner.os }}-testing-${{ steps.date.outputs.week }}
+          key: vault-image-${{ runner.os }}-testing-${{ steps.date.outputs.day }}
           restore-keys: |
             vault-image-${{ runner.os }}-testing-
 
@@ -309,57 +311,114 @@ jobs:
         continue-on-error: true
         if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
         run: |
-          docker ps -a --format "{{.ID}}  {{.Image}}  {{.Names}}"
-          echo ""
-          docker ps -a --format "{{.Names}}" | grep -v -E "^(agbot|css-api|exchange-api|e2edevtest|e2edevregistry|fdo-owner-services|bao|postgres|postgres-fdo-owner-service|mongo)$"
+          echo "=== All Containers ==="
+          docker ps -a --format "{{.ID}}  {{.Image}}  {{.Names}}" || echo "Failed to list containers"
           echo ""
           echo "=== Agent Service Container Logs ==="
-          for container in $(docker ps -a --format "{{.Names}}" | grep -v -E "^(agbot|css-api|exchange-api|e2edevtest|e2edevregistry|fdo-owner-services|bao|postgres|postgres-fdo-owner-service|mongo)$"); do
+          # Get list of agent service containers (exclude management hub containers)
+          agent_containers=$(docker ps -a --format "{{.Names}}" 2>/dev/null | grep -v -E "^(agbot|css-api|exchange-api|e2edevtest|e2edevregistry|fdo-owner-services|bao|postgres|postgres-fdo-owner-service|mongo)$" || true)
+          
+          if [ -z "$agent_containers" ]; then
+            echo "No agent service containers found"
+          else
+            echo "Found agent service containers:"
+            echo "$agent_containers"
             echo ""
-            echo "=========================================="
-            echo "Container: $container"
-            echo "Status: $(docker inspect --format='{{.State.Status}}' $container 2>/dev/null || echo 'unknown')"
-            echo "=========================================="
-            docker logs "$container" 2>&1 || echo "Failed to get logs for $container"
-            echo ""
-          done
+            for container in $agent_containers; do
+              echo ""
+              echo "=========================================="
+              echo "Container: $container"
+              echo "Status: $(docker inspect --format='{{.State.Status}}' "$container" 2>/dev/null || echo 'unknown')"
+              echo "=========================================="
+              docker logs "$container" 2>&1 || echo "Failed to get logs for $container"
+              echo ""
+            done
+          fi
 
       - name: Test Failure Catch - Check Agbot Docker Log
         continue-on-error: true
         if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: docker logs agbot
+        run: |
+          if docker ps -a --format "{{.Names}}" | grep -q "^agbot$"; then
+            echo "=== Agbot Container Log ==="
+            docker logs agbot 2>&1
+          else
+            echo "Agbot container not found"
+          fi
       
       - name: Test Failure Catch - Check Cloud Sync Service (CSS) Docker Log
         continue-on-error: true
         if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: docker logs css-api
+        run: |
+          if docker ps -a --format "{{.Names}}" | grep -q "^css-api$"; then
+            echo "=== CSS Container Log ==="
+            docker logs css-api 2>&1
+          else
+            echo "CSS container not found"
+          fi
 
       - name: Test Failure Catch - Check Exchange Docker Log
         continue-on-error: true
         if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: docker logs exchange-api
+        run: |
+          if docker ps -a --format "{{.Names}}" | grep -q "^exchange-api$"; then
+            echo "=== Exchange Container Log ==="
+            docker logs exchange-api 2>&1
+          else
+            echo "Exchange container not found"
+          fi
       
       - name: Test Failure Catch - Check k8s Pods
         continue-on-error: true
         if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: sudo -E snap run microk8s kubectl get pods -n agent-namespace -o wide
+        run: |
+          if command -v microk8s &> /dev/null; then
+            echo "=== Kubernetes Pods ==="
+            sudo -E snap run microk8s kubectl get pods -n agent-namespace -o wide 2>&1 || echo "No pods found or namespace doesn't exist"
+          else
+            echo "MicroK8s not available (may not be part of this test run)"
+          fi
 
       - name: Test Failure Catch - Check k8s Pods Description
         continue-on-error: true
         if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: sudo -E snap run microk8s kubectl describe pods -n agent-namespace
+        run: |
+          if command -v microk8s &> /dev/null; then
+            echo "=== Kubernetes Pod Descriptions ==="
+            sudo -E snap run microk8s kubectl describe pods -n agent-namespace 2>&1 || echo "No pods found or namespace doesn't exist"
+          else
+            echo "MicroK8s not available (may not be part of this test run)"
+          fi
 
       - name: Test Failure Catch - Check k8s Services
         continue-on-error: true
         if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: sudo -E snap run microk8s kubectl get services -n agent-namespace -o wide
+        run: |
+          if command -v microk8s &> /dev/null; then
+            echo "=== Kubernetes Services ==="
+            sudo -E snap run microk8s kubectl get services -n agent-namespace -o wide 2>&1 || echo "No services found or namespace doesn't exist"
+          else
+            echo "MicroK8s not available (may not be part of this test run)"
+          fi
 
       - name: Test Failure Catch - Check k8s Nodes
         continue-on-error: true
         if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: sudo -E snap run microk8s kubectl get nodes -n agent-namespace -o wide
+        run: |
+          if command -v microk8s &> /dev/null; then
+            echo "=== Kubernetes Nodes ==="
+            sudo -E snap run microk8s kubectl get nodes -o wide 2>&1 || echo "Failed to get nodes"
+          else
+            echo "MicroK8s not available (may not be part of this test run)"
+          fi
 
       - name: Test Failure Catch - Check k8s Pod Logs
         continue-on-error: true
         if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
-        run: sudo -E snap run microk8s kubectl logs -l app=agent --all-pods=true --all-containers=true -n agent-namespace
+        run: |
+          if command -v microk8s &> /dev/null; then
+            echo "=== Kubernetes Pod Logs ==="
+            sudo -E snap run microk8s kubectl logs -l app=agent --all-pods=true --all-containers=true -n agent-namespace 2>&1 || echo "No agent pods found or namespace doesn't exist"
+          else
+            echo "MicroK8s not available (may not be part of this test run)"
+          fi
