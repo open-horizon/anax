@@ -6,7 +6,7 @@ if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
 fi
 
 # Base directory for test resources (test/ directory - current working directory when script is called).
-E2EDEV_ROOT="$(pwd)"
+export E2EDEV_ROOT="$(pwd)"
 
 # $1 - results
 # $2 -
