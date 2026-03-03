@@ -1294,10 +1294,10 @@ fi
 
 # netspeed policy
 if [ "${NOVAULT}" != "1" ]; then
-  NS_DP="${E2EDEV_ROOT}/deployment_policies/userdev/netspeed_secrets.json"
+  NS_DP="${E2EDEV_ROOT}/gov/deployment_policies/userdev/netspeed_secrets.json"
 
 else
-  NS_DP="${E2EDEV_ROOT}/deployment_policies/userdev/netspeed.json"
+  NS_DP="${E2EDEV_ROOT}/gov/deployment_policies/userdev/netspeed.json"
 
 fi
 
@@ -1311,10 +1311,10 @@ results "$RES"
 
 # location policy 
 if [ "${NOVAULT}" != "1" ]; then
-  NS_DP="${E2EDEV_ROOT}/deployment_policies/userdev/location_secrets.json"
+  NS_DP="${E2EDEV_ROOT}/gov/deployment_policies/userdev/location_secrets.json"
 
 else
-  NS_DP="${E2EDEV_ROOT}/deployment_policies/userdev/location.json"
+  NS_DP="${E2EDEV_ROOT}/gov/deployment_policies/userdev/location.json"
 fi
 
 cat ${NS_DP} | envsubst > $KEY_TEST_DIR/policy_location.json
