@@ -56,13 +56,13 @@ DOCKER_TEST_ADD_HOST ?= "localhost:127.0.0.1"
 E2EDEV_HOST_IP := 127.0.0.1
 UDS ?= /var/run/horizon/
 API_KEY ?= 0
-DOCKER_CPU_TAG := 1.2.7
+export DOCKER_CPU_TAG := 1.2.7
 ICP_HOST_IP ?= 0
 ORG_ID ?=
 ifeq ($(arch),ppc64le)
-	DOCKER_CPU_INAME ?= openhorizon/ibm.cpu_$(arch)
+	export DOCKER_CPU_INAME ?= openhorizon/ibm.cpu_$(arch)
 else
-	DOCKER_CPU_INAME ?= openhorizon/ibm.cpu_amd64
+	export DOCKER_CPU_INAME ?= openhorizon/ibm.cpu_amd64
 endif
 
 # agbot

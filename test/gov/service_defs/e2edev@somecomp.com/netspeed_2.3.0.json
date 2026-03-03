@@ -55,7 +55,7 @@
   },
   "deploymentSignature":"",
   "clusterDeployment": {
-    "operatorYamlArchive": "/root/input_files/k8s_deploy/topservice-operator.tar.gz"
+    "operatorYamlArchive": "$PWD/gov/input_files/k8s_deploy/topservice-operator.tar.gz"
   },
   "clusterDeploymentSignature": ""
 }

@@ -99,7 +99,7 @@ fi
 
 # Setup real ARCH value in all test files
 log_message INFO "Setting up architecture in test files"
-for in_file in /root/input_files/compcheck/*.json; do
+for in_file in "$PWD"/input_files/compcheck/*.json; do
     sed -i -e "s#__ARCH__#${ARCH}#g" "$in_file"
     if [ $? -ne 0 ]; then
         log_message ERROR "Failed to set architecture in $in_file"
