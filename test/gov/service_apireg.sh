@@ -653,7 +653,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_k8s1.json
       }
   ],
   "clusterDeployment": {
-    "operatorYamlArchive": ""${E2EDEV_ROOT}"/gov/input_files/k8s_deploy/topservice-operator/topservice-operator.tar.gz"
+    "operatorYamlArchive": "${E2EDEV_ROOT}/gov/input_files/k8s_deploy/topservice-operator/topservice-operator.tar.gz"
    },
   "clusterDeploymentSignature": ""
 }
@@ -695,7 +695,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_k8s_embedded_ns.json
       }
   ],
   "clusterDeployment": {
-    "operatorYamlArchive": ""${E2EDEV_ROOT}"/gov/input_files/k8s_deploy/topservice-operator-with-embedded-ns/topservice-operator-with-embedded-ns.tar.gz"
+    "operatorYamlArchive": "${E2EDEV_ROOT}/gov/input_files/k8s_deploy/topservice-operator-with-embedded-ns/topservice-operator-with-embedded-ns.tar.gz"
    },
   "clusterDeploymentSignature": ""
 }
@@ -737,7 +737,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_k8s_secret.json
       }
   ],
   "clusterDeployment": {
-    "operatorYamlArchive": ""${E2EDEV_ROOT}"/gov/input_files/k8s_deploy/k8s-secret-operator/k8s-secret-operator.tar.gz",
+    "operatorYamlArchive": "${E2EDEV_ROOT}/gov/input_files/k8s_deploy/k8s-secret-operator/k8s-secret-operator.tar.gz",
     "secrets": {
           "secret1": {"description": "Secret 1 for cluster hello-secret."},
           "secret2": {
@@ -787,7 +787,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_k8s_mms.json
     }
   ],
   "clusterDeployment": {
-    "operatorYamlArchive": ""${E2EDEV_ROOT}"/gov/input_files/k8s_deploy/k8s-mms-operator/k8s-mms-operator.tar.gz"
+    "operatorYamlArchive": "${E2EDEV_ROOT}/gov/input_files/k8s_deploy/k8s-mms-operator/k8s-mms-operator.tar.gz"
   },
   "clusterDeploymentSignature": ""
 }

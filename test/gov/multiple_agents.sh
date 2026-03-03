@@ -6,7 +6,7 @@ if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
 fi
 
 # Base directory for test resources (test/ directory, one level up from this script).
-E2EDEV_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+E2EDEV_ROOT="$(pwd)"
 
 PREFIX="Multiple agents:"
 
