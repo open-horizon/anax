@@ -25,7 +25,7 @@ jobs:
 
     # Variables that are available to all steps in the job
     env:
-      GOPATH: /home/runner/${{github.repository}}/go
+      GOPATH: ${{ github.workspace }}/go
       DOCKER_CONFIG: /home/runner/.docker-config
       # Note: GitHub Actions automatically sets RUNNER_DEBUG=1 in the environment when
       # step debug logging is enabled (via ACTIONS_STEP_DEBUG=true repository secret).
@@ -207,9 +207,28 @@ jobs:
         if: steps.cache-vault-image.outputs.cache-hit == 'true'
         run: docker load -i /tmp/vault-image.tar
 
+      - name: Verify cached images loaded
+        run: |
+          echo "Verifying cached images are present..."
+          docker images
+          echo ""
+          echo "Checking for required management hub images..."
+          for img in "quay.io/openhorizon/amd64_exchange-api:testing" \
+                     "openhorizon/amd64_agbot:e2edev" \
+                     "openhorizon/amd64_cloud-sync-service:latest" \
+                     "mongo:4.0.6" \
+                     "postgres:17" \
+                     "openhorizon/amd64_vault:testing"; do
+            if docker image inspect "$img" > /dev/null 2>&1; then
+              echo "✓ Found: $img"
+            else
+              echo "⚠ Missing: $img (will be pulled during test)"
+            fi
+          done
+
       - name: E2E Development Test
         id: test-runner
-        run: cd ${GOPATH}/src/github.com/open-horizon/anax && make -C test test-no-clean TEST_VARS=${{matrix.tests}}
+        run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make -C test test-no-clean TEST_VARS=${{matrix.tests}}
 
       # Save service images built during the test run for future cache hits.
       # Images are tagged as localhost:443/amd64_*:1.0 and hello:1.0 by the service Makefiles.
