@@ -5,8 +5,8 @@ if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
     set -x
 fi
 
-# Base directory for test resources (test/ directory, one level up from this script).
-E2EDEV_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+# Base directory for test resources (test/ directory - current working directory when script is called).
+E2EDEV_ROOT="$(pwd)"
 
 # $1 - results
 # $2 -
