@@ -25,7 +25,7 @@ jobs:
 
     # Variables that are available to all steps in the job
     env:
-      GOPATH: /home/runner/work/anax/anax/go
+      GOPATH: /home/runner/${{github.repository}}/go
       DOCKER_CONFIG: /home/runner/.docker-config
       # Note: GitHub Actions automatically sets RUNNER_DEBUG=1 in the environment when
       # step debug logging is enabled (via ACTIONS_STEP_DEBUG=true repository secret).
