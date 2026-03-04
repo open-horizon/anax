@@ -196,29 +196,6 @@ while [ ${DEVICE_NUM} -lt ${NUM_AGENTS} ]; do
   DEVICE_NUM=$(( DEVICE_NUM + 1 ))
 done
 
-# Register agreement bot in the exchange
-if [ "$NOAGBOT" != "1" ] && [ "$TESTFAIL" != "1" ]
-then
-  AGBOT_AUTH="root/root:${EXCH_ROOTPW}"
-  ORG="IBM"
-
-  # register all patterns and business policies for e2edev@somecomp.com org to agbot1
-  REGAGBOTE2EDEV=$(curl -sSL -X POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"patternOrgid":"e2edev@somecomp.com","pattern":"*", "nodeOrgid": "e2edev@somecomp.com"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/deployment/patterns" | jq -r '.code, .msg')
-  echo "$REGAGBOTE2EDEV"
-
-  REGAGBOTE2EDEV=$(curl -sSL -X POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"businessPolOrgid":"e2edev@somecomp.com","businessPol":"*", "nodeOrgid": "e2edev@somecomp.com"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/deployment/policies" | jq -r '.code, .msg')
-  echo "$REGAGBOTE2EDEV"
-
-  # register all patterns and business policies for userdev org to agbot1
-  REGAGBOTUSERDEV=$(curl -sSL -X POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"patternOrgid":"e2edev@somecomp.com","pattern":"*", "nodeOrgid": "userdev"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/deployment/patterns" | jq -r '.code, .msg')
-  echo "$REGAGBOTUSERDEV"
-
-  REGAGBOTUSERDEV=$(curl -sSL -X POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"businessPolOrgid":"userdev","businessPol":"*", "nodeOrgid": "userdev"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/deployment/policies" | jq -r '.code, .msg')
-  echo "$REGAGBOTUSERDEV"
-
-  sleep 30
-fi
-
 # Create Orgs in CSS
  ./gov/init_sync_service.sh
 
@@ -248,12 +225,33 @@ else
   echo "Register services SUCCESSFUL"
 fi
 
-# add just one specific pattern for agbot served patterns, just for testing.
+# Register agreement bot patterns and business policies in the exchange
+# This must happen AFTER patterns and business policies are created in the exchange
 if [ "$NOAGBOT" != "1" ] && [ "$TESTFAIL" != "1" ]
 then
   AGBOT_AUTH="root/root:${EXCH_ROOTPW}"
   ORG="IBM"
+
+  echo "Registering agbot to manage patterns and business policies..."
+
+  # register all patterns and business policies for e2edev@somecomp.com org to agbot1
+  REGAGBOTE2EDEV=$(curl -sSL -X POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"patternOrgid":"e2edev@somecomp.com","pattern":"*", "nodeOrgid": "e2edev@somecomp.com"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/patterns" | jq -r '.code, .msg')
+  echo "$REGAGBOTE2EDEV"
+
+  REGAGBOTE2EDEV=$(curl -sSL -X POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"businessPolOrgid":"e2edev@somecomp.com","businessPol":"*", "nodeOrgid": "e2edev@somecomp.com"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/businesspols" | jq -r '.code, .msg')
+  echo "$REGAGBOTE2EDEV"
+
+  # register all patterns and business policies for userdev org to agbot1
+  REGAGBOTUSERDEV=$(curl -sSL -X POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"patternOrgid":"e2edev@somecomp.com","pattern":"*", "nodeOrgid": "userdev"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/patterns" | jq -r '.code, .msg')
+  echo "$REGAGBOTUSERDEV"
+
+  REGAGBOTUSERDEV=$(curl -sSL -X POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"businessPolOrgid":"userdev","businessPol":"*", "nodeOrgid": "userdev"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/businesspols" | jq -r '.code, .msg')
+  echo "$REGAGBOTUSERDEV"
+
+  # add just one specific pattern for agbot served patterns, just for testing.
   # keep one just for testing this api
   REGAGBOTSNS=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"patternOrgid":"e2edev@somecomp.com","pattern":"sns"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/deployment/patterns" | jq -r '.msg')
   echo "$REGAGBOTSNS"
+
+  sleep 30
 fi

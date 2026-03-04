@@ -1360,3 +1360,154 @@ GitHub Actions automatically copy documentation on pushes to master branch. See 
 - [Deployment Policies](docs/deployment_policy.md)
 - [Node Management](docs/node_management_overview.md)
 - [Test Environment Setup](test/README.md)
+
+## GitHub Actions Workflow Best Practices
+
+### Caching Strategy for CI/CD Pipelines
+
+When implementing caching in GitHub Actions workflows, follow these principles to ensure cache effectiveness even during development and debugging phases:
+
+#### The "Never Had a Happy Path" Problem
+
+**Problem**: Traditional caching strategies only save cache on successful workflow runs. If tests consistently fail during development or debugging, the cache never gets populated, leading to:
+- Repeated expensive image pulls on every run
+- Slower iteration cycles when fixing issues
+- Wasted network bandwidth
+- Longer time to first successful run
+
+**Solution**: Use `if: always()` conditions on cache save steps to ensure caching happens regardless of test outcomes.
+
+#### Implementation Pattern
+
+**1. Pre-Pull Strategy (Before Tests)**
+```yaml
+# Pull images if not in cache AND not already in Docker daemon
+- name: Pull base image if not cached
+  if: steps.cache-image.outputs.cache-hit != 'true'
+  run: |
+    if ! docker image inspect alpine:latest > /dev/null 2>&1; then
+      echo "Pulling alpine:latest..."
+      docker pull alpine:latest
+    else
+      echo "alpine:latest already present, skipping pull"
+    fi
+```
+
+**Benefits:**
+- Avoids redundant pulls if image already exists
+- Ensures images are available before tests run
+- Enables caching even if tests fail immediately
+
+**2. Always-Save Strategy (After Tests)**
+```yaml
+# Save to cache whether tests pass or fail
+- name: Save image to cache
+  if: always() && steps.cache-image.outputs.cache-hit != 'true'
+  continue-on-error: true
+  run: |
+    if docker image inspect alpine:latest > /dev/null 2>&1; then
+      echo "Saving alpine:latest to cache..."
+      docker save alpine:latest -o /tmp/alpine-image.tar
+    else
+      echo "alpine:latest not found, skipping cache save"
+    fi
+```
+
+**Benefits:**
+- Cache builds up even during debugging/fixing phase
+- Subsequent runs benefit from cached images
+- Faster iteration when fixing failing tests
+- `continue-on-error: true` prevents blocking failure diagnostics
+
+#### Cache Key Strategy
+
+**Weekly Rotation for Mutable Tags:**
+```yaml
+key: alpine-image-${{ runner.os }}-latest-${{ steps.date.outputs.week }}
+restore-keys: |
+  alpine-image-${{ runner.os }}-latest-
+```
+
+**Benefits:**
+- Balances freshness with cache efficiency
+- Mutable tags (`:latest`, `:testing`) get refreshed weekly
+- Restore-keys provide fallback to previous week's cache
+
+**Stable Keys for Pinned Tags:**
+```yaml
+key: mongo-image-${{ runner.os }}-4.0.6
+```
+
+**Benefits:**
+- Pinned versions never change, so cache key is constant
+- Maximum cache hit rate for stable dependencies
+
+#### Workflow Execution Flow
+
+**First Run (No Cache, Tests Fail):**
+1. Cache miss → Pull images (only if not present)
+2. Tests run and fail
+3. `always()` condition → Images still saved to cache ✓
+4. Next run benefits from cached images
+
+**Second Run (Cache Hit):**
+1. Cache hit → Load images from cache (no pull)
+2. Tests run (pass or fail)
+3. Cache already populated, no save needed
+
+**Result:** Cache builds incrementally even during development, reducing iteration time and network usage.
+
+#### Best Practices Summary
+
+1. **Use `if: always()` on save steps** - Ensures caching happens regardless of test outcome
+2. **Check before pulling** - Avoid redundant pulls if image already exists in Docker daemon
+3. **Use `continue-on-error: true`** - Prevents cache failures from blocking diagnostics
+4. **Separate cache entries** - One cache entry per image for independent invalidation
+5. **Weekly rotation for mutable tags** - Balances freshness with cache efficiency
+6. **Stable keys for pinned versions** - Maximizes cache hits for unchanging dependencies
+7. **Pre-pull before tests** - Ensures images available even if tests fail early
+
+#### Go Build Cache Strategy
+
+The Go build cache (`~/.cache/go-build`) also benefits from the always-save strategy:
+
+```yaml
+# Restore Go build cache
+- name: Cache Go build cache
+  id: cache-go-build
+  uses: actions/cache@v4
+  with:
+    path: ~/.cache/go-build
+    key: go-build-${{ runner.os }}-go1.24-${{ hashFiles('**/*.go') }}
+    restore-keys: |
+      go-build-${{ runner.os }}-go1.24-
+
+# Build step happens here...
+
+# Save Go build cache even if tests fail
+- name: Save Go build cache
+  if: always() && steps.cache-go-build.outputs.cache-hit != 'true'
+  uses: actions/cache/save@v4
+  with:
+    path: ~/.cache/go-build
+    key: ${{ steps.cache-go-build.outputs.cache-primary-key }}
+```
+
+**Benefits:**
+- Compiled artifacts cached even when tests fail
+- Faster builds on subsequent runs
+- Reduced compilation time during debugging
+- Works with `actions/cache/save` for explicit post-job saving
+
+**Note:** The `setup-go` action's built-in cache (`cache: true`) handles Go module dependencies (`$GOPATH/pkg/mod`) automatically, but only saves on success. For build artifacts, use the explicit save pattern above.
+
+#### Example: E2E Test Workflow
+
+See [`.github/workflows/E2E-test.yml`](.github/workflows/E2E-test.yml) for a complete implementation that caches:
+- Go build cache (`~/.cache/go-build`) - saved even on test failure
+- Go module dependencies (`$GOPATH/pkg/mod`) - handled by setup-go action
+- Base images (alpine:latest, registry.access.redhat.com/ubi9-minimal:latest)
+- Management hub images (Exchange, Agbot, CSS, MongoDB, PostgreSQL, Vault)
+- Service images built during tests
+
+This strategy ensures the cache builds up progressively, even when tests are failing during development, significantly reducing iteration time, compilation time, and network bandwidth usage.
