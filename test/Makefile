@@ -77,7 +77,7 @@ endif
 AGBOT_API ?= http://127.0.0.1:3110
 AGBOT2_API ?= http://agbot2:8080
 AGBOT_SAPI_URL ?= $(HZN_TRANSPORT)://127.0.0.1:3110
-AGBOT_NAME ?= agbot
+AGBOT_NAME ?= agbot1
 AGBOT_TOKEN ?= Abcdefghijklmno1
 
 # exchange
