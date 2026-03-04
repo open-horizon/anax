@@ -60,9 +60,9 @@ fi
  # DL8IBM=$(curl -X DELETE "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"password":"ibmadminpw","email":"ibmadmin%40ibm.com","admin":true}' "${EXCH_URL}/orgs/IBM/users/ibmadmin" | jq -r '.code, .msg')
  # echo "$DL8IBM"
 
-  # Delete agreement bot user in the exchange
-  echo "Delete Agbot user..."
-  DL8AGBOT=$(curl -X DELETE "${CERT_VAR[@]}" --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/users/agbot1" | jq -r '.code, .msg')
+  # Delete agreement bot in the exchange
+  echo "Delete Agbot..."
+  DL8AGBOT=$(curl -X DELETE "${CERT_VAR[@]}" --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/agbot1" | jq -r '.code, .msg')
   echo "$DL8AGBOT"
 
   echo "Delete network_1.5.0 ..."
@@ -149,7 +149,7 @@ echo "$CR8IBM"
 
 # Register agreement bot user in the exchange
 echo "Creating Agbot user..."
-CR8AGBOT=$(curl -sSL -X POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"password":"Abcdefghijklmno1","email":"me%40gmail.com","admin":false}' "${EXCH_URL}/orgs/IBM/users/agbot1" | jq -r '.code, .msg')
+CR8AGBOT=$(curl -sSL -X POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"name":"agbot1","publicKey":"","token":"Abcdefghijklmno1",}' "${EXCH_URL}/orgs/IBM/agbot/agbot1" | jq -r '.code, .msg')
 echo "$CR8AGBOT"
 
 # Register users in the exchange

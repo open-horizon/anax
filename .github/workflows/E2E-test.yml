@@ -48,13 +48,11 @@ jobs:
           cache: true
           cache-dependency-path: go/src/github.com/${{github.repository}}/go.sum
 
-      # Cache the Go build cache (~/.cache/go-build) to speed up compilation of anax binaries.
-      # The key includes the Go version and a hash of all Go source files so the cache is
-      # invalidated whenever source code changes. The restore-key falls back to any prior
-      # build cache for the same OS/Go version, allowing incremental reuse even on cache miss.
-      - name: Cache Go build cache
+      # Restore Go build cache to speed up compilation. We use restore-only here
+      # and explicitly save later with actions/cache/save so cache is saved even on test failure.
+      - name: Restore Go build cache
         id: cache-go-build
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: ~/.cache/go-build
           key: go-build-${{ runner.os }}-go1.24-${{ hashFiles('**/*.go') }}
@@ -78,38 +76,36 @@ jobs:
       - name: Build anax binaries
         run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make
 
-      # Cache the Docker registry image (pinned by digest - key is constant so always hits after first run)
-      - name: Cache Docker registry image
+      # Restore Docker registry image from cache (pinned by digest - key is constant so always hits after first run)
+      - name: Restore Docker registry image from cache
         id: cache-registry-image
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: /tmp/registry-image.tar
           key: registry-image-${{ runner.os }}-sha256-7d081088e4bfd632a88e3f3bcd9e007ef44a796fddfe3261407a3f9f04abe1e7
 
-      - name: Restore Docker registry image from cache
+      - name: Load Docker registry image from cache
         if: steps.cache-registry-image.outputs.cache-hit == 'true'
         run: docker load -i /tmp/registry-image.tar
 
-      - name: Pull and save Docker registry image to cache
+      - name: Pull Docker registry image if not cached
         if: steps.cache-registry-image.outputs.cache-hit != 'true'
-        run: |
-          docker pull registry@sha256:7d081088e4bfd632a88e3f3bcd9e007ef44a796fddfe3261407a3f9f04abe1e7
-          docker save registry@sha256:7d081088e4bfd632a88e3f3bcd9e007ef44a796fddfe3261407a3f9f04abe1e7 -o /tmp/registry-image.tar
+        run: docker pull registry@sha256:7d081088e4bfd632a88e3f3bcd9e007ef44a796fddfe3261407a3f9f04abe1e7
 
-      # Cache the e2edev service images built from test/docker/fs/ Dockerfiles.
+      # Restore e2edev service images built from test/docker/fs/ Dockerfiles.
       # These images (cpu, leaf, hello, usehello, helm/hello) are built at test runtime
       # by hzn_dev_services.sh via 'make ARCH=amd64' in each service directory.
       # Key is based on all service Dockerfiles so cache is invalidated on any change.
-      - name: Cache e2edev service images
+      - name: Restore e2edev service images from cache
         id: cache-service-images
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: /tmp/e2edev-service-images.tar
           key: e2edev-service-images-${{ runner.os }}-${{ hashFiles('go/src/github.com/**/test/docker/fs/hzn/**', 'go/src/github.com/**/test/docker/fs/helm/**') }}
           restore-keys: |
             e2edev-service-images-${{ runner.os }}-
 
-      - name: Restore e2edev service images from cache
+      - name: Load e2edev service images from cache
         if: steps.cache-service-images.outputs.cache-hit == 'true'
         run: docker load -i /tmp/e2edev-service-images.tar
 
@@ -132,81 +128,81 @@ jobs:
       # in the Docker daemon (avoiding registry pulls), then save them after the test.
       # Mutable tags (testing, latest, e2edev) use a weekly key; pinned tags use a stable key.
 
-      - name: Cache Exchange image
+      - name: Restore Exchange image from cache
         id: cache-exchange-image
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: /tmp/exchange-image.tar
           key: exchange-image-${{ runner.os }}-testing-${{ steps.date.outputs.day }}
           restore-keys: |
             exchange-image-${{ runner.os }}-testing-
 
-      - name: Restore Exchange image from cache
+      - name: Load Exchange image from cache
         if: steps.cache-exchange-image.outputs.cache-hit == 'true'
         run: docker load -i /tmp/exchange-image.tar
 
-      - name: Cache Agbot image
+      - name: Restore Agbot image from cache
         id: cache-agbot-image
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: /tmp/agbot-image.tar
           key: agbot-image-${{ runner.os }}-e2edev-${{ steps.date.outputs.week }}
           restore-keys: |
             agbot-image-${{ runner.os }}-e2edev-
 
-      - name: Restore Agbot image from cache
+      - name: Load Agbot image from cache
         if: steps.cache-agbot-image.outputs.cache-hit == 'true'
         run: docker load -i /tmp/agbot-image.tar
 
-      - name: Cache CSS image
+      - name: Restore CSS image from cache
         id: cache-css-image
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: /tmp/css-image.tar
           key: css-image-${{ runner.os }}-latest-${{ steps.date.outputs.week }}
           restore-keys: |
             css-image-${{ runner.os }}-latest-
 
-      - name: Restore CSS image from cache
+      - name: Load CSS image from cache
         if: steps.cache-css-image.outputs.cache-hit == 'true'
         run: docker load -i /tmp/css-image.tar
 
-      - name: Cache MongoDB image
+      - name: Restore MongoDB image from cache
         id: cache-mongo-image
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: /tmp/mongo-image.tar
           key: mongo-image-${{ runner.os }}-4.0.6
           restore-keys: |
             mongo-image-${{ runner.os }}-
 
-      - name: Restore MongoDB image from cache
+      - name: Load MongoDB image from cache
         if: steps.cache-mongo-image.outputs.cache-hit == 'true'
         run: docker load -i /tmp/mongo-image.tar
 
-      - name: Cache PostgreSQL image
+      - name: Restore PostgreSQL image from cache
         id: cache-postgres-image
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: /tmp/postgres-image.tar
           key: postgres-image-${{ runner.os }}-17
           restore-keys: |
             postgres-image-${{ runner.os }}-
 
-      - name: Restore PostgreSQL image from cache
+      - name: Load PostgreSQL image from cache
         if: steps.cache-postgres-image.outputs.cache-hit == 'true'
         run: docker load -i /tmp/postgres-image.tar
 
-      - name: Cache Vault image
+      - name: Restore Vault image from cache
         id: cache-vault-image
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: /tmp/vault-image.tar
           key: vault-image-${{ runner.os }}-testing-${{ steps.date.outputs.day }}
           restore-keys: |
             vault-image-${{ runner.os }}-testing-
 
-      - name: Restore Vault image from cache
+      - name: Load Vault image from cache
         if: steps.cache-vault-image.outputs.cache-hit == 'true'
         run: docker load -i /tmp/vault-image.tar
 
@@ -214,29 +210,29 @@ jobs:
       # alpine:latest is used by test service Dockerfiles (cpu, leaf, hello, usehello, helm/hello).
       # UBI9 is used by production container builds (anax, agbot, CSS, ESS).
       # Weekly cache key balances freshness with cache efficiency for these mutable tags.
-      - name: Cache Alpine base image
+      - name: Restore Alpine base image from cache
         id: cache-alpine-image
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: /tmp/alpine-image.tar
           key: alpine-image-${{ runner.os }}-latest-${{ steps.date.outputs.week }}
           restore-keys: |
             alpine-image-${{ runner.os }}-latest-
 
-      - name: Restore Alpine base image from cache
+      - name: Load Alpine base image from cache
         if: steps.cache-alpine-image.outputs.cache-hit == 'true'
         run: docker load -i /tmp/alpine-image.tar
 
-      - name: Cache Red Hat UBI9 base image
+      - name: Restore Red Hat UBI9 base image from cache
         id: cache-ubi-image
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: /tmp/ubi-image.tar
           key: ubi-image-${{ runner.os }}-ubi9-minimal-latest-${{ steps.date.outputs.week }}
           restore-keys: |
             ubi-image-${{ runner.os }}-ubi9-minimal-latest-
 
-      - name: Restore Red Hat UBI9 base image from cache
+      - name: Load Red Hat UBI9 base image from cache
         if: steps.cache-ubi-image.outputs.cache-hit == 'true'
         run: docker load -i /tmp/ubi-image.tar
 
@@ -296,105 +292,165 @@ jobs:
         id: test-runner
         run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make -C test test-no-clean TEST_VARS=${{matrix.tests}}
 
-      # Save Go build cache to ensure it's available for next run even if tests fail.
-      # The actions/cache action only saves on success by default, but we want to save
-      # the build cache even when tests fail so subsequent runs benefit from compiled artifacts.
-      # This uses actions/cache/save action which is designed for post-job cache saving.
+      # Save Go build cache even if tests fail so subsequent runs benefit from compiled artifacts.
+      # Uses actions/cache/save which works with the actions/cache/restore used earlier.
       - name: Save Go build cache
-        if: always() && steps.cache-go-build.outputs.cache-hit != 'true'
+        if: always()
         uses: actions/cache/save@v4
         with:
           path: ~/.cache/go-build
           key: go-build-${{ runner.os }}-go1.24-${{ hashFiles('**/*.go') }}
 
-      # Save service images built during the test run for future cache hits.
-      # Images are tagged as localhost:443/amd64_*:1.0 and hello:1.0 by the service Makefiles.
-      # Using always() ensures caching happens even if tests fail, building cache for next run.
-      # continue-on-error so a partial test run (some images missing) does not block failure diagnostics.
-      - name: Save e2edev service images to cache
-        if: always() && steps.cache-service-images.outputs.cache-hit != 'true'
+      # Save Docker registry image to cache (always save even if tests fail)
+      - name: Save Docker registry image to cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: /tmp/registry-image.tar
+          key: registry-image-${{ runner.os }}-sha256-7d081088e4bfd632a88e3f3bcd9e007ef44a796fddfe3261407a3f9f04abe1e7
+
+      # Save service images: first create tar file, then save to cache
+      - name: Create e2edev service images tar
+        if: always()
         continue-on-error: true
         run: |
-          images=$(docker images --format '{{.Repository}}:{{.Tag}}' | grep -E '^(localhost:443/amd64_|hello:1\.0)')
+          images=$(docker images --format '{{.Repository}}:{{.Tag}}' | grep -E '^(localhost:443/amd64_|hello:1\.0)' || true)
           if [ -n "$images" ]; then
+            echo "Saving service images: $images"
             # shellcheck disable=SC2086
             docker save $images -o /tmp/e2edev-service-images.tar
+          else
+            echo "No service images found to save"
           fi
 
-      # Save management hub images pulled/built during the test run for future cache hits.
-      # deploy-mgmt-hub.sh pulls exchange, agbot, CSS, mongo, postgres, vault images.
-      # Each image is saved to its own tar so individual cache entries can be invalidated
-      # independently when tags change. Using always() ensures caching happens even if tests fail.
-      # continue-on-error so missing images don't block diagnostics.
-      - name: Save Exchange image to cache
-        if: always() && steps.cache-exchange-image.outputs.cache-hit != 'true'
+      - name: Save e2edev service images to cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: /tmp/e2edev-service-images.tar
+          key: e2edev-service-images-${{ runner.os }}-${{ hashFiles('go/src/github.com/**/test/docker/fs/hzn/**', 'go/src/github.com/**/test/docker/fs/helm/**') }}
+
+      # Save management hub images: create tar files then save to cache
+      - name: Create Exchange image tar
+        if: always()
         continue-on-error: true
         run: |
           if docker image inspect quay.io/openhorizon/amd64_exchange-api:testing > /dev/null 2>&1; then
             docker save quay.io/openhorizon/amd64_exchange-api:testing -o /tmp/exchange-image.tar
           fi
 
-      - name: Save Agbot image to cache
-        if: always() && steps.cache-agbot-image.outputs.cache-hit != 'true'
+      - name: Save Exchange image to cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: /tmp/exchange-image.tar
+          key: exchange-image-${{ runner.os }}-testing-${{ steps.date.outputs.day }}
+
+      - name: Create Agbot image tar
+        if: always()
         continue-on-error: true
         run: |
           if docker image inspect openhorizon/amd64_agbot:e2edev > /dev/null 2>&1; then
             docker save openhorizon/amd64_agbot:e2edev -o /tmp/agbot-image.tar
           fi
 
-      - name: Save CSS image to cache
-        if: always() && steps.cache-css-image.outputs.cache-hit != 'true'
+      - name: Save Agbot image to cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: /tmp/agbot-image.tar
+          key: agbot-image-${{ runner.os }}-e2edev-${{ steps.date.outputs.week }}
+
+      - name: Create CSS image tar
+        if: always()
         continue-on-error: true
         run: |
           if docker image inspect openhorizon/amd64_cloud-sync-service:latest > /dev/null 2>&1; then
             docker save openhorizon/amd64_cloud-sync-service:latest -o /tmp/css-image.tar
           fi
 
-      - name: Save MongoDB image to cache
-        if: always() && steps.cache-mongo-image.outputs.cache-hit != 'true'
+      - name: Save CSS image to cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: /tmp/css-image.tar
+          key: css-image-${{ runner.os }}-latest-${{ steps.date.outputs.week }}
+
+      - name: Create MongoDB image tar
+        if: always()
         continue-on-error: true
         run: |
           if docker image inspect mongo:4.0.6 > /dev/null 2>&1; then
             docker save mongo:4.0.6 -o /tmp/mongo-image.tar
           fi
 
-      - name: Save PostgreSQL image to cache
-        if: always() && steps.cache-postgres-image.outputs.cache-hit != 'true'
+      - name: Save MongoDB image to cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: /tmp/mongo-image.tar
+          key: mongo-image-${{ runner.os }}-4.0.6
+
+      - name: Create PostgreSQL image tar
+        if: always()
         continue-on-error: true
         run: |
           if docker image inspect postgres:17 > /dev/null 2>&1; then
             docker save postgres:17 -o /tmp/postgres-image.tar
           fi
 
-      - name: Save Vault image to cache
-        if: always() && steps.cache-vault-image.outputs.cache-hit != 'true'
+      - name: Save PostgreSQL image to cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: /tmp/postgres-image.tar
+          key: postgres-image-${{ runner.os }}-17
+
+      - name: Create Vault image tar
+        if: always()
         continue-on-error: true
         run: |
           if docker image inspect openhorizon/amd64_vault:testing > /dev/null 2>&1; then
             docker save openhorizon/amd64_vault:testing -o /tmp/vault-image.tar
           fi
 
-      - name: Save Alpine base image to cache
-        if: always() && steps.cache-alpine-image.outputs.cache-hit != 'true'
+      - name: Save Vault image to cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: /tmp/vault-image.tar
+          key: vault-image-${{ runner.os }}-testing-${{ steps.date.outputs.day }}
+
+      # Save base images
+      - name: Create Alpine image tar
+        if: always()
         continue-on-error: true
         run: |
           if docker image inspect alpine:latest > /dev/null 2>&1; then
-            echo "Saving alpine:latest to cache..."
             docker save alpine:latest -o /tmp/alpine-image.tar
-          else
-            echo "alpine:latest not found, skipping cache save"
           fi
 
-      - name: Save Red Hat UBI9 base image to cache
-        if: always() && steps.cache-ubi-image.outputs.cache-hit != 'true'
+      - name: Save Alpine base image to cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: /tmp/alpine-image.tar
+          key: alpine-image-${{ runner.os }}-latest-${{ steps.date.outputs.week }}
+
+      - name: Create UBI9 image tar
+        if: always()
         continue-on-error: true
         run: |
           if docker image inspect registry.access.redhat.com/ubi9-minimal:latest > /dev/null 2>&1; then
-            echo "Saving registry.access.redhat.com/ubi9-minimal:latest to cache..."
             docker save registry.access.redhat.com/ubi9-minimal:latest -o /tmp/ubi-image.tar
-          else
-            echo "registry.access.redhat.com/ubi9-minimal:latest not found, skipping cache save"
           fi
+
+      - name: Save Red Hat UBI9 base image to cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: /tmp/ubi-image.tar
+          key: ubi-image-${{ runner.os }}-ubi9-minimal-latest-${{ steps.date.outputs.week }}
       
       - name: Test Failure Catch - Check Docker Images
         continue-on-error: true
