@@ -236,6 +236,60 @@ jobs:
         if: steps.cache-ubi-image.outputs.cache-hit == 'true'
         run: docker load -i /tmp/ubi-image.tar
 
+      # Cache anax-built images (anax, anax_k8s, agbot, ESS) that are built during the test.
+      # These are built from source and tagged with version numbers, so we use a content-based key.
+      - name: Restore anax agent image from cache
+        id: cache-anax-image
+        uses: actions/cache/restore@v4
+        with:
+          path: /tmp/anax-image.tar
+          key: anax-image-${{ runner.os }}-${{ hashFiles('go/src/github.com/**/anax/**', 'go/src/github.com/**/Makefile') }}
+          restore-keys: |
+            anax-image-${{ runner.os }}-
+
+      - name: Load anax agent image from cache
+        if: steps.cache-anax-image.outputs.cache-hit == 'true'
+        run: docker load -i /tmp/anax-image.tar
+
+      - name: Restore anax k8s image from cache
+        id: cache-anax-k8s-image
+        uses: actions/cache/restore@v4
+        with:
+          path: /tmp/anax-k8s-image.tar
+          key: anax-k8s-image-${{ runner.os }}-${{ hashFiles('go/src/github.com/**/anax-in-k8s/**', 'go/src/github.com/**/Makefile') }}
+          restore-keys: |
+            anax-k8s-image-${{ runner.os }}-
+
+      - name: Load anax k8s image from cache
+        if: steps.cache-anax-k8s-image.outputs.cache-hit == 'true'
+        run: docker load -i /tmp/anax-k8s-image.tar
+
+      - name: Restore agbot testing image from cache
+        id: cache-agbot-testing-image
+        uses: actions/cache/restore@v4
+        with:
+          path: /tmp/agbot-testing-image.tar
+          key: agbot-testing-image-${{ runner.os }}-${{ hashFiles('go/src/github.com/**/agreementbot/**', 'go/src/github.com/**/Makefile') }}
+          restore-keys: |
+            agbot-testing-image-${{ runner.os }}-
+
+      - name: Load agbot testing image from cache
+        if: steps.cache-agbot-testing-image.outputs.cache-hit == 'true'
+        run: docker load -i /tmp/agbot-testing-image.tar
+
+      - name: Restore ESS image from cache
+        id: cache-ess-image
+        uses: actions/cache/restore@v4
+        with:
+          path: /tmp/ess-image.tar
+          key: ess-image-${{ runner.os }}-${{ hashFiles('go/src/github.com/**/ess/**', 'go/src/github.com/**/Makefile') }}
+          restore-keys: |
+            ess-image-${{ runner.os }}-
+
+      - name: Load ESS image from cache
+        if: steps.cache-ess-image.outputs.cache-hit == 'true'
+        run: docker load -i /tmp/ess-image.tar
+
       # Pre-pull base images if not in cache to ensure they're available for the test.
       # This happens BEFORE the test runs, so images get cached even if tests fail.
       # Only pulls if image is not already present in Docker daemon.
@@ -514,6 +568,67 @@ jobs:
         with:
           path: /tmp/ubi-image.tar
           key: ubi-image-${{ runner.os }}-ubi9-minimal-latest-${{ steps.date.outputs.week }}
+
+      # Save anax-built images
+      - name: Create anax agent image tar
+        if: always()
+        continue-on-error: true
+        run: |
+          if docker image inspect openhorizon/amd64_anax:testing > /dev/null 2>&1; then
+            docker save openhorizon/amd64_anax:testing -o /tmp/anax-image.tar
+          fi
+
+      - name: Save anax agent image to cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: /tmp/anax-image.tar
+          key: anax-image-${{ runner.os }}-${{ hashFiles('go/src/github.com/**/anax/**', 'go/src/github.com/**/Makefile') }}
+
+      - name: Create anax k8s image tar
+        if: always()
+        continue-on-error: true
+        run: |
+          if docker image inspect openhorizon/amd64_anax_k8s:testing > /dev/null 2>&1; then
+            docker save openhorizon/amd64_anax_k8s:testing -o /tmp/anax-k8s-image.tar
+          fi
+
+      - name: Save anax k8s image to cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: /tmp/anax-k8s-image.tar
+          key: anax-k8s-image-${{ runner.os }}-${{ hashFiles('go/src/github.com/**/anax-in-k8s/**', 'go/src/github.com/**/Makefile') }}
+
+      - name: Create agbot testing image tar
+        if: always()
+        continue-on-error: true
+        run: |
+          if docker image inspect openhorizon/amd64_agbot:testing > /dev/null 2>&1; then
+            docker save openhorizon/amd64_agbot:testing -o /tmp/agbot-testing-image.tar
+          fi
+
+      - name: Save agbot testing image to cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: /tmp/agbot-testing-image.tar
+          key: agbot-testing-image-${{ runner.os }}-${{ hashFiles('go/src/github.com/**/agreementbot/**', 'go/src/github.com/**/Makefile') }}
+
+      - name: Create ESS image tar
+        if: always()
+        continue-on-error: true
+        run: |
+          if docker image inspect openhorizon/amd64_edge-sync-service:testing > /dev/null 2>&1; then
+            docker save openhorizon/amd64_edge-sync-service:testing -o /tmp/ess-image.tar
+          fi
+
+      - name: Save ESS image to cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: /tmp/ess-image.tar
+          key: ess-image-${{ runner.os }}-${{ hashFiles('go/src/github.com/**/ess/**', 'go/src/github.com/**/Makefile') }}
       
       - name: Test Failure Catch - Check Docker Images
         continue-on-error: true

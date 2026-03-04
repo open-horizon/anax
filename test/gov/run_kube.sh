@@ -103,9 +103,29 @@ fi
 #
 echo "Generate the /etc/default/horizon file based on local network configuration"
 echo "HZN_LISTEN_IP is ${HZN_LISTEN_IP}"
-EX_IP=${HZN_LISTEN_IP}
-CSS_IP=${HZN_LISTEN_IP}
-AGBOT_IP=${HZN_LISTEN_IP}
+
+# For Kubernetes pods to reach services on the host, we need the actual host IP, not 127.0.0.1
+# MicroK8s pods cannot reach 127.0.0.1 on the host - they need the host's network IP
+if [ "${HZN_LISTEN_IP}" = "127.0.0.1" ] || [ "${HZN_LISTEN_IP}" = "localhost" ]; then
+	echo "Detecting actual host IP for Kubernetes pod connectivity..."
+	# Try to get the default route interface IP (works in most environments)
+	DETECTED_IP=$(ip route get 1.1.1.1 2>/dev/null | grep -oP 'src \K\S+' || hostname -I | awk '{print $1}')
+	if [ -n "${DETECTED_IP}" ] && [ "${DETECTED_IP}" != "127.0.0.1" ]; then
+		echo "Using detected host IP: ${DETECTED_IP}"
+		EX_IP=${DETECTED_IP}
+		CSS_IP=${DETECTED_IP}
+		AGBOT_IP=${DETECTED_IP}
+	else
+		echo "Warning: Could not detect host IP, using ${HZN_LISTEN_IP} (may not work from Kubernetes pods)"
+		EX_IP=${HZN_LISTEN_IP}
+		CSS_IP=${HZN_LISTEN_IP}
+		AGBOT_IP=${HZN_LISTEN_IP}
+	fi
+else
+	EX_IP=${HZN_LISTEN_IP}
+	CSS_IP=${HZN_LISTEN_IP}
+	AGBOT_IP=${HZN_LISTEN_IP}
+fi
 
 if [ "${EX_IP}" == "" ] || [ "${CSS_IP}" == "" ] || [ "${AGBOT_IP}" = "" ]
 then
