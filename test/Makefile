@@ -52,8 +52,13 @@ DOCKER_TEST_INAME ?= openhorizon/e2edev-test
 DOCKER_TEST_TAG ?= latest
 DOCKER_TEST_NETWORK ?= hzn_horizonnet
 DOCKER_TEST_ADD_HOST ?= "localhost:127.0.0.1"
+# Use 0.0.0.0 to bind services to all interfaces (required for Kubernetes pod connectivity)
+# Services will listen on all network interfaces, making them accessible from:
+# - localhost (127.0.0.1) for local testing
+# - actual network IP (e.g., 10.x.x.x) for Kubernetes pods
+# - Docker bridge network for containerized tests
 #$(shell hostname -I | awk '{print $$1}')
-E2EDEV_HOST_IP := 127.0.0.1
+E2EDEV_HOST_IP := 0.0.0.0
 UDS ?= /var/run/horizon/
 API_KEY ?= 0
 export DOCKER_CPU_TAG := 1.2.7
@@ -74,9 +79,9 @@ old_agbot := $(shell echo -e $(TEST_VARS) | grep OLDAGBOT=1)
 ifneq ($(old_agbot),)
 	AGBOT_IMAGE_TAG = latest
 endif
-AGBOT_API ?= http://127.0.0.1:3110
+AGBOT_API ?= http://$(E2EDEV_HOST_IP):3110
 AGBOT2_API ?= http://agbot2:8080
-AGBOT_SAPI_URL ?= $(HZN_TRANSPORT)://127.0.0.1:3111
+AGBOT_SAPI_URL ?= $(HZN_TRANSPORT)://$(E2EDEV_HOST_IP):3111
 AGBOT_NAME ?= agbot1
 AGBOT_TOKEN ?= Abcdefghijklmno1
 
@@ -84,7 +89,7 @@ AGBOT_TOKEN ?= Abcdefghijklmno1
 DOCKER_EXCH_CNAME = exchange-api
 DOCKER_EXCH_INAME ?= quay.io/openhorizon/$(arch)_exchange-api
 DOCKER_EXCH_TAG ?= testing
-DOCKER_EXCH ?= $(HZN_TRANSPORT)://127.0.0.1:3090/v1
+DOCKER_EXCH ?= $(HZN_TRANSPORT)://$(E2EDEV_HOST_IP):3090/v1
 EXCHANGE_LOG_LEVEL ?= DEBUG
 EXCH_ROOTPW ?= Horizon-Rul3s
 EXCHANGE_HUB_ADMIN_PW ?= hubadminpw
@@ -126,7 +131,7 @@ DOCKER_CSS_TAG ?= latest
 CSS_INTERNAL_PORT ?= 8080
 CSS_LOG_LEVEL ?= DEBUG
 CSS_TRACE_LEVEL ?= DEBUG
-CSS_URL ?= $(HZN_TRANSPORT)://127.0.0.1:9443
+CSS_URL ?= $(HZN_TRANSPORT)://$(E2EDEV_HOST_IP):9443
 
 #css DB
 DOCKER_CSSDB_CNAME := mongo
