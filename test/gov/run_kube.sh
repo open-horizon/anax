@@ -116,6 +116,14 @@ fi
 # Create the directory structure in tempfs for generated config files
 mkdir -p "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube"
 
+# Copy persistent-claim.yaml to tempfs (no variable substitution needed)
+if ! cp "docker/fs/etc/agent-in-kube/persistent-claim.yaml" "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/persistent-claim.yaml"; then echo "Failure copying persistent-claim.yaml"; exit 1; fi
+
+# Copy hub.crt to tempfs if using certificates
+if [ "${CERT_LOC}" -eq 1 ]; then
+	if ! cp "docker/fs/etc/agent-in-kube/hub.crt" "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/hub.crt"; then echo "Failure copying hub.crt to tempfs"; exit 1; fi
+fi
+
 # Process the template from docker/fs and write to tempfs
 if ! EX_IP=${EX_IP} CSS_IP=${CSS_IP} AGBOT_IP=${AGBOT_IP} envsubst < "docker/fs/etc/agent-in-kube/horizon.env" > "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/horizon"; then echo "Failure configuring agent env var file"; exit 1; fi
 
