@@ -266,10 +266,10 @@ jobs:
         if: steps.cache-exchange-image.outputs.cache-hit != 'true'
         run: |
           if ! docker image inspect quay.io/open-horizon/exchange-ubi:testing > /dev/null 2>&1; then
-            echo "Pulling quay.io/openhorizon/exchange-ubi:testing..."
-            docker pull quay.io/openhorizon/exchange-ubi:testing
+            echo "Pulling quay.io/open-horizon/exchange-ubi:testing..."
+            docker pull quay.io/open-horizon/exchange-ubi:testing
           else
-            echo "quay.io/openhorizon/exchange-ubi:testing already present, skipping pull"
+            echo "quay.io/open-horizon/exchange-ubi:testing already present, skipping pull"
           fi
 
       - name: Pull Agbot image if not cached
@@ -328,7 +328,7 @@ jobs:
           docker images
           echo ""
           echo "Checking for required management hub images..."
-          for img in "quay.io/openhorizon/exchange-ubi:testing" \
+          for img in "quay.io/open-horizon/exchange-ubi:testing" \
                      "openhorizon/amd64_agbot:e2edev" \
                      "openhorizon/amd64_cloud-sync-service:latest" \
                      "mongo:4.0.6" \
@@ -398,8 +398,8 @@ jobs:
         if: always()
         continue-on-error: true
         run: |
-          if docker image inspect quay.io/openhorizon/exchange-ubi:testing > /dev/null 2>&1; then
-            docker save quay.io/openhorizon/exchange-ubi:testing -o /tmp/exchange-image.tar
+          if docker image inspect quay.io/open-horizon/exchange-ubi:testing > /dev/null 2>&1; then
+            docker save quay.io/open-horizon/exchange-ubi:testing -o /tmp/exchange-image.tar
           fi
 
       - name: Save Exchange image to cache
