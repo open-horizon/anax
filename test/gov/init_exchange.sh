@@ -7,8 +7,11 @@ fi
 
 # bootstrap the exchange
 
-TEST_DIFF_ORG=${TEST_DIFF_ORG:-1}
 AGBOT_NAME=${AGBOT_NAME:-agbot1}
+AGBOT_ORG=${AGBOT_ORG:-IBM}
+AGBOT_TOKEN=$(AGBOT_TOKEN:-Abcdefghijklmno1)
+AGBOT_AUTH=$(AGBOT_AUTH:-"${AGBOT_ORG}/${AGBOT_NAME}:${AGBOT_TOKEN}")
+TEST_DIFF_ORG=${TEST_DIFF_ORG:-1}
 
 EXCH_URL="${EXCH_APP_HOST}"
 
@@ -61,9 +64,9 @@ fi
  # echo "$DL8IBM"
 
   # Delete agreement bot in the exchange
-  echo "Delete Agbot..."
-  DL8AGBOT=$(curl -X DELETE "${CERT_VAR[@]}" --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/agbot1" | jq -r '.code, .msg')
-  echo "$DL8AGBOT"
+  # echo "Delete Agbot..."
+  # DL8AGBOT=$(curl -X DELETE "${CERT_VAR[@]}" --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/agbot1" | jq -r '.code, .msg')
+  # echo "$DL8AGBOT"
 
   echo "Delete network_1.5.0 ..."
   DLNET150=$(curl -X DELETE "${CERT_VAR[@]}" --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/bluehorizon.network-services-network_1.5.0_${ARCH}" | jq -r '.code, .msg')
@@ -148,9 +151,9 @@ CR8IBM=$(curl -sSL -X POST "${CERT_VAR[@]}" --header 'Content-Type: application/
 echo "$CR8IBM"
 
 # Register agreement bot user in the exchange
-echo "Creating Agbot user..."
-CR8AGBOT=$(curl -sSL -X POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"name":"agbot1","publicKey":"","token":"Abcdefghijklmno1",}' "${EXCH_URL}/orgs/IBM/agbot/agbot1" | jq -r '.code, .msg')
-echo "$CR8AGBOT"
+# echo "Creating Agbot user..."
+# CR8AGBOT=$(curl -sSL -X POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"name":"agbot1","publicKey":"","token":"Abcdefghijklmno1",}' "${EXCH_URL}/orgs/IBM/agbot/agbot1" | jq -r '.code, .msg')
+# echo "$CR8AGBOT"
 
 # Register users in the exchange
 echo "Creating Anax user in e2edev@somecomp.com org..."
@@ -230,8 +233,7 @@ fi
 # This must happen AFTER patterns and business policies are created in the exchange
 if [ "$NOAGBOT" != "1" ] && [ "$TESTFAIL" != "1" ]
 then
-  AGBOT_AUTH="root/root:${EXCH_ROOTPW}"
-  ORG="IBM"
+  ORG="${AGBOT_ORG}"
 
   echo "Registering agbot to manage patterns and business policies..."
 
