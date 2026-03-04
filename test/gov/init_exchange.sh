@@ -8,6 +8,7 @@ fi
 # bootstrap the exchange
 
 TEST_DIFF_ORG=${TEST_DIFF_ORG:-1}
+AGBOT_NAME=${AGBOT_NAME:-agbot1}
 
 EXCH_URL="${EXCH_APP_HOST}"
 

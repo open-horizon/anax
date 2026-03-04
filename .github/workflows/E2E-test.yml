@@ -305,7 +305,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: ~/.cache/go-build
-          key: ${{ steps.cache-go-build.outputs.cache-primary-key }}
+          key: go-build-${{ runner.os }}-go1.24-${{ hashFiles('**/*.go') }}
 
       # Save service images built during the test run for future cache hits.
       # Images are tagged as localhost:443/amd64_*:1.0 and hello:1.0 by the service Makefiles.
