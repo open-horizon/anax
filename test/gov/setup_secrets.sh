@@ -14,7 +14,7 @@ then
 fi
 
 # Set default AGBOT_SAPI_URL if not provided
-AGBOT_SAPI_URL=${AGBOT_SAPI_URL:-http://127.0.0.1:3110}
+AGBOT_SAPI_URL=${AGBOT_SAPI_URL:-http://127.0.0.1:3111}
 
 USERDEV_ORG="userdev"
 USERDEV_ADMIN_AUTH="userdev/userdevadmin:userdevadminpw"

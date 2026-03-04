@@ -193,18 +193,18 @@ jobs:
         if: steps.cache-postgres-image.outputs.cache-hit == 'true'
         run: docker load -i /tmp/postgres-image.tar
 
-      - name: Restore Vault image from cache
-        id: cache-vault-image
+      - name: Restore OpenBao image from cache
+        id: cache-openbao-image
         uses: actions/cache/restore@v4
         with:
-          path: /tmp/vault-image.tar
-          key: vault-image-${{ runner.os }}-testing-${{ steps.date.outputs.day }}
+          path: /tmp/openbao-image.tar
+          key: openbao-image-${{ runner.os }}-2.0
           restore-keys: |
-            vault-image-${{ runner.os }}-testing-
+            openbao-image-${{ runner.os }}-
 
-      - name: Load Vault image from cache
-        if: steps.cache-vault-image.outputs.cache-hit == 'true'
-        run: docker load -i /tmp/vault-image.tar
+      - name: Load OpenBao image from cache
+        if: steps.cache-openbao-image.outputs.cache-hit == 'true'
+        run: docker load -i /tmp/openbao-image.tar
 
       # Cache base images used for building Docker containers in E2E tests.
       # alpine:latest is used by test service Dockerfiles (cpu, leaf, hello, usehello, helm/hello).
@@ -259,6 +259,69 @@ jobs:
             echo "registry.access.redhat.com/ubi9-minimal:latest already present, skipping pull"
           fi
 
+      # Pre-pull management hub images if not in cache to ensure they're available for the test.
+      # This happens BEFORE the test runs, so images get cached even if tests fail.
+      # Only pulls if image is not already present in Docker daemon.
+      - name: Pull Exchange image if not cached
+        if: steps.cache-exchange-image.outputs.cache-hit != 'true'
+        run: |
+          if ! docker image inspect quay.io/openhorizon/amd64_exchange-api:testing > /dev/null 2>&1; then
+            echo "Pulling quay.io/openhorizon/amd64_exchange-api:testing..."
+            docker pull quay.io/openhorizon/amd64_exchange-api:testing
+          else
+            echo "quay.io/openhorizon/amd64_exchange-api:testing already present, skipping pull"
+          fi
+
+      - name: Pull Agbot image if not cached
+        if: steps.cache-agbot-image.outputs.cache-hit != 'true'
+        run: |
+          if ! docker image inspect openhorizon/amd64_agbot:e2edev > /dev/null 2>&1; then
+            echo "Pulling openhorizon/amd64_agbot:e2edev..."
+            docker pull openhorizon/amd64_agbot:e2edev
+          else
+            echo "openhorizon/amd64_agbot:e2edev already present, skipping pull"
+          fi
+
+      - name: Pull CSS image if not cached
+        if: steps.cache-css-image.outputs.cache-hit != 'true'
+        run: |
+          if ! docker image inspect openhorizon/amd64_cloud-sync-service:latest > /dev/null 2>&1; then
+            echo "Pulling openhorizon/amd64_cloud-sync-service:latest..."
+            docker pull openhorizon/amd64_cloud-sync-service:latest
+          else
+            echo "openhorizon/amd64_cloud-sync-service:latest already present, skipping pull"
+          fi
+
+      - name: Pull MongoDB image if not cached
+        if: steps.cache-mongo-image.outputs.cache-hit != 'true'
+        run: |
+          if ! docker image inspect mongo:4.0.6 > /dev/null 2>&1; then
+            echo "Pulling mongo:4.0.6..."
+            docker pull mongo:4.0.6
+          else
+            echo "mongo:4.0.6 already present, skipping pull"
+          fi
+
+      - name: Pull PostgreSQL image if not cached
+        if: steps.cache-postgres-image.outputs.cache-hit != 'true'
+        run: |
+          if ! docker image inspect postgres:17 > /dev/null 2>&1; then
+            echo "Pulling postgres:17..."
+            docker pull postgres:17
+          else
+            echo "postgres:17 already present, skipping pull"
+          fi
+
+      - name: Pull OpenBao image if not cached
+        if: steps.cache-openbao-image.outputs.cache-hit != 'true'
+        run: |
+          if ! docker image inspect quay.io/openbao/openbao-ubi:2.0 > /dev/null 2>&1; then
+            echo "Pulling quay.io/openbao/openbao-ubi:2.0..."
+            docker pull quay.io/openbao/openbao-ubi:2.0
+          else
+            echo "quay.io/openbao/openbao-ubi:2.0 already present, skipping pull"
+          fi
+
       - name: Verify cached images loaded
         run: |
           echo "Verifying cached images are present..."
@@ -270,7 +333,7 @@ jobs:
                      "openhorizon/amd64_cloud-sync-service:latest" \
                      "mongo:4.0.6" \
                      "postgres:17" \
-                     "openhorizon/amd64_vault:testing"; do
+                     "quay.io/openbao/openbao-ubi:2.0"; do
             if docker image inspect "$img" > /dev/null 2>&1; then
               echo "✓ Found: $img"
             else
@@ -406,20 +469,20 @@ jobs:
           path: /tmp/postgres-image.tar
           key: postgres-image-${{ runner.os }}-17
 
-      - name: Create Vault image tar
+      - name: Create OpenBao image tar
         if: always()
         continue-on-error: true
         run: |
-          if docker image inspect openhorizon/amd64_vault:testing > /dev/null 2>&1; then
-            docker save openhorizon/amd64_vault:testing -o /tmp/vault-image.tar
+          if docker image inspect quay.io/openbao/openbao-ubi:2.0 > /dev/null 2>&1; then
+            docker save quay.io/openbao/openbao-ubi:2.0 -o /tmp/openbao-image.tar
           fi
 
-      - name: Save Vault image to cache
+      - name: Save OpenBao image to cache
         if: always()
         uses: actions/cache/save@v4
         with:
-          path: /tmp/vault-image.tar
-          key: vault-image-${{ runner.os }}-testing-${{ steps.date.outputs.day }}
+          path: /tmp/openbao-image.tar
+          key: openbao-image-${{ runner.os }}-2.0
 
       # Save base images
       - name: Create Alpine image tar
