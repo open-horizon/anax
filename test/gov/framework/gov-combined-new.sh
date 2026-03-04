@@ -142,8 +142,8 @@ if [ "$TESTFAIL" != "1" ] && ! should_skip_test "api_tests"; then
         # Cleanup after API tests
         log_message INFO "Cleaning up after API tests"
         kill $(pidof anax) 2>/dev/null
-        rm -fr /root/.colonus/*.db
-        rm -fr /root/.colonus/policy.d/*
+        rm -fr /var/horizon/.colonus/*.db
+        rm -fr /var/horizon/.colonus/policy.d/*
     else
         log_message ERROR "Anax failed to start for API tests"
         TEST_RESULTS["api_tests"]="FAIL"

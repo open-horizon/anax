@@ -39,7 +39,7 @@ buildContainer=$(make build)
 
 verify "${buildContainer}" "Successfully built" "hello container did not build"
 
-mkdir -p /root/.helm
+mkdir -p /tmp/hzndev/.helm
 
 cd "${PROJECT_HELM_HOME}" || exit
 buildPackage=$(make package)

@@ -92,10 +92,10 @@ sleep 5
 # Copy binaries and other files that are needed inside the agent container.
 #
 echo "Grab binaries and config files needed inside the container"
-if ! cp "${ANAX_SOURCE}/anax" "${ANAX_SOURCE}/cli/hzn" "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube"; then echo "Failure copying binaries"; exit 1; fi
+if ! cp "${ANAX_SOURCE}/anax" "${ANAX_SOURCE}/cli/hzn" "docker/fs/etc/agent-in-kube"; then echo "Failure copying binaries"; exit 1; fi
 
 if [ "${CERT_LOC}" -eq 1 ]; then
-	if ! cp "${E2EDEVTEST_TEMPFS}/certs/css.crt" "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/hub.crt"; then echo "Failure copying CSS SSL cert"; exit 1; fi
+	if ! cp "${E2EDEVTEST_TEMPFS}/certs/css.crt" "docker/fs/etc/agent-in-kube/hub.crt"; then echo "Failure copying CSS SSL cert"; exit 1; fi
 fi
 
 #

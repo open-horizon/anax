@@ -25,7 +25,8 @@ startMultiAgents() {
 
   # set css certs for the agent container
   if [ "${CERT_LOC}" -eq 1 ]; then
-    cat /certs/css.crt > /tmp/e2edevtest/css.crt
+    mkdir -p /tmp/hzndev
+    cat /certs/css.crt > /tmp/hzndev/css.crt
   fi
 
   counter=0
@@ -34,7 +35,8 @@ startMultiAgents() {
     device_num=$((6 + counter))
 
     # set config for the agent container
-    configfile="/tmp/e2edevtest/horizon.multi_agents"
+    mkdir -p /tmp/hzndev
+    configfile="/tmp/hzndev/horizon.multi_agents"
     {
       echo -e "HZN_EXCHANGE_URL=${EXCH_APP_HOST}"
       echo -e "HZN_FSS_CSSURL=${CSS_URL}"
@@ -44,7 +46,7 @@ startMultiAgents() {
       echo -e "HZN_AGENT_PORT=${agent_port}"
     } > "$configfile"
     if [ "${CERT_LOC}" -eq 1 ]; then
-      echo "HZN_MGMT_HUB_CERT_PATH=/tmp/e2edevtest/css.crt" >> "$configfile"
+      echo "HZN_MGMT_HUB_CERT_PATH=/tmp/hzndev/css.crt" >> "$configfile"
     fi
 
     # start agent container
@@ -100,8 +102,8 @@ verifyMultiAgentsAgreements() {
     echo "${PREFIX} Verify agreement for agent container horizon${device_num} ..."
  
     # copy the test scripts over to agent container
-    docker cp "${E2EDEV_ROOT}"/gov/verify_agreements.sh horizon${device_num}:/root/.
-    docker cp "${E2EDEV_ROOT}"/gov/check_node_status.sh horizon${device_num}:/root/.
+    docker cp "${E2EDEV_ROOT}"/gov/verify_agreements.sh horizon${device_num}:/tmp/.
+    docker cp "${E2EDEV_ROOT}"/gov/check_node_status.sh horizon${device_num}:/tmp/.
 
     docker exec -e "ANAX_API=http://localhost:${agent_port}" \
         -e "EXCH_APP_HOST=${EXCH_APP_HOST}" \
@@ -110,7 +112,7 @@ verifyMultiAgentsAgreements() {
         -e ADMIN_AUTH=e2edevadmin:e2edevadminpw \
         -e "NODEID=anaxdevice${device_num}" \
         -e "NOLOOP=${NOLOOP}" \
-        "horizon${device_num}" "${E2EDEV_ROOT}"/gov/verify_agreements.sh
+        "horizon${device_num}" /tmp/verify_agreements.sh
 
     (( counter=counter+1 ))
   done
