@@ -11,7 +11,6 @@ source "${SCRIPT_DIR}/test_utils.sh"
 
 # Test configuration
 TEST_NAME="service_log_test"
-TIMEOUT=$(get_timeout $SERVICE_TIMEOUT)
 
 log_message INFO "Starting service log test"
 
@@ -47,7 +46,7 @@ capture_metrics "${TEST_NAME}_start"
 # Run the service log test
 log_message INFO "Running service log test"
 if [ "$TEST_RETRY_ENABLED" == "1" ]; then
-    retry_command $TEST_MAX_RETRIES $TEST_RETRY_DELAY "${PARENT_DIR}/service_log_test.sh"
+    retry_command "$TEST_MAX_RETRIES" "$TEST_RETRY_DELAY" "${PARENT_DIR}/service_log_test.sh"
     result=$?
 else
     "${PARENT_DIR}/service_log_test.sh"

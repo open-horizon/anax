@@ -11,7 +11,6 @@ source "${SCRIPT_DIR}/test_utils.sh"
 
 # Test configuration
 TEST_NAME="hzn_registration"
-TIMEOUT=$(get_timeout 300)
 
 log_message INFO "Starting hzn registration/unregistration test"
 
@@ -47,7 +46,7 @@ capture_metrics "${TEST_NAME}_start"
 # Run the hzn registration test
 log_message INFO "Running hzn registration/unregistration test"
 if [ "$TEST_RETRY_ENABLED" == "1" ]; then
-    retry_command $TEST_MAX_RETRIES $TEST_RETRY_DELAY "${PARENT_DIR}/hzn_reg.sh"
+    retry_command "$TEST_MAX_RETRIES" "$TEST_RETRY_DELAY" "${PARENT_DIR}/hzn_reg.sh"
     result=$?
 else
     "${PARENT_DIR}/hzn_reg.sh"

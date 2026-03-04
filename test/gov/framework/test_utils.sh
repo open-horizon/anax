@@ -22,10 +22,11 @@ wait_for_condition() {
     
     log_message INFO "Waiting for: $description (timeout: ${timeout}s)"
     
-    local start_time=$(date +%s)
+    local start_time
+    start_time=$(date +%s)
     local elapsed=0
     
-    while [ $elapsed -lt $timeout ]; do
+    while [ "$elapsed" -lt "$timeout" ]; do
         # Execute condition command
         if eval "$condition_cmd" > /dev/null 2>&1; then
             log_message INFO "Condition met: $description (after ${elapsed}s)"
@@ -119,10 +120,10 @@ retry_command() {
     local max_attempts="${1:-3}"
     local delay="${2:-5}"
     shift 2
-    local command="$@"
+    local command="$*"
     
     local attempt=1
-    while [ $attempt -le $max_attempts ]; do
+    while [ "$attempt" -le "$max_attempts" ]; do
         log_message INFO "Attempt $attempt/$max_attempts: $command"
         
         if eval "$command"; then
@@ -130,7 +131,7 @@ retry_command() {
             return 0
         fi
         
-        if [ $attempt -lt $max_attempts ]; then
+        if [ "$attempt" -lt "$max_attempts" ]; then
             local wait_time=$((delay * attempt))
             log_message WARN "Command failed, retrying in ${wait_time}s..."
             sleep $wait_time
@@ -197,7 +198,8 @@ get_active_services() {
 cancel_all_agreements() {
     log_message INFO "Cancelling all agreements"
     
-    local agreements=$(get_active_agreements | jq -r '.[].current_agreement_id')
+    local agreements
+    agreements=$(get_active_agreements | jq -r '.[].current_agreement_id')
     
     if [ -z "$agreements" ]; then
         log_message INFO "No active agreements to cancel"
@@ -248,7 +250,8 @@ register_node_pattern() {
     
     log_message INFO "Registering node with pattern: $pattern"
     
-    local reg_data=$(cat <<EOF
+    local reg_data
+    reg_data=$(cat <<EOF
 {
     "id": "$node_id",
     "token": "$node_token",

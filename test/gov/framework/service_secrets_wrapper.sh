@@ -11,7 +11,6 @@ source "${SCRIPT_DIR}/test_utils.sh"
 
 # Test configuration
 TEST_NAME="service_secrets"
-TIMEOUT=$(get_timeout 300)
 
 log_message INFO "Starting service secrets test"
 
@@ -48,7 +47,7 @@ capture_metrics "${TEST_NAME}_start"
 # Run the service secrets test
 log_message INFO "Running service secrets test"
 if [ "$TEST_RETRY_ENABLED" == "1" ]; then
-    retry_command $TEST_MAX_RETRIES $TEST_RETRY_DELAY "${PARENT_DIR}/service_secrets_test.sh"
+    retry_command "$TEST_MAX_RETRIES" "$TEST_RETRY_DELAY" "${PARENT_DIR}/service_secrets_test.sh"
     result=$?
 else
     "${PARENT_DIR}/service_secrets_test.sh"

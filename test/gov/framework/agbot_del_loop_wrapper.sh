@@ -11,7 +11,6 @@ source "${SCRIPT_DIR}/test_utils.sh"
 
 # Test configuration
 TEST_NAME="agbot_del_loop"
-TIMEOUT=$(get_timeout $AGBOT_TIMEOUT)
 
 log_message INFO "Starting agbot deletion loop test"
 
@@ -49,7 +48,7 @@ capture_metrics "${TEST_NAME}_start"
 # Run the agbot deletion loop test
 log_message INFO "Running agbot deletion loop test"
 if [ "$TEST_RETRY_ENABLED" == "1" ]; then
-    retry_command $TEST_MAX_RETRIES $TEST_RETRY_DELAY "${PARENT_DIR}/agbot_del_loop.sh"
+    retry_command "$TEST_MAX_RETRIES" "$TEST_RETRY_DELAY" "${PARENT_DIR}/agbot_del_loop.sh"
     result=$?
 else
     "${PARENT_DIR}/agbot_del_loop.sh"

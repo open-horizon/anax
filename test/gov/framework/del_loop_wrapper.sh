@@ -11,7 +11,6 @@ source "${SCRIPT_DIR}/test_utils.sh"
 
 # Test configuration
 TEST_NAME="agreement_deletion"
-TIMEOUT=$(get_timeout 300)
 
 log_message INFO "Starting agreement deletion test"
 
@@ -47,7 +46,7 @@ fi
 # Run the deletion test
 log_message INFO "Running agreement deletion test"
 if [ "$TEST_RETRY_ENABLED" == "1" ]; then
-    retry_command $TEST_MAX_RETRIES $TEST_RETRY_DELAY "${PARENT_DIR}/del_loop.sh"
+    retry_command "$TEST_MAX_RETRIES" "$TEST_RETRY_DELAY" "${PARENT_DIR}/del_loop.sh"
     result=$?
 else
     "${PARENT_DIR}/del_loop.sh"

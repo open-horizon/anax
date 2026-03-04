@@ -67,7 +67,8 @@ run_test() {
     local test_log="${TEST_RESULTS_DIR}/${test_name}.log"
     
     # Record start time
-    local start_time=$(date +%s)
+    local start_time
+    start_time=$(date +%s)
     
     # Run test and capture output
     local exit_code
@@ -90,7 +91,8 @@ run_test() {
     fi
     
     # Record end time and duration
-    local end_time=$(date +%s)
+    local end_time
+    end_time=$(date +%s)
     local duration=$((end_time - start_time))
     TEST_DURATIONS["$test_name"]=$duration
     
@@ -98,7 +100,7 @@ run_test() {
     TEST_OUTPUTS["$test_name"]="$test_log"
     
     # Process result
-    if [ $exit_code -eq 0 ]; then
+    if [ "$exit_code" -eq 0 ]; then
         TEST_RESULTS["$test_name"]="PASS"
         ((PASSED_TESTS++))
         echo "✓ PASSED: $test_name (${duration}s)"
@@ -127,7 +129,7 @@ run_test() {
     
     echo "========================================="
     
-    return $exit_code
+    return "$exit_code"
 }
 
 # Run a test with setup and teardown
@@ -256,7 +258,8 @@ EOF
 
 # Print test summary
 print_test_summary() {
-    local suite_end_time=$(date +%s)
+    local suite_end_time
+    suite_end_time=$(date +%s)
     local suite_duration=$((suite_end_time - TEST_SUITE_START_TIME))
     
     echo ""

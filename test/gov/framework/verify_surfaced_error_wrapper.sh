@@ -11,7 +11,6 @@ source "${SCRIPT_DIR}/test_utils.sh"
 
 # Test configuration
 TEST_NAME="verify_surfaced_error"
-TIMEOUT=$(get_timeout 300)
 
 log_message INFO "Starting surfaced error verification test"
 
@@ -42,7 +41,7 @@ capture_metrics "${TEST_NAME}_start"
 # Run the surfaced error verification test
 log_message INFO "Running surfaced error verification test"
 if [ "$TEST_RETRY_ENABLED" == "1" ]; then
-    retry_command $TEST_MAX_RETRIES $TEST_RETRY_DELAY "${PARENT_DIR}/verify_surfaced_error.sh"
+    retry_command "$TEST_MAX_RETRIES" "$TEST_RETRY_DELAY" "${PARENT_DIR}/verify_surfaced_error.sh"
     result=$?
 else
     "${PARENT_DIR}/verify_surfaced_error.sh"

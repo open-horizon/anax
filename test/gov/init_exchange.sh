@@ -254,6 +254,6 @@ then
   AGBOT_AUTH="root/root:${EXCH_ROOTPW}"
   ORG="IBM"
   # keep one just for testing this api
-  REGAGBOTSNS=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"patternOrgid":"e2edev@somecomp.com","pattern":"sns"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/patterns" | jq -r '.msg')
+  REGAGBOTSNS=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"patternOrgid":"e2edev@somecomp.com","pattern":"sns"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/deployment/patterns" | jq -r '.msg')
   echo "$REGAGBOTSNS"
 fi

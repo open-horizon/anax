@@ -413,22 +413,47 @@ if [ -z "$VARIABLE" ]; then
 
 #### 9. Testing Shell Scripts
 
-**Validate shell scripts before committing:**
+**MANDATORY: Always run shellcheck on shell script changes:**
+
+All shell script modifications MUST pass shellcheck validation before committing. This catches common errors, security issues, and ensures best practices are followed.
 
 ```bash
-# Use shellcheck if available (recommended)
+# REQUIRED: Run shellcheck on all modified shell scripts
 shellcheck script.sh
 
-# Manual checks:
-# - Run with bash -n (syntax check)
+# shellcheck must exit with code 0 (no errors or warnings)
+# Fix all issues reported by shellcheck before committing
+```
+
+**Additional validation steps:**
+
+```bash
+# Syntax check
 bash -n script.sh
 
-# - Test with different shells
+# Test with different shells
 sh script.sh
 bash script.sh
 
-# - Verify executable permissions
+# Verify executable permissions
 ls -la script.sh
+```
+
+**When to run shellcheck:**
+- After creating a new shell script
+- After modifying any existing shell script
+- Before committing changes
+- During code review
+
+**Installing shellcheck:**
+```bash
+# Debian/Ubuntu
+apt-get install shellcheck
+
+# macOS
+brew install shellcheck
+
+# Or use online: https://www.shellcheck.net/
 ```
 
 #### 10. Security Considerations

@@ -11,7 +11,6 @@ source "${SCRIPT_DIR}/test_utils.sh"
 
 # Test configuration
 TEST_NAME="verify_agreements"
-TIMEOUT=$(get_timeout 300)
 
 # Parse arguments
 ORG_ID="${ORG_ID:-${DEVICE_ORG}}"
@@ -46,7 +45,7 @@ capture_metrics "${TEST_NAME}_start"
 # Run the actual test with retry logic
 log_message INFO "Running agreement verification"
 if [ "$TEST_RETRY_ENABLED" == "1" ]; then
-    retry_command $TEST_MAX_RETRIES $TEST_RETRY_DELAY \
+    retry_command "$TEST_MAX_RETRIES" "$TEST_RETRY_DELAY" \
         "ORG_ID=$ORG_ID ADMIN_AUTH=$ADMIN_AUTH ${SCRIPT_DIR}/verify_agreements.sh"
     result=$?
 else

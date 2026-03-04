@@ -218,7 +218,7 @@ get_timeout() {
 log_message() {
     local level="$1"
     shift
-    local message="$@"
+    local message="$*"
     
     local level_priority=0
     case "$level" in

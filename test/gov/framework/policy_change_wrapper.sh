@@ -11,7 +11,6 @@ source "${SCRIPT_DIR}/test_utils.sh"
 
 # Test configuration
 TEST_NAME="policy_change"
-TIMEOUT=$(get_timeout 300)
 
 log_message INFO "Starting policy change test"
 
@@ -51,7 +50,7 @@ capture_metrics "${TEST_NAME}_start"
 # Run the policy change test
 log_message INFO "Running policy change test"
 if [ "$TEST_RETRY_ENABLED" == "1" ]; then
-    retry_command $TEST_MAX_RETRIES $TEST_RETRY_DELAY "${PARENT_DIR}/policy_change.sh"
+    retry_command "$TEST_MAX_RETRIES" "$TEST_RETRY_DELAY" "${PARENT_DIR}/policy_change.sh"
     result=$?
 else
     "${PARENT_DIR}/policy_change.sh"

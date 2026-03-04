@@ -11,7 +11,6 @@ source "${SCRIPT_DIR}/test_utils.sh"
 
 # Test configuration
 TEST_NAME="agbot_apitest"
-TIMEOUT=$(get_timeout $API_TIMEOUT)
 
 log_message INFO "Starting agbot API test"
 
@@ -50,7 +49,7 @@ log_message INFO "Initial agbot agreements: $initial_agbot_agreements"
 # Run the agbot API test
 log_message INFO "Running agbot API test"
 if [ "$TEST_RETRY_ENABLED" == "1" ]; then
-    retry_command $TEST_MAX_RETRIES $TEST_RETRY_DELAY "${PARENT_DIR}/agbot_apitest.sh"
+    retry_command "$TEST_MAX_RETRIES" "$TEST_RETRY_DELAY" "${PARENT_DIR}/agbot_apitest.sh"
     result=$?
 else
     "${PARENT_DIR}/agbot_apitest.sh"

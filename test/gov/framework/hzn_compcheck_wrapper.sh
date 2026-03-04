@@ -11,7 +11,6 @@ source "${SCRIPT_DIR}/test_utils.sh"
 
 # Test configuration
 TEST_NAME="hzn_compcheck"
-TIMEOUT=$(get_timeout 300)
 
 log_message INFO "Starting hzn policy compatibility check test"
 
@@ -47,7 +46,7 @@ fi
 # Run the compatibility check test
 log_message INFO "Running hzn policy compatibility check test"
 if [ "$TEST_RETRY_ENABLED" == "1" ]; then
-    retry_command $TEST_MAX_RETRIES $TEST_RETRY_DELAY "${PARENT_DIR}/hzn_compcheck.sh"
+    retry_command "$TEST_MAX_RETRIES" "$TEST_RETRY_DELAY" "${PARENT_DIR}/hzn_compcheck.sh"
     result=$?
 else
     "${PARENT_DIR}/hzn_compcheck.sh"

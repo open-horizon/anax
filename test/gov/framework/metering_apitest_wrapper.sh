@@ -11,7 +11,6 @@ source "${SCRIPT_DIR}/test_utils.sh"
 
 # Test configuration
 TEST_NAME="metering_apitest"
-TIMEOUT=$(get_timeout $API_TIMEOUT)
 
 log_message INFO "Starting metering API test"
 
@@ -54,7 +53,7 @@ capture_metrics "${TEST_NAME}_start"
 # Run the metering API test
 log_message INFO "Running metering API test"
 if [ "$TEST_RETRY_ENABLED" == "1" ]; then
-    retry_command $TEST_MAX_RETRIES $TEST_RETRY_DELAY "${PARENT_DIR}/metering_apitest.sh"
+    retry_command "$TEST_MAX_RETRIES" "$TEST_RETRY_DELAY" "${PARENT_DIR}/metering_apitest.sh"
     result=$?
 else
     "${PARENT_DIR}/metering_apitest.sh"

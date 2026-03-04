@@ -11,7 +11,6 @@ source "${SCRIPT_DIR}/test_utils.sh"
 
 # Test configuration
 TEST_NAME="sync_service"
-TIMEOUT=$(get_timeout 300)
 
 log_message INFO "Starting sync service (CSS/ESS) test"
 
@@ -44,7 +43,7 @@ fi
 # Run the sync service test
 log_message INFO "Running sync service test"
 if [ "$TEST_RETRY_ENABLED" == "1" ]; then
-    retry_command $TEST_MAX_RETRIES $TEST_RETRY_DELAY "${PARENT_DIR}/sync_service_test.sh"
+    retry_command "$TEST_MAX_RETRIES" "$TEST_RETRY_DELAY" "${PARENT_DIR}/sync_service_test.sh"
     result=$?
 else
     "${PARENT_DIR}/sync_service_test.sh"

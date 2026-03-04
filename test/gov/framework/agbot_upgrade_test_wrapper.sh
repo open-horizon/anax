@@ -11,7 +11,6 @@ source "${SCRIPT_DIR}/test_utils.sh"
 
 # Test configuration
 TEST_NAME="agbot_upgrade_test"
-TIMEOUT=$(get_timeout $AGBOT_TIMEOUT)
 
 log_message INFO "Starting agbot upgrade test"
 
@@ -41,7 +40,7 @@ curl -sS "${AGBOT_API}/agreement" > /tmp/${TEST_NAME}_agreements_before.json 2>&
 # Run the agbot upgrade test
 log_message INFO "Running agbot upgrade test"
 if [ "$TEST_RETRY_ENABLED" == "1" ]; then
-    retry_command $TEST_MAX_RETRIES $TEST_RETRY_DELAY "${PARENT_DIR}/agbot_upgrade_test.sh"
+    retry_command "$TEST_MAX_RETRIES" "$TEST_RETRY_DELAY" "${PARENT_DIR}/agbot_upgrade_test.sh"
     result=$?
 else
     "${PARENT_DIR}/agbot_upgrade_test.sh"
