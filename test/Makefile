@@ -272,6 +272,11 @@ run-dockerreg: test-network
 		-p 127.0.0.1:443:443 \
 		--name $(DOCKER_REG_CNAME) \
 		--network "$(DOCKER_TEST_NETWORK)" \
+		--health-cmd="wget --no-verbose --tries=1 --spider https://localhost:443/v2/ --no-check-certificate || exit 1" \
+		--health-interval=10s \
+		--health-timeout=5s \
+		--health-retries=3 \
+		--health-start-period=10s \
 		-v $(E2EDEVTEST_TEMPFS)/certs:/certs \
 		-v $(E2EDEVTEST_TEMPFS)/auth:/auth \
 		-v ~/.docker:/root/.docker \

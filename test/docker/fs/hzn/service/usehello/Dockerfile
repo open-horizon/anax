@@ -17,4 +17,8 @@ USER e2edevuser
 ENV UNIX_SOCKET_FILE_PERMISSIONS="0777"
 
 WORKDIR /tmp
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD pgrep -f start.sh > /dev/null || exit 1
+
 CMD [ "/tmp/start.sh" ]

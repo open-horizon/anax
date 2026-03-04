@@ -113,19 +113,23 @@ then
 	exit 1
 fi
 
-if ! EX_IP=${EX_IP} CSS_IP=${CSS_IP} AGBOT_IP=${AGBOT_IP} envsubst < "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/horizon.env" > "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/horizon"; then echo "Failure configuring agent env var file"; exit 1; fi
+# Create the directory structure in tempfs for generated config files
+mkdir -p "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube"
+
+# Process the template from docker/fs and write to tempfs
+if ! EX_IP=${EX_IP} CSS_IP=${CSS_IP} AGBOT_IP=${AGBOT_IP} envsubst < "docker/fs/etc/agent-in-kube/horizon.env" > "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/horizon"; then echo "Failure configuring agent env var file"; exit 1; fi
 
 if [ "${CERT_LOC}" -eq 1 ]; then
-	depl_file="${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/deployment.yaml.tmpl"
+	depl_file="docker/fs/etc/agent-in-kube/deployment.yaml.tmpl"
 else
 	# remove HZN_MGMT_HUB_CERT_PATH from the horizon env file
 	sed -i '/HZN_MGMT_HUB_CERT_PATH/d' "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/horizon"
 
-	depl_file="${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/deployment_nocert.yaml.tmpl"
+	depl_file="docker/fs/etc/agent-in-kube/deployment_nocert.yaml.tmpl"
 fi
 
 # create deployment.yaml file
-if ! ARCH=${ARCH} envsubst < "${depl_file} "> "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/deployment.yaml"; then echo "Failure configuring k8s agent deployment template file"; exit 1; fi
+if ! ARCH=${ARCH} envsubst < "${depl_file}" > "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/deployment.yaml"; then echo "Failure configuring k8s agent deployment template file"; exit 1; fi
 
 echo "Enable kube dns"
 $cprefix microk8s.enable dns
