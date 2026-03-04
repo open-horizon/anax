@@ -53,6 +53,7 @@ jobs:
       # invalidated whenever source code changes. The restore-key falls back to any prior
       # build cache for the same OS/Go version, allowing incremental reuse even on cache miss.
       - name: Cache Go build cache
+        id: cache-go-build
         uses: actions/cache@v4
         with:
           path: ~/.cache/go-build
@@ -209,6 +210,59 @@ jobs:
         if: steps.cache-vault-image.outputs.cache-hit == 'true'
         run: docker load -i /tmp/vault-image.tar
 
+      # Cache base images used for building Docker containers in E2E tests.
+      # alpine:latest is used by test service Dockerfiles (cpu, leaf, hello, usehello, helm/hello).
+      # UBI9 is used by production container builds (anax, agbot, CSS, ESS).
+      # Weekly cache key balances freshness with cache efficiency for these mutable tags.
+      - name: Cache Alpine base image
+        id: cache-alpine-image
+        uses: actions/cache@v4
+        with:
+          path: /tmp/alpine-image.tar
+          key: alpine-image-${{ runner.os }}-latest-${{ steps.date.outputs.week }}
+          restore-keys: |
+            alpine-image-${{ runner.os }}-latest-
+
+      - name: Restore Alpine base image from cache
+        if: steps.cache-alpine-image.outputs.cache-hit == 'true'
+        run: docker load -i /tmp/alpine-image.tar
+
+      - name: Cache Red Hat UBI9 base image
+        id: cache-ubi-image
+        uses: actions/cache@v4
+        with:
+          path: /tmp/ubi-image.tar
+          key: ubi-image-${{ runner.os }}-ubi9-minimal-latest-${{ steps.date.outputs.week }}
+          restore-keys: |
+            ubi-image-${{ runner.os }}-ubi9-minimal-latest-
+
+      - name: Restore Red Hat UBI9 base image from cache
+        if: steps.cache-ubi-image.outputs.cache-hit == 'true'
+        run: docker load -i /tmp/ubi-image.tar
+
+      # Pre-pull base images if not in cache to ensure they're available for the test.
+      # This happens BEFORE the test runs, so images get cached even if tests fail.
+      # Only pulls if image is not already present in Docker daemon.
+      - name: Pull Alpine base image if not cached
+        if: steps.cache-alpine-image.outputs.cache-hit != 'true'
+        run: |
+          if ! docker image inspect alpine:latest > /dev/null 2>&1; then
+            echo "Pulling alpine:latest..."
+            docker pull alpine:latest
+          else
+            echo "alpine:latest already present, skipping pull"
+          fi
+
+      - name: Pull Red Hat UBI9 base image if not cached
+        if: steps.cache-ubi-image.outputs.cache-hit != 'true'
+        run: |
+          if ! docker image inspect registry.access.redhat.com/ubi9-minimal:latest > /dev/null 2>&1; then
+            echo "Pulling registry.access.redhat.com/ubi9-minimal:latest..."
+            docker pull registry.access.redhat.com/ubi9-minimal:latest
+          else
+            echo "registry.access.redhat.com/ubi9-minimal:latest already present, skipping pull"
+          fi
+
       - name: Verify cached images loaded
         run: |
           echo "Verifying cached images are present..."
@@ -227,16 +281,38 @@ jobs:
               echo "⚠ Missing: $img (will be pulled during test)"
             fi
           done
+          echo ""
+          echo "Checking for base images used in Docker builds..."
+          for img in "alpine:latest" \
+                     "registry.access.redhat.com/ubi9-minimal:latest"; do
+            if docker image inspect "$img" > /dev/null 2>&1; then
+              echo "✓ Found: $img"
+            else
+              echo "⚠ Missing: $img (will be pulled during test)"
+            fi
+          done
 
       - name: E2E Development Test
         id: test-runner
         run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make -C test test-no-clean TEST_VARS=${{matrix.tests}}
 
+      # Save Go build cache to ensure it's available for next run even if tests fail.
+      # The actions/cache action only saves on success by default, but we want to save
+      # the build cache even when tests fail so subsequent runs benefit from compiled artifacts.
+      # This uses actions/cache/save action which is designed for post-job cache saving.
+      - name: Save Go build cache
+        if: always() && steps.cache-go-build.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.cache/go-build
+          key: ${{ steps.cache-go-build.outputs.cache-primary-key }}
+
       # Save service images built during the test run for future cache hits.
       # Images are tagged as localhost:443/amd64_*:1.0 and hello:1.0 by the service Makefiles.
+      # Using always() ensures caching happens even if tests fail, building cache for next run.
       # continue-on-error so a partial test run (some images missing) does not block failure diagnostics.
       - name: Save e2edev service images to cache
-        if: steps.cache-service-images.outputs.cache-hit != 'true'
+        if: always() && steps.cache-service-images.outputs.cache-hit != 'true'
         continue-on-error: true
         run: |
           images=$(docker images --format '{{.Repository}}:{{.Tag}}' | grep -E '^(localhost:443/amd64_|hello:1\.0)')
@@ -248,9 +324,10 @@ jobs:
       # Save management hub images pulled/built during the test run for future cache hits.
       # deploy-mgmt-hub.sh pulls exchange, agbot, CSS, mongo, postgres, vault images.
       # Each image is saved to its own tar so individual cache entries can be invalidated
-      # independently when tags change. continue-on-error so missing images don't block diagnostics.
+      # independently when tags change. Using always() ensures caching happens even if tests fail.
+      # continue-on-error so missing images don't block diagnostics.
       - name: Save Exchange image to cache
-        if: steps.cache-exchange-image.outputs.cache-hit != 'true'
+        if: always() && steps.cache-exchange-image.outputs.cache-hit != 'true'
         continue-on-error: true
         run: |
           if docker image inspect quay.io/openhorizon/amd64_exchange-api:testing > /dev/null 2>&1; then
@@ -258,7 +335,7 @@ jobs:
           fi
 
       - name: Save Agbot image to cache
-        if: steps.cache-agbot-image.outputs.cache-hit != 'true'
+        if: always() && steps.cache-agbot-image.outputs.cache-hit != 'true'
         continue-on-error: true
         run: |
           if docker image inspect openhorizon/amd64_agbot:e2edev > /dev/null 2>&1; then
@@ -266,7 +343,7 @@ jobs:
           fi
 
       - name: Save CSS image to cache
-        if: steps.cache-css-image.outputs.cache-hit != 'true'
+        if: always() && steps.cache-css-image.outputs.cache-hit != 'true'
         continue-on-error: true
         run: |
           if docker image inspect openhorizon/amd64_cloud-sync-service:latest > /dev/null 2>&1; then
@@ -274,7 +351,7 @@ jobs:
           fi
 
       - name: Save MongoDB image to cache
-        if: steps.cache-mongo-image.outputs.cache-hit != 'true'
+        if: always() && steps.cache-mongo-image.outputs.cache-hit != 'true'
         continue-on-error: true
         run: |
           if docker image inspect mongo:4.0.6 > /dev/null 2>&1; then
@@ -282,7 +359,7 @@ jobs:
           fi
 
       - name: Save PostgreSQL image to cache
-        if: steps.cache-postgres-image.outputs.cache-hit != 'true'
+        if: always() && steps.cache-postgres-image.outputs.cache-hit != 'true'
         continue-on-error: true
         run: |
           if docker image inspect postgres:17 > /dev/null 2>&1; then
@@ -290,11 +367,33 @@ jobs:
           fi
 
       - name: Save Vault image to cache
-        if: steps.cache-vault-image.outputs.cache-hit != 'true'
+        if: always() && steps.cache-vault-image.outputs.cache-hit != 'true'
         continue-on-error: true
         run: |
           if docker image inspect openhorizon/amd64_vault:testing > /dev/null 2>&1; then
             docker save openhorizon/amd64_vault:testing -o /tmp/vault-image.tar
+          fi
+
+      - name: Save Alpine base image to cache
+        if: always() && steps.cache-alpine-image.outputs.cache-hit != 'true'
+        continue-on-error: true
+        run: |
+          if docker image inspect alpine:latest > /dev/null 2>&1; then
+            echo "Saving alpine:latest to cache..."
+            docker save alpine:latest -o /tmp/alpine-image.tar
+          else
+            echo "alpine:latest not found, skipping cache save"
+          fi
+
+      - name: Save Red Hat UBI9 base image to cache
+        if: always() && steps.cache-ubi-image.outputs.cache-hit != 'true'
+        continue-on-error: true
+        run: |
+          if docker image inspect registry.access.redhat.com/ubi9-minimal:latest > /dev/null 2>&1; then
+            echo "Saving registry.access.redhat.com/ubi9-minimal:latest to cache..."
+            docker save registry.access.redhat.com/ubi9-minimal:latest -o /tmp/ubi-image.tar
+          else
+            echo "registry.access.redhat.com/ubi9-minimal:latest not found, skipping cache save"
           fi
       
       - name: Test Failure Catch - Check Docker Images
