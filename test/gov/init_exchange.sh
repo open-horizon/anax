@@ -9,8 +9,8 @@ fi
 
 AGBOT_NAME=${AGBOT_NAME:-agbot1}
 AGBOT_ORG=${AGBOT_ORG:-IBM}
-AGBOT_TOKEN=$(AGBOT_TOKEN:-Abcdefghijklmno1)
-AGBOT_AUTH=$(AGBOT_AUTH:-"${AGBOT_ORG}/${AGBOT_NAME}:${AGBOT_TOKEN}")
+AGBOT_TOKEN=${AGBOT_TOKEN:-Abcdefghijklmno1}
+AGBOT_AUTH=${AGBOT_AUTH:-"${AGBOT_ORG}/${AGBOT_NAME}:${AGBOT_TOKEN}"}
 TEST_DIFF_ORG=${TEST_DIFF_ORG:-1}
 
 EXCH_URL="${EXCH_APP_HOST}"
@@ -34,8 +34,8 @@ docker version
 #fi
 
 #--cacert /certs/css.crt
-if [ "${CERT_LOC}" -eq 1 ]; then
-  CERT_VAR="--cacert /certs/css.crt"
+if [ "${CERT_LOC}" = "1" ]; then
+  CERT_VAR=(--cacert /certs/css.crt)
 else
   CERT_VAR=(--silent)
 fi
@@ -186,7 +186,12 @@ REGANAX1C=$(curl -sSL -X PUT "${CERT_VAR[@]}" --header 'Content-Type: applicatio
 echo "$REGANAX1C"
 
 DEVICE_NUM=6
-NUM_AGENTS=$(( ${MULTIAGENTS:-0} + DEVICE_NUM ))
+MULTIAGENTS=${MULTIAGENTS:-0}
+if ! [[ "$MULTIAGENTS" =~ ^[0-9]+$ ]]; then
+    echo "Error: MULTIAGENTS must be a number, got: $MULTIAGENTS"
+    exit 255
+fi
+NUM_AGENTS=$(( MULTIAGENTS + DEVICE_NUM ))
 while [ ${DEVICE_NUM} -lt ${NUM_AGENTS} ]; do
   echo "Registering Anax device ${DEVICE_NUM}..."
   REGANAXMUL=$(curl -sSL -X PUT "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "e2edev@somecomp.com/anax1:anax1pw" -d "{\"token\":\"Abcdefghijklmno1\",\"name\":\"anaxdev\",\"registeredServices\":[],\"msgEndPoint\":\"\",\"softwareVersions\":{},\"publicKey\":\"\",\"pattern\":\"\",\"arch\":\"${ARCH}\"}" "${EXCH_URL}/orgs/e2edev@somecomp.com/nodes/anaxdevice${DEVICE_NUM}" | jq -r '.code, .msg')
@@ -201,7 +206,12 @@ while [ ${DEVICE_NUM} -lt ${NUM_AGENTS} ]; do
 done
 
 # Create Orgs in CSS
- ./gov/init_sync_service.sh
+if [ -f ./gov/init_sync_service.sh ]; then
+    ./gov/init_sync_service.sh
+else
+    echo "Error: init_sync_service.sh not found"
+    exit 255
+fi
 
 # package resources
 if ! ./gov/resource_package.sh
