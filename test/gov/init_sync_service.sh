@@ -6,8 +6,8 @@ if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
 fi
 
 #--cacert /certs/css.crt
-if [ "${CERT_LOC}" -eq 1 ]; then
-  CERT_VAR="--cacert /certs/css.crt"
+if [ "${CERT_LOC}" = "1" ]; then
+  CERT_VAR=(--cacert /certs/css.crt)
 else
   CERT_VAR=(--silent)
 fi

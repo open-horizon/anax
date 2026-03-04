@@ -14,8 +14,8 @@ fi
 # 6 - the destination id. The node's id. Specify "none" to leave the field unset.
 # 7 - the object policy (optional).
 # 8 - is public file
-if [ "${CERT_LOC}" -eq 1 ]; then
-  CERT_VAR="--cacert /certs/css.crt"
+if [ "${CERT_LOC}" = "1" ]; then
+  CERT_VAR=(--cacert /certs/css.crt)
 else
   CERT_VAR=(--silent)
 fi

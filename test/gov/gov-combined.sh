@@ -26,7 +26,7 @@ set_exports() {
     export HZN_AGENT_PORT=8510
     export ANAX_API="http://localhost:${HZN_AGENT_PORT}"
     export EXCH="${EXCH_APP_HOST}"
-    if [ "${CERT_LOC}" -eq 1 ]; then
+    if [ "${CERT_LOC}" = "1" ]; then
       export HZN_MGMT_HUB_CERT_PATH="/certs/css.crt"
     fi
 
@@ -316,7 +316,7 @@ elif [ "$TESTFAIL" != "1" ]; then
     fi
 
     # start multiple agents
-    # shellcheck source=test/gov/multiple_agents.sh
+    # shellcheck disable=SC1091
     source ./gov/multiple_agents.sh
     if [ -n "$MULTIAGENTS" ] && [ "$MULTIAGENTS" != "0" ]; then
       echo "Starting multiple agents with pattern ${ma_pattern} ..."

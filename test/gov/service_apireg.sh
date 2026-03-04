@@ -22,8 +22,8 @@ results() {
   fi
 }
 
-if [ "${CERT_LOC}" -eq 1 ]; then
-  CERT_VAR="--cacert /certs/css.crt"
+if [ "${CERT_LOC}" = "1" ]; then
+  CERT_VAR=(--cacert /certs/css.crt)
 else
   CERT_VAR=(--silent)
 fi

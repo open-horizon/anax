@@ -246,6 +246,11 @@ then
   ORG="${AGBOT_ORG}"
 
   echo "Registering agbot to manage patterns and business policies..."
+  echo "DEBUG: AGBOT_NAME=${AGBOT_NAME}"
+  echo "DEBUG: AGBOT_ORG=${AGBOT_ORG}"
+  echo "DEBUG: AGBOT_TOKEN=${AGBOT_TOKEN}"
+  echo "DEBUG: AGBOT_AUTH=${AGBOT_AUTH}"
+  echo "DEBUG: EXCH_URL=${EXCH_URL}"
 
   # register all patterns and business policies for e2edev@somecomp.com org to agbot1
   REGAGBOTE2EDEV=$(curl -sSL -X POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"patternOrgid":"e2edev@somecomp.com","pattern":"*", "nodeOrgid": "e2edev@somecomp.com"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/patterns" | jq -r '.code, .msg')
