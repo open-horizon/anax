@@ -9,7 +9,7 @@ fi
 # Begin testing global agreement protocol attributes
 
 # missing protocol definition
-cat > /tmp/agreementprotocolattribute.tmp <<'EOF'
+cat > /tmp/agreementprotocolattribute.tmp <<EOF
 {
   "type": "AgreementProtocolAttributes",
   "label": "Agreement Protocols",
@@ -41,7 +41,7 @@ else
 fi
 
 # no protocols specified
-cat > /tmp/agreementprotocolattribute.tmp <<'EOF'
+cat > /tmp/agreementprotocolattribute.tmp <<EOF
 {
   "type": "AgreementProtocolAttributes",
   "label": "Agreement Protocols",
@@ -75,7 +75,7 @@ else
 fi
 
 # protocol is not a number
-cat > /tmp/agreementprotocolattribute.tmp <<'EOF'
+cat > /tmp/agreementprotocolattribute.tmp <<EOF
 {
   "type": "AgreementProtocolAttributes",
   "label": "Agreement Protocols",
@@ -109,7 +109,7 @@ else
 fi
 
 # protocol is not an array of numbers
-cat > /tmp/agreementprotocolattribute.tmp <<'EOF'
+cat > /tmp/agreementprotocolattribute.tmp <<EOF
 {
   "type": "AgreementProtocolAttributes",
   "label": "Agreement Protocols",
@@ -143,7 +143,7 @@ else
 fi
 
 # fred is not one of the supported protocol names
-cat > /tmp/agreementprotocolattribute.tmp <<'EOF'
+cat > /tmp/agreementprotocolattribute.tmp <<EOF
 {
   "type": "AgreementProtocolAttributes",
   "label": "Agreement Protocols",
@@ -181,7 +181,7 @@ else
 fi
 
 # blockchain not specified correctly
-cat > /tmp/agreementprotocolattribute.tmp <<'EOF'
+cat > /tmp/agreementprotocolattribute.tmp <<EOF
 {
   "type": "AgreementProtocolAttributes",
   "label": "Agreement Protocols",
@@ -219,7 +219,7 @@ else
 fi
 
 # blockchain array not specified correctly
-cat > /tmp/agreementprotocolattribute.tmp <<'EOF'
+cat > /tmp/agreementprotocolattribute.tmp <<EOF
 {
   "type": "AgreementProtocolAttributes",
   "label": "Agreement Protocols",
@@ -257,7 +257,7 @@ else
 fi
 
 # blockchain type is not a number
-cat > /tmp/agreementprotocolattribute.tmp <<'EOF'
+cat > /tmp/agreementprotocolattribute.tmp <<EOF
 {
   "type": "AgreementProtocolAttributes",
   "label": "Agreement Protocols",
@@ -300,7 +300,7 @@ else
 fi
 
 # blockchain name is not a number
-cat > /tmp/agreementprotocolattribute.tmp <<'EOF'
+cat > /tmp/agreementprotocolattribute.tmp <<EOF
 {
   "type": "AgreementProtocolAttributes",
   "label": "Agreement Protocols",
@@ -343,7 +343,7 @@ else
 fi
 
 # blockchain type is not one of the supported types for Basic protocol
-cat > /tmp/agreementprotocolattribute.tmp <<'EOF'
+cat > /tmp/agreementprotocolattribute.tmp <<EOF
 {
   "type": "AgreementProtocolAttributes",
   "label": "Agreement Protocols",
@@ -389,7 +389,7 @@ fi
 # Now testing service specific agreement protocol attributes
 
 # missing protocol specification
-cat > /tmp/netspeedservice.tmp <<'EOF'
+cat > /tmp/netspeedservice.tmp <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -429,7 +429,7 @@ else
 fi
 
 # empty protocol array
-cat > /tmp/netspeedservice.tmp <<'EOF'
+cat > /tmp/netspeedservice.tmp <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -471,7 +471,7 @@ else
 fi
 
 # invalid value type for protocol
-cat > /tmp/netspeedservice.tmp <<'EOF'
+cat > /tmp/netspeedservice.tmp <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -513,7 +513,7 @@ else
 fi
 
 # invalid value type for protocol
-cat > /tmp/netspeedservice.tmp <<'EOF'
+cat > /tmp/netspeedservice.tmp <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -555,7 +555,7 @@ else
 fi
 
 # fred is not a known protocol
-cat > /tmp/netspeedservice.tmp <<'EOF'
+cat > /tmp/netspeedservice.tmp <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -601,7 +601,7 @@ else
 fi
 
 # invalid value type for protocol
-cat > /tmp/netspeedservice.tmp <<'EOF'
+cat > /tmp/netspeedservice.tmp <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -647,7 +647,7 @@ else
 fi
 
 # invalid value type for protocol
-cat > /tmp/netspeedservice.tmp <<'EOF'
+cat > /tmp/netspeedservice.tmp <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -693,7 +693,7 @@ else
 fi
 
 # invalid value type for blockchain type
-cat > /tmp/netspeedservice.tmp <<'EOF'
+cat > /tmp/netspeedservice.tmp <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -744,7 +744,7 @@ else
 fi
 
 # invalid value type for blockchain name
-cat > /tmp/netspeedservice.tmp <<'EOF'
+cat > /tmp/netspeedservice.tmp <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -795,7 +795,7 @@ else
 fi
 
 # invalid blockchain type for known protocol
-cat > /tmp/netspeedservice.tmp <<'EOF'
+cat > /tmp/netspeedservice.tmp <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -851,7 +851,7 @@ fi
 if [ "$PATTERN" = "" ]
 then
 
-cat > /tmp/netspeedservice.tmp <<'EOF'
+cat > /tmp/netspeedservice.tmp <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/no-such-service",
   "${SERVICE_NAME}": "no-such",
@@ -891,7 +891,7 @@ fi
 else
 
 # When patterns are in use, the device side cannot set any policy, there should be an error
-cat > /tmp/netspeedservice.tmp <<'EOF'
+cat > /tmp/netspeedservice.tmp <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/no-such-service",
   "${SERVICE_NAME}": "no-such",

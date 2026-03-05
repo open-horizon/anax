@@ -10,7 +10,7 @@ EMAIL="foo@goo.com"
   echo "Calling node API"
 
 if curl -sS -H "Content-Type: application/json" "$ANAX_API/node" | jq -er '. | .account.id' > /dev/null; then
-  cat > /tmp/updatehzntoken.tmp <<'EOF'
+  cat > /tmp/updatehzntoken.tmp <<EOF
 {
   "account": {
     "id": "$USER"
@@ -28,7 +28,7 @@ EOF
 
 else
 
-  cat > /tmp/newhzndevice.tmp <<'EOF'
+  cat > /tmp/newhzndevice.tmp <<EOF
 {
   "account": {
     "id": "$USER",

@@ -16,7 +16,7 @@ ORG="e2edev@somecomp.com"
 echo "Testing node API"
 
 # shellcheck disable=SC2153  # DEVICE_NAME is set externally as an environment variable
-cat > /tmp/newhzndevice.tmp <<'EOF'
+cat > /tmp/newhzndevice.tmp <<EOF
 {
   "id": "$DEVICE_ID",
   "name": "$DEVICE_NAME",
@@ -44,7 +44,7 @@ else
 fi
 
 # undefined org
-cat > /tmp/newhzndevice.tmp <<'EOF'
+cat > /tmp/newhzndevice.tmp <<EOF
 {
   "id": "$DEVICE_ID",
   "name": "$DEVICE_NAME",
@@ -73,7 +73,7 @@ else
 fi
 
 # undefined pattern
-cat > /tmp/newhzndevice.tmp <<'EOF'
+cat > /tmp/newhzndevice.tmp <<EOF
 {
   "id": "$DEVICE_ID",
   "name": "$DEVICE_NAME",

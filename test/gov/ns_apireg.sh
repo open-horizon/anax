@@ -24,7 +24,7 @@ then
         # IBM/netspeed depends on: IBM/nework, IBN/network2, IBM/cpu
         # e2edev@somecomp.com/netspeed depends on: e2edev@somecomp.com/network, e2edev@somecomp.com/network2, IBM/cpu e2edev@somecomp.com/cpu
 
-        cat > /tmp/snsconfig.tmp <<'EOF'
+        cat > /tmp/snsconfig.tmp <<EOF
 [
   {
     "serviceOrgid": "IBM",
@@ -103,7 +103,7 @@ EOF
         # Configure the netspeed service variables, at an older version level just to be sure
         # that the runtime will still pick them up for the newer version that is installed in the exchange.
 
-        cat > /tmp/snsconfig.tmp <<'EOF'
+        cat > /tmp/snsconfig.tmp <<EOF
 [
   {
     "serviceOrgid": "IBM",

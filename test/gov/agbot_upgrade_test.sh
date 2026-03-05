@@ -186,7 +186,7 @@ do
     sleep 10
 done
 
-cat > /tmp/upgradetest.tmp <<'EOF'
+cat > /tmp/upgradetest.tmp <<EOF
 {
     "agreementId": "$AGID"
 }
@@ -208,7 +208,7 @@ else
 fi
 
 # test 10 ================================================
-cat > /tmp/upgradetest.tmp <<'EOF'
+cat > /tmp/upgradetest.tmp <<EOF
 {
     "agreementId": "$AGID"
 }
@@ -230,7 +230,7 @@ else
 fi
 
 # test 11 ================================================
-cat > /tmp/upgradetest.tmp <<'EOF'
+cat > /tmp/upgradetest.tmp <<EOF
 {
     "agreementId": "$AGID",
     "device": "abcdef"

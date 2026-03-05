@@ -212,7 +212,7 @@ EOF
 done
 
 echo -e "\n${PREFIX} test /deploycheck/policycompatible. Input: node policy and business policy"
-cat > /tmp/comp_input.tmp <<'EOF'
+cat > /tmp/comp_input.tmp <<EOF
 {
   "node_policy":      $node_policy,
   "business_policy":  $bp_location
@@ -223,7 +223,7 @@ run_and_check "deploycheck/policycompatible" "$comp_input" "200" ""
 check_comp_results "true" ""
 
 echo -e "\n${PREFIX} test /deploycheck/policycompatible. Input: node policy, business policy and service policy"
-cat > /tmp/comp_input.tmp <<'EOF'
+cat > /tmp/comp_input.tmp <<EOF
 {
   "node_policy":      $node_policy,
   "business_policy":  $bp_location,
@@ -253,7 +253,7 @@ cat > /tmp/service_policy_bad.tmp <<'EOF'
 EOF
 service_policy_bad=$(cat /tmp/service_policy_bad.tmp)
 
-cat > /tmp/comp_input.tmp <<'EOF'
+cat > /tmp/comp_input.tmp <<EOF
 {
   "node_policy":      $node_policy,
   "business_policy":  $bp_location,

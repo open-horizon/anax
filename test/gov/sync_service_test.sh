@@ -867,7 +867,7 @@ testUserHaveAccessToALLObjects() {
 
     # publish
     # have access to update object in user's org
-    cat > /tmp/resmeta.tmp <<'EOF'
+    cat > /tmp/meta.json <<EOF
     {
       "objectID": "${8}",
       "objectType": "${7}",
@@ -878,9 +878,6 @@ testUserHaveAccessToALLObjects() {
       "expiration": "2032-10-02T15:00:00Z"
     }
 EOF
-    resmeta=$(cat /tmp/resmeta.tmp)
-
-    echo "$resmeta" > /tmp/meta.json
     hzn mms object publish -m /tmp/meta.json -f /tmp/data.txt >/dev/null
     RC=$?
     if [ $RC -ne 0 ]
@@ -920,7 +917,7 @@ testUserNotHaveAccessToPrivateObjects() {
 
      # don't have access to update private object
     echo "user ${2} is publishing object: ${5} ${6}"
-    cat > /tmp/resmeta.tmp <<'EOF'
+    cat > /tmp/meta.json <<EOF
     {
       "objectID": "${6}",
       "objectType": "${5}",
@@ -929,9 +926,6 @@ testUserNotHaveAccessToPrivateObjects() {
       "description": "test acl - test update by user"
     }
 EOF
-    resmeta=$(cat /tmp/resmeta.tmp)
-
-    echo "$resmeta" > /tmp/meta.json
     resp=$(hzn mms object publish -m /tmp/meta.json -f /tmp/data.txt 2>&1)
     verify "$resp" "Unauthorized" "Got unexpected error with updating object in object type ${5} by ${2}"
 
@@ -967,7 +961,7 @@ verifyUserAccessForPublicObject() {
 
     echo "Verify user $1/$2 doesn't have WRITE access to public object in $4 org"
     # user can't update object metadata or object data
-cat > /tmp/resmeta.tmp <<'EOF'
+cat > /tmp/resmeta.tmp <<EOF
 {
   "data": [],
   "meta": {
@@ -1019,7 +1013,7 @@ verifyAdminUserCanCreatePublicObject() {
     export HZN_ORG_ID=${1}
 
     # hub admin can create public object in anyorg
-cat > /tmp/resmeta.tmp <<'EOF'
+cat > /tmp/meta.json <<EOF
 {
   "objectID": "public_obj",
   "objectType": "public",
@@ -1031,9 +1025,6 @@ cat > /tmp/resmeta.tmp <<'EOF'
   "public": true
 }
 EOF
-resmeta=$(cat /tmp/resmeta.tmp)
-
-    echo "$resmeta" > /tmp/meta.json
     hzn mms object publish -o "${4}" -m /tmp/meta.json -f /tmp/data.txt >/dev/null
     RC=$?
     if [ $RC -ne 0 ]

@@ -9,7 +9,7 @@ fi
 # Begin testing metering properties
 
 # missing perTimeUnit field
-cat > /tmp/netspeedservice.tmp <<'EOF'
+cat > /tmp/netspeedservice.tmp <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -51,7 +51,7 @@ else
 fi
 
 # missing token field
-cat > /tmp/netspeedservice.tmp <<'EOF'
+cat > /tmp/netspeedservice.tmp <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -93,7 +93,7 @@ else
 fi
 
 # missing tokens and perTimeUnit fields
-cat > /tmp/netspeedservice.tmp <<'EOF'
+cat > /tmp/netspeedservice.tmp <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -135,7 +135,7 @@ else
 fi
 
 # tokens must be non-zero
-cat > /tmp/netspeedservice.tmp <<'EOF'
+cat > /tmp/netspeedservice.tmp <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -178,7 +178,7 @@ else
 fi
 
 # perTimeUnit must be non-blank
-cat > /tmp/netspeedservice.tmp <<'EOF'
+cat > /tmp/netspeedservice.tmp <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -221,7 +221,7 @@ else
 fi
 
 # tokens must be a valid number
-cat > /tmp/netspeedservice.tmp <<'EOF'
+cat > /tmp/netspeedservice.tmp <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -265,7 +265,7 @@ else
 fi
 
 # perTimeUnit must be a string
-cat > /tmp/netspeedservice.tmp <<'EOF'
+cat > /tmp/netspeedservice.tmp <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -309,7 +309,7 @@ else
 fi
 
 # notification interval must be a number
-cat > /tmp/netspeedservice.tmp <<'EOF'
+cat > /tmp/netspeedservice.tmp <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -353,7 +353,7 @@ else
 fi
 
 # notificationInterval cannot be specified without tokens perTimeUnit
-cat > /tmp/netspeedservice.tmp <<'EOF'
+cat > /tmp/netspeedservice.tmp <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",

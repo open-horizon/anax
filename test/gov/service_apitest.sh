@@ -77,7 +77,7 @@ else
 fi
 
 # empty service URL
-cat > /tmp/snsconfig.tmp <<'EOF'
+cat > /tmp/snsconfig.tmp <<EOF
 {
   "url": "",
   "version": "2.2.0",
@@ -122,7 +122,7 @@ else
 fi
 
 # invalid version string
-cat > /tmp/snsconfig.tmp <<'EOF'
+cat > /tmp/snsconfig.tmp <<EOF
 {
   "url": "https://bluehorizon.network/services/netspeed",
   "versionRange": "a",
@@ -167,7 +167,7 @@ else
 fi
 
 # invalid attributes section
-cat > /tmp/snsconfig.tmp <<'EOF'
+cat > /tmp/snsconfig.tmp <<EOF
 {
   "url": "https://bluehorizon.network/services/netspeed",
   "versionRange": "1.2.3",
@@ -198,7 +198,7 @@ else
 fi
 
 # unknown service
-cat > /tmp/snsconfig.tmp <<'EOF'
+cat > /tmp/snsconfig.tmp <<EOF
 {
   "url": "https://bluehorizon.network/services/testServiceX",
   "versionRange": "1.2.3",
@@ -241,7 +241,7 @@ fi
 
 echo -e "\nSetting up test service for context tests"
 
-cat > /tmp/service.tmp <<'EOF'
+cat > /tmp/service.tmp <<EOF
 {
   "label":"test",
   "description":"test service",
@@ -297,7 +297,7 @@ else
 fi
 
 # wrong variable type (number) in the variables section
-cat > /tmp/snsconfig.tmp <<'EOF'
+cat > /tmp/snsconfig.tmp <<EOF
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",
@@ -338,7 +338,7 @@ else
 fi
 
 # wrong variable type (array of string) in the variables section
-cat > /tmp/snsconfig.tmp <<'EOF'
+cat > /tmp/snsconfig.tmp <<EOF
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",
@@ -379,7 +379,7 @@ else
 fi
 
 # wrong variable type object in the variables section
-cat > /tmp/snsconfig.tmp <<'EOF'
+cat > /tmp/snsconfig.tmp <<EOF
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",
@@ -420,7 +420,7 @@ else
 fi
 
 # wrong variable type (string) in the variables section for an int
-cat > /tmp/snsconfig.tmp <<'EOF'
+cat > /tmp/snsconfig.tmp <<EOF
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",
@@ -461,7 +461,7 @@ else
 fi
 
 # wrong variable type (string) in the variables section for a float
-cat > /tmp/snsconfig.tmp <<'EOF'
+cat > /tmp/snsconfig.tmp <<EOF
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",
@@ -502,7 +502,7 @@ else
 fi
 
 # wrong variable type (string) in the variables section for list of strings
-cat > /tmp/snsconfig.tmp <<'EOF'
+cat > /tmp/snsconfig.tmp <<EOF
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",
@@ -543,7 +543,7 @@ else
 fi
 
 # wrong variable type (float) in the variables section for a int
-cat > /tmp/snsconfig.tmp <<'EOF'
+cat > /tmp/snsconfig.tmp <<EOF
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",
@@ -584,7 +584,7 @@ else
 fi
 
 # wrong variable type (int) in the variables section for a list of strings
-cat > /tmp/snsconfig.tmp <<'EOF'
+cat > /tmp/snsconfig.tmp <<EOF
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",
@@ -625,7 +625,7 @@ else
 fi
 
 # wrong variable type (array numbers) in the variables section for a list of strings
-cat > /tmp/snsconfig.tmp <<'EOF'
+cat > /tmp/snsconfig.tmp <<EOF
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",
@@ -671,7 +671,7 @@ fi
 if [ "$PATTERN" != "" ]
 then
   # missing variable in the variables section
-  cat > /tmp/snsconfig.tmp <<'EOF'
+  cat > /tmp/snsconfig.tmp <<EOF
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",
@@ -710,7 +710,7 @@ EOF
   fi
 
   # another missing variable in the variables section
-  cat > /tmp/snsconfig.tmp <<'EOF'
+  cat > /tmp/snsconfig.tmp <<EOF
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",
@@ -754,7 +754,7 @@ fi
 # Configure the testservice service variables, at an older version level just to be sure
 # that the runtime will still pick them up for the newer version that is installed in the exchange.
 # The configstate tests that come after these service tests depend on the following to work correctly.
-cat > /tmp/snsconfig.tmp <<'EOF'
+cat > /tmp/snsconfig.tmp <<EOF
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "0.5.0",

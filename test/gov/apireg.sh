@@ -45,7 +45,7 @@ if [[ "$PATTERN" != "" ]]; then
     pat="e2edev@somecomp.com/$PATTERN"
 fi
 
-cat > /tmp/newhzndevice.tmp <<'EOF'
+cat > /tmp/newhzndevice.tmp <<EOF
 {
   "id": "$DEVICE_ID",
   "token": "$TOKEN",
