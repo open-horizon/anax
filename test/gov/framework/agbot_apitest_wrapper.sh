@@ -36,7 +36,20 @@ fi
 
 log_message INFO "Verifying agbot accessibility at ${AGBOT_API}"
 if ! curl -sS "${AGBOT_API}/agreement" > /dev/null 2>&1; then
-    log_message ERROR "Agbot is not accessible"
+    log_message ERROR "Agbot is not accessible at ${AGBOT_API}"
+    
+    # Extract host and port for detailed diagnostics
+    AGBOT_HOST=$(echo "$AGBOT_API" | sed -E 's|https?://([^:/]+).*|\1|')
+    AGBOT_PORT=$(echo "$AGBOT_API" | sed -E 's|https?://[^:]+:([0-9]+).*|\1|')
+    
+    log_message INFO "Checking if agbot is listening on ${AGBOT_HOST}:${AGBOT_PORT}..."
+    if nc -z "$AGBOT_HOST" "$AGBOT_PORT" 2>/dev/null; then
+        log_message WARN "Agbot is listening but not responding correctly to /agreement"
+        log_message WARN "This may indicate agbot is still starting up or has an issue"
+    else
+        log_message ERROR "Agbot is not listening on ${AGBOT_HOST}:${AGBOT_PORT}"
+        log_message ERROR "Verify agbot service is running and accessible"
+    fi
     exit 1
 fi
 

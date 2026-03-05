@@ -81,7 +81,11 @@ else
     fi
     
     log_message ERROR "Exchange status:"
-    curl -sS "${EXCH_APP_HOST}/v1/admin/version" || echo "Failed to get Exchange version"
+    if [ -n "${HZN_EXCHANGE_USER_AUTH:-}" ]; then
+        curl -sS -u "${HZN_EXCHANGE_USER_AUTH}" "${EXCH_APP_HOST}/v1/admin/version" || echo "Failed to get Exchange version"
+    else
+        curl -sS "${EXCH_APP_HOST}/v1/admin/version" || echo "Failed to get Exchange version (no auth)"
+    fi
 fi
 
 exit $result

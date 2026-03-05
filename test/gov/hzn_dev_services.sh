@@ -53,7 +53,8 @@ createProject() {
 
     buildOut=$(make ARCH="${ARCH}" 2>&1)
 
-    verify "${buildOut}" "Successfully built" "writing image sha256:[0-9A-Za-z\.[:space:]]* done" "$2 container did not build" 1
+    # Check for successful build OR cached image (skipped build)
+    verify "${buildOut}" "Successfully built" "writing image sha256:[0-9A-Za-z\.[:space:]]* done|already exists, skipping build" "$2 container did not build" 1
 
     verify "${buildOut}" "$3" "$3" "$2 container did not produce output" 0
 

@@ -139,6 +139,15 @@ When fixing bugs or issues, agents should NOT create separate documentation file
 test/gov/framework/SYNC_SERVICE_AUTH_FIX.md
 test/gov/FIX_USER_VARIABLE_CONFLICT.md
 BUGFIX_AUTHENTICATION.md
+MAKEFILE_OPTIMIZATION.md
+PERFORMANCE_IMPROVEMENTS.md
+```
+
+**This also applies to summary documents:**
+- Do NOT create summary documents for changes (e.g., `SUMMARY.md`, `CHANGES_SUMMARY.md`)
+- Do NOT create explanation documents for optimizations (e.g., `OPTIMIZATION_GUIDE.md`)
+- Changes should be self-documenting through clear code, comments, and commit messages
+- If broader documentation is needed, update existing documentation files (README.md, AGENTS.md, etc.)
 ```
 
 **Example of What TO Do:**

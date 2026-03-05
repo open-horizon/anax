@@ -11,11 +11,23 @@ default: all
 all: build run check
 
 build:
-	docker build -t $(DOCKER_HUB_ID)/$(DOCKER_NAME):$(DOCKER_TAG) .
+	@if ! docker image inspect $(DOCKER_HUB_ID)/$(DOCKER_NAME):$(DOCKER_TAG) > /dev/null 2>&1; then \
+		docker build -t $(DOCKER_HUB_ID)/$(DOCKER_NAME):$(DOCKER_TAG) .; \
+	else \
+		echo "Image $(DOCKER_HUB_ID)/$(DOCKER_NAME):$(DOCKER_TAG) already exists, skipping build"; \
+	fi
 
 run:
-	-docker rm -f $(DOCKER_NAME) 2> /dev/null || :
-	docker run -d --name $(DOCKER_NAME) --network=hzn_horizonnet --publish=8348:8347 --volume `pwd`:/outside $(DOCKER_HUB_ID)/$(DOCKER_NAME):$(DOCKER_TAG)
+	@if docker ps -a --filter name=^$(DOCKER_NAME)$$ --format '{{.Names}}' | grep -q '^$(DOCKER_NAME)$$'; then \
+		if docker ps --filter name=^$(DOCKER_NAME)$$ --format '{{.Names}}' | grep -q '^$(DOCKER_NAME)$$'; then \
+			echo "Container $(DOCKER_NAME) already running, skipping"; \
+		else \
+			echo "Container $(DOCKER_NAME) exists but not running, restarting"; \
+			docker start $(DOCKER_NAME); \
+		fi \
+	else \
+		docker run -d --name $(DOCKER_NAME) --network=hzn_horizonnet --publish=8348:8347 --volume `pwd`:/outside $(DOCKER_HUB_ID)/$(DOCKER_NAME):$(DOCKER_TAG); \
+	fi
 
 check:
 	docker ps -a --filter name=$(DOCKER_NAME)
@@ -31,4 +43,7 @@ publish:
 clean: stop
 	-docker rmi $(DOCKER_HUB_ID)/$(DOCKER_NAME):$(DOCKER_TAG)
 
-.PHONY: default all build run check publish clean
+rebuild:
+	docker build -t $(DOCKER_HUB_ID)/$(DOCKER_NAME):$(DOCKER_TAG) .
+
+.PHONY: default all build rebuild run check publish clean

@@ -705,6 +705,66 @@ jobs:
             done
           fi
 
+      - name: Test Failure Catch - Check Anax Systemd Service Logs
+        continue-on-error: true
+        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
+        run: |
+          echo "=== Anax Systemd Service Logs ==="
+          if systemctl is-active --quiet horizon.service 2>/dev/null; then
+            echo "Horizon service is active"
+            echo ""
+            echo "--- Service Status ---"
+            systemctl status horizon.service --no-pager || true
+            echo ""
+            echo "--- Service Logs (last 500 lines) ---"
+            journalctl -u horizon.service -n 500 --no-pager || echo "Failed to retrieve journalctl logs"
+          elif systemctl list-unit-files | grep -q horizon.service 2>/dev/null; then
+            echo "Horizon service exists but is not active"
+            echo ""
+            echo "--- Service Status ---"
+            systemctl status horizon.service --no-pager || true
+            echo ""
+            echo "--- Service Logs (last 500 lines) ---"
+            journalctl -u horizon.service -n 500 --no-pager || echo "Failed to retrieve journalctl logs"
+          else
+            echo "Horizon systemd service not found (agent may be running in container mode)"
+          fi
+
+      - name: Test Failure Catch - Check Anax Agent Install Log
+        continue-on-error: true
+        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
+        run: |
+          echo "=== Anax Agent Install Log ==="
+          # Common install log locations
+          install_log_paths=(
+            "/var/log/horizon-agent-install.log"
+            "/tmp/horizon-agent-install.log"
+            "/var/horizon/agent-install.log"
+            "$HOME/horizon-agent-install.log"
+          )
+          
+          log_found=false
+          for log_path in "${install_log_paths[@]}"; do
+            if [ -f "$log_path" ]; then
+              echo "Found install log at: $log_path"
+              echo ""
+              echo "--- Install Log Content (last 500 lines) ---"
+              tail -n 500 "$log_path" 2>&1 || echo "Failed to read $log_path"
+              log_found=true
+              break
+            fi
+          done
+          
+          if [ "$log_found" = false ]; then
+            echo "Agent install log not found in common locations:"
+            for log_path in "${install_log_paths[@]}"; do
+              echo "  - $log_path"
+            done
+            echo ""
+            echo "Searching for any horizon install logs..."
+            find /var/log /tmp "$HOME" -name "*horizon*install*.log" -type f 2>/dev/null || echo "No install logs found"
+          fi
+
       - name: Test Failure Catch - Check Agbot Docker Log
         continue-on-error: true
         if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}

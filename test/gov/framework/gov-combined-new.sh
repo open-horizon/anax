@@ -208,6 +208,16 @@ if [ "$TESTFAIL" != "1" ] && ! should_skip_test "api_tests"; then
         log_message ERROR "Skipping API tests - Anax binary not available"
         ANAX_AVAILABLE=0
     else
+        # Detect if running in GitHub Actions or without /root write access
+        if [ -n "${GITHUB_ACTIONS:-}" ] || [ ! -w "/root" ] 2>/dev/null; then
+            ANAX_DB_PATH="/tmp/anax-db"
+            mkdir -p "$ANAX_DB_PATH"
+            log_message INFO "Using writable DB path for tests: $ANAX_DB_PATH"
+        else
+            ANAX_DB_PATH="/root/.colonus"
+        fi
+        export ANAX_DB_PATH
+        
         # Ensure config files exist by processing templates if needed
         CONFIG_DIR="/etc/colonus"
         TEMPLATE_DIR="${GOV_DIR}/../docker/fs/etc/colonus"
@@ -224,17 +234,17 @@ if [ "$TESTFAIL" != "1" ] && ! should_skip_test "api_tests"; then
         if [ ! -f "$CONFIG_FILE" ] && [ -f "$TEMPLATE_FILE" ]; then
             log_message INFO "Creating config file from template: $CONFIG_FILE"
             if mkdir -p "$CONFIG_DIR" 2>/dev/null; then
-                EXCH_APP_HOST="${EXCH_APP_HOST}" CSS_URL="${CSS_URL}" HZN_AGBOT_URL="${AGBOT_SAPI_URL}" \
+                ANAX_DB_PATH="${ANAX_DB_PATH}" EXCH_APP_HOST="${EXCH_APP_HOST}" CSS_URL="${CSS_URL}" HZN_AGBOT_URL="${AGBOT_SAPI_URL}" \
                     envsubst < "$TEMPLATE_FILE" > "$CONFIG_FILE" 2>/dev/null || {
                     log_message WARN "Failed to create config file in $CONFIG_DIR, trying temp location"
                     CONFIG_FILE="/tmp/anax-test.config"
-                    EXCH_APP_HOST="${EXCH_APP_HOST}" CSS_URL="${CSS_URL}" HZN_AGBOT_URL="${AGBOT_SAPI_URL}" \
+                    ANAX_DB_PATH="${ANAX_DB_PATH}" EXCH_APP_HOST="${EXCH_APP_HOST}" CSS_URL="${CSS_URL}" HZN_AGBOT_URL="${AGBOT_SAPI_URL}" \
                         envsubst < "$TEMPLATE_FILE" > "$CONFIG_FILE"
                 }
             else
                 log_message WARN "Cannot write to $CONFIG_DIR, using temp location"
                 CONFIG_FILE="/tmp/anax-test.config"
-                EXCH_APP_HOST="${EXCH_APP_HOST}" CSS_URL="${CSS_URL}" HZN_AGBOT_URL="${AGBOT_SAPI_URL}" \
+                ANAX_DB_PATH="${ANAX_DB_PATH}" EXCH_APP_HOST="${EXCH_APP_HOST}" CSS_URL="${CSS_URL}" HZN_AGBOT_URL="${AGBOT_SAPI_URL}" \
                     envsubst < "$TEMPLATE_FILE" > "$CONFIG_FILE"
             fi
         fi
