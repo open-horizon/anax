@@ -151,55 +151,90 @@ done
 # Test Execution Section
 # ============================================================================
 
+# Export critical environment variables for test wrappers
+export AGBOT_API="${AGBOT_API}"
+export AGBOT2_API="${AGBOT2_API}"
+export CSS_URL="${CSS_URL}"
+export EXCH_ROOTPW="${EXCH_ROOTPW}"
+
 # Test 1: Build old anax if needed
 if [ "$OLDANAX" == "1" ]; then
     run_test "build_old_anax" "./build_old_anax.sh"
 fi
 
-# Test 2: CSS/ESS Sync Service Test
+# Test 2: Initialize CSS/ESS with organizations before testing
+if ! should_skip_test "init_sync_service"; then
+    log_message INFO "Initializing CSS/ESS with organizations"
+    if ./init_sync_service.sh; then
+        log_message INFO "CSS/ESS initialization successful"
+    else
+        log_message ERROR "CSS/ESS initialization failed"
+        ((FAILED_TESTS++))
+    fi
+fi
+
+# Test 3: CSS/ESS Sync Service Test
 if ! should_skip_test "sync_service"; then
     run_test "sync_service" "${FRAMEWORK_DIR}/sync_service_wrapper.sh"
 fi
 
-# Test 3: API Tests (requires anax startup)
+# Test 4: API Tests (requires anax startup)
 # Track whether Anax is available for subsequent tests
 ANAX_AVAILABLE=0
 
 if [ "$TESTFAIL" != "1" ] && ! should_skip_test "api_tests"; then
     set_exports
     
-    # Start Anax for API tests
-    log_message INFO "Starting Anax for API tests"
-    if [ "${CERT_LOC}" -eq "1" ]; then
-        /usr/local/bin/anax -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined.config >/tmp/anax.log 2>&1 &
-    else
-        /usr/local/bin/anax -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined-no-cert.config >/tmp/anax.log 2>&1 &
+    # Detect anax binary location
+    ANAX_BIN=""
+    if [ -x "/usr/local/bin/anax" ]; then
+        ANAX_BIN="/usr/local/bin/anax"
+    elif [ -x "${GOPATH}/src/github.com/${GITHUB_REPOSITORY}/anax" ]; then
+        ANAX_BIN="${GOPATH}/src/github.com/${GITHUB_REPOSITORY}/anax"
+    elif [ -x "$(dirname "${GOV_DIR}")/anax" ]; then
+        ANAX_BIN="$(dirname "${GOV_DIR}")/anax"
+    elif command -v anax >/dev/null 2>&1; then
+        ANAX_BIN="$(command -v anax)"
     fi
     
-    sleep 5
-    
-    # Wait for anax to be ready
-    if wait_for_anax 120; then
-        ANAX_AVAILABLE=1
-        run_test "api_tests" "${FRAMEWORK_DIR}/apitest_wrapper.sh"
-        
-        # Cleanup after API tests
-        log_message INFO "Cleaning up after API tests"
-        # shellcheck disable=SC2046
-        kill $(pidof anax) 2>/dev/null
-        rm -fr /var/horizon/.colonus/*.db
-        rm -fr /var/horizon/.colonus/policy.d/*
+    if [ -z "$ANAX_BIN" ]; then
+        log_message ERROR "Anax binary not found in expected locations"
+        log_message ERROR "Skipping API tests - Anax binary not available"
+        ANAX_AVAILABLE=0
     else
-        log_message ERROR "Anax failed to start for API tests"
-        log_message WARN "Skipping tests that require Anax on localhost"
-        # TEST_RESULTS is used by test framework
-        # shellcheck disable=SC2034
-        TEST_RESULTS["api_tests"]="FAIL"
-        ((FAILED_TESTS++))
+        # Start Anax for API tests
+        log_message INFO "Starting Anax for API tests using: $ANAX_BIN"
+        if [ "${CERT_LOC}" -eq "1" ]; then
+            "$ANAX_BIN" -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined.config >/tmp/anax.log 2>&1 &
+        else
+            "$ANAX_BIN" -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined-no-cert.config >/tmp/anax.log 2>&1 &
+        fi
+        
+        sleep 5
+        
+        # Wait for anax to be ready
+        if wait_for_anax 120; then
+            ANAX_AVAILABLE=1
+            run_test "api_tests" "${FRAMEWORK_DIR}/apitest_wrapper.sh"
+            
+            # Cleanup after API tests
+            log_message INFO "Cleaning up after API tests"
+            # shellcheck disable=SC2046
+            kill $(pidof anax) 2>/dev/null
+            rm -fr /var/horizon/.colonus/*.db 2>/dev/null || true
+            rm -fr /var/horizon/.colonus/policy.d/* 2>/dev/null || true
+        else
+            log_message ERROR "Anax failed to start for API tests"
+            log_message WARN "Skipping tests that require Anax on localhost"
+            # TEST_RESULTS is used by test framework
+            # shellcheck disable=SC2034
+            TEST_RESULTS["api_tests"]="FAIL"
+            ((FAILED_TESTS++))
+        fi
     fi
 fi
 
-# Test 4: Agbot verification
+# Test 5: Agbot verification
 if [ "$NOAGBOT" != "1" ] && [ "$TESTFAIL" != "1" ] && [ ${REMOTE_HUB} -eq 0 ]; then
     if ! should_skip_test "agbot_verification"; then
         run_test "agbot_verification" "curl -sSL ${AGBOT_API}/agreement > /dev/null"
@@ -210,7 +245,7 @@ if [ "$NOAGBOT" != "1" ] && [ "$TESTFAIL" != "1" ] && [ ${REMOTE_HUB} -eq 0 ]; t
     fi
 fi
 
-# Test 5: Pattern-based or Policy-based tests
+# Test 6: Pattern-based or Policy-based tests
 # These tests require Anax to be running on localhost
 if [ "$TESTFAIL" != "1" ]; then
     if [ "$ANAX_AVAILABLE" -eq 0 ]; then
