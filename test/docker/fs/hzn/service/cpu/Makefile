@@ -10,7 +10,7 @@ default: all
 
 all: build run check
 
-build: clean
+build:
 	docker build -t $(DOCKER_HUB_ID)/$(DOCKER_NAME):$(DOCKER_TAG) .
 
 run: stop

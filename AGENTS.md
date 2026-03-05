@@ -1515,6 +1515,111 @@ See [`.github/workflows/E2E-test.yml`](.github/workflows/E2E-test.yml) for a com
 - Service images built during tests
 
 
+### Matrix Job Cache Key Strategy
+
+When using matrix jobs in GitHub Actions, cache keys must be carefully designed to ensure proper cache sharing and reuse.
+
+#### Shared vs. Per-Job Cache Keys
+
+**Principle**: Cache keys should reflect whether the cached content is identical across matrix jobs or unique to each job.
+
+**Shared Resources** (identical across all matrix jobs):
+- Management hub images (Exchange, Agbot, CSS, databases)
+- Base images (Alpine, UBI, etc.)
+- External dependencies that don't vary by test type
+- **Cache key pattern**: `resource-${{ runner.os }}-version-${{ date }}`
+- **NO matrix variable in key**
+
+**Per-Job Resources** (unique to each matrix job):
+- Go build cache (different files compiled per test)
+- Test-specific artifacts
+- Job-specific build outputs
+- **Cache key pattern**: `resource-${{ runner.os }}-${{ hashFiles() }}-${{ matrix.variable }}`
+- **INCLUDE matrix variable in key**
+
+**Why This Matters:**
+- Shared resources with matrix-specific keys create separate caches that can't be reused
+- Per-job resources without matrix-specific keys cause cache conflicts and corruption
+- Mismatched save/restore keys result in 0% cache hit rate
+
+**Example:**
+```yaml
+# Shared image - all jobs use same cache
+key: agbot-image-${{ runner.os }}-e2edev-${{ steps.date.outputs.week }}
+
+# Per-job artifact - each job has own cache
+key: go-build-${{ runner.os }}-${{ hashFiles('**/*.go') }}-${{ matrix.tests }}
+```
+
+### Docker Build Caching in CI/CD
+
+**Principle**: Docker layer caching is essential for fast CI/CD pipelines. Never disable it without good reason.
+
+#### Avoid Cache-Defeating Patterns
+
+**Anti-patterns that break caching:**
+1. Using `--no-cache` flag in docker build commands
+2. Running `docker rmi` before building (deletes cached layers)
+3. Making `build` target depend on `clean` target
+4. Unnecessary image deletion in build scripts
+
+**Correct patterns:**
+1. Let Docker use its layer cache naturally
+2. Only use `--no-cache` when debugging cache-related issues
+3. Separate `clean` targets from normal `build` targets
+4. Use `docker build -t image:tag .` without additional flags
+
+**When to use `--no-cache`:**
+- Debugging suspected cache corruption
+- Forcing fresh builds after base image updates
+- One-off builds, not in CI/CD pipelines
+
+**Performance impact:**
+- With caching: Builds use cached layers, ~75% faster
+- Without caching: Full rebuild every time, wastes time and resources
+
+### Test Framework Wrapper Requirements
+
+**Principle**: All tests must use framework wrappers to ensure consistent environment, error handling, and diagnostics.
+
+#### Why Wrappers Are Mandatory
+
+Test wrappers provide critical infrastructure:
+
+1. **Environment Setup**: Export all required variables (CSS_URL, EXCH_APP_HOST, etc.)
+2. **Service Verification**: Check prerequisites before running tests
+3. **Error Handling**: Consistent error reporting and diagnostics
+4. **Retry Logic**: Automatic retries for transient failures
+5. **Metrics Collection**: Capture test timing and resource usage
+6. **Cleanup**: Ensure proper cleanup even on failure
+
+#### Direct Script Calls Are Incorrect
+
+**Anti-pattern:**
+```bash
+run_test "api_tests" "./apitest.sh"  # Missing environment setup
+```
+
+**Correct pattern:**
+```bash
+run_test "api_tests" "${FRAMEWORK_DIR}/apitest_wrapper.sh"  # Full infrastructure
+```
+
+#### Common Issues from Direct Calls
+
+- Tests fail with "variable not set" errors (CSS_URL, etc.)
+- Inconsistent error messages across tests
+- Missing diagnostic information on failures
+- No retry capability for flaky tests
+- Incomplete cleanup leaving test artifacts
+
+#### Wrapper Naming Convention
+
+- Test script: `test_name.sh` in `test/gov/`
+- Wrapper: `test_name_wrapper.sh` in `test/gov/framework/`
+- Orchestrator calls wrapper, wrapper calls test script
+- Wrapper handles all framework integration
+
 ## Test Framework Architecture
 
 The anax project uses a comprehensive test framework for E2E (end-to-end) testing located in `test/gov/framework/`.

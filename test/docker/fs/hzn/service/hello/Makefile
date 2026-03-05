@@ -11,7 +11,7 @@ default: build run check
 
 build: clean Dockerfile start.sh server
 	-docker rmi $(BASE)/$(IMAGE):$(VER)
-	docker build --no-cache -t $(BASE)/$(IMAGE):$(VER) .
+	docker build -t $(BASE)/$(IMAGE):$(VER) .
 
 server: server.go
 	CGO_ENABLED=0 go build server.go

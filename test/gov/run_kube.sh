@@ -408,7 +408,7 @@ if [ "${TEST_PATTERNS}" != "" ]; then
 	$cprefix microk8s.kubectl exec "${POD}" -it -n ${AGENT_NAME_SPACE} -- env ARCH="${ARCH}" /usr/bin/hzn unregister -f
 
 	# pattern name: e2edev@somecomp.com/sk8s
-	if ! $cprefix microk8s.kubectl exec "${POD}" -it -n ${AGENT_NAME_SPACE} -- env ARCH="${ARCH} "/usr/bin/hzn register -f /home/agentuser/node_ui_k8s_svc1.json -p e2edev@somecomp.com/sk8s -u "root/root:${EXCH_ROOTPW}"; then
+	if ! $cprefix microk8s.kubectl exec "${POD}" -it -n ${AGENT_NAME_SPACE} -- env ARCH="${ARCH}" /usr/bin/hzn register -f /home/agentuser/node_ui_k8s_svc1.json -p e2edev@somecomp.com/sk8s -u "root/root:${EXCH_ROOTPW}"; then
 		echo -e "${PREFIX} cluster agent failed to register pattern e2edev@somecomp.com/sk8s"
   		exit 2
 	else

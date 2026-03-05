@@ -10,8 +10,7 @@ HZN_DEV_HOST_IP ?=127.0.0.1
 default: build run check
 
 build: Dockerfile start.sh
-	-docker rmi $(BASE)/$(IMAGE):$(VER)
-	docker build --no-cache -t $(BASE)/$(IMAGE):$(VER) .
+	docker build -t $(BASE)/$(IMAGE):$(VER) .
 
 horizonstart:
 	hzn -v dev service start

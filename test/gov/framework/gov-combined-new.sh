@@ -152,7 +152,7 @@ fi
 
 # Test 2: CSS/ESS Sync Service Test
 if ! should_skip_test "sync_service"; then
-    run_test "sync_service" "./sync_service_test.sh"
+    run_test "sync_service" "${FRAMEWORK_DIR}/sync_service_wrapper.sh"
 fi
 
 # Test 3: API Tests (requires anax startup)
@@ -175,7 +175,7 @@ if [ "$TESTFAIL" != "1" ] && ! should_skip_test "api_tests"; then
     # Wait for anax to be ready
     if wait_for_anax 120; then
         ANAX_AVAILABLE=1
-        run_test "api_tests" "./apitest.sh"
+        run_test "api_tests" "${FRAMEWORK_DIR}/apitest_wrapper.sh"
         
         # Cleanup after API tests
         log_message INFO "Cleaning up after API tests"
@@ -228,21 +228,21 @@ if [ "$TESTFAIL" != "1" ]; then
             fi
             
             if [ "$NOLOOP" == "1" ]; then
-                run_test "verify_agreements_policy" "ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh"
-                
+                run_test "verify_agreements_policy" "ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ${FRAMEWORK_DIR}/verify_agreements_wrapper.sh"
+
                 if [ "$NOCANCEL" != "1" ]; then
-                    run_test "delete_agreements_device" "./del_loop.sh"
+                    run_test "delete_agreements_device" "${FRAMEWORK_DIR}/del_loop_wrapper.sh"
                     sleep 30
-                    run_test "delete_agreements_agbot" "./agbot_del_loop.sh"
+                    run_test "delete_agreements_agbot" "${FRAMEWORK_DIR}/agbot_del_loop_wrapper.sh"
                     log_message INFO "Waiting for agreement state to stabilize after cancellations..."
                     sleep 60
-                    run_test "verify_agreements_restart" "ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh"
+                    run_test "verify_agreements_restart" "ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ${FRAMEWORK_DIR}/verify_agreements_wrapper.sh"
                 fi
             fi
         fi
         
         if [ "$NOSVC_CONFIGSTATE" != "1" ]; then
-            run_test "service_configstate" "./service_configstate_test.sh"
+            run_test "service_configstate" "${FRAMEWORK_DIR}/service_configstate_wrapper.sh"
         fi
         
     else
@@ -285,15 +285,15 @@ if [ "$TESTFAIL" != "1" ]; then
                 fi
                 
                 if [ "$NOLOOP" == "1" ]; then
-                    run_test "verify_agreements_${pat}" "ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh"
-                    
+                    run_test "verify_agreements_${pat}" "ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ${FRAMEWORK_DIR}/verify_agreements_wrapper.sh"
+
                     if [ "$NOCANCEL" != "1" ]; then
-                        run_test "delete_agreements_device_${pat}" "./del_loop.sh"
+                        run_test "delete_agreements_device_${pat}" "${FRAMEWORK_DIR}/del_loop_wrapper.sh"
                         sleep 30
-                        run_test "delete_agreements_agbot_${pat}" "./agbot_del_loop.sh"
+                        run_test "delete_agreements_agbot_${pat}" "${FRAMEWORK_DIR}/agbot_del_loop_wrapper.sh"
                         log_message INFO "Waiting for agreement state to stabilize after cancellations..."
                         sleep 60
-                        run_test "verify_agreements_restart_${pat}" "ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh"
+                        run_test "verify_agreements_restart_${pat}" "ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ${FRAMEWORK_DIR}/verify_agreements_wrapper.sh"
                     fi
                 fi
             fi
@@ -307,12 +307,12 @@ if [ "$TESTFAIL" != "1" ]; then
             
             # Service retry test
             if [ "$NORETRY" != "1" ]; then
-                run_test "service_retry_${pat}" "./service_retry_test.sh"
+                run_test "service_retry_${pat}" "${FRAMEWORK_DIR}/service_retry_test_wrapper.sh"
             fi
             
             # Service config state test
             if [ "$NOSVC_CONFIGSTATE" != "1" ]; then
-                run_test "service_configstate_${pat}" "./service_configstate_test.sh"
+                run_test "service_configstate_${pat}" "${FRAMEWORK_DIR}/service_configstate_wrapper.sh"
             fi
             
             # Unregister if not last pattern
@@ -329,19 +329,19 @@ fi
 if [ "$NOCOMPCHECK" != "1" ] && [ "$TESTFAIL" != "1" ]; then
     if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" == "" ]; then
         # Agbot compcheck doesn't require local Anax
-        run_test "agbot_compcheck" "./agbot_apitest.sh"
+        run_test "agbot_compcheck" "${FRAMEWORK_DIR}/agbot_apitest_wrapper.sh"
         
         # hzn_compcheck requires nodes to be registered in Exchange (from pattern/policy tests)
         # Skip if pattern/policy tests were skipped
         if [ "$ANAX_AVAILABLE" -eq 1 ]; then
-            run_test "hzn_compcheck" "./hzn_compcheck.sh"
+            run_test "hzn_compcheck" "${FRAMEWORK_DIR}/hzn_compcheck_wrapper.sh"
         else
             log_message WARN "Skipping hzn_compcheck test - requires nodes registered by pattern/policy tests"
         fi
         
         # hzn_secretsmanager requires local Anax
         if [ "$NOVAULT" != "1" ] && [ "$ANAX_AVAILABLE" -eq 1 ]; then
-            run_test "hzn_secretsmanager" "./hzn_secretsmanager.sh"
+            run_test "hzn_secretsmanager" "${FRAMEWORK_DIR}/hzn_secretsmanager_wrapper.sh"
         elif [ "$NOVAULT" != "1" ] && [ "$ANAX_AVAILABLE" -eq 0 ]; then
             log_message WARN "Skipping hzn_secretsmanager test - Anax not available on localhost"
         fi
@@ -352,7 +352,7 @@ fi
 if [ "$NOSURFERR" != "1" ] && [ "$TESTFAIL" != "1" ] && [ ${REMOTE_HUB} -eq 0 ] && [ "$ANAX_AVAILABLE" -eq 1 ]; then
     if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" == "" ]; then
         if [ "$NOLOOP" == "1" ]; then
-            run_test "verify_surfaced_error" "./verify_surfaced_error.sh"
+            run_test "verify_surfaced_error" "${FRAMEWORK_DIR}/verify_surfaced_error_wrapper.sh"
         fi
     fi
 elif [ "$NOSURFERR" != "1" ] && [ ${REMOTE_HUB} -eq 0 ] && [ "$ANAX_AVAILABLE" -eq 0 ]; then
@@ -362,21 +362,21 @@ fi
 # Test 8: Policy change test
 if [ "$NOSURFERR" != "1" ] && [ "$TESTFAIL" != "1" ] && [ ${REMOTE_HUB} -eq 0 ]; then
     if [ "$TEST_PATTERNS" == "" ] && [ "$NOLOOP" == "1" ]; then
-        run_test "policy_change" "./policy_change.sh"
+        run_test "policy_change" "${FRAMEWORK_DIR}/policy_change_wrapper.sh"
     fi
 fi
 
 # Test 9: Service upgrade/downgrade test
 if [ "$NOUPGRADE" != "1" ] && [ "$TESTFAIL" != "1" ] && [ ${REMOTE_HUB} -eq 0 ]; then
     if [ "$TEST_PATTERNS" == "sall" ]; then
-        run_test "service_upgrade_downgrade" "./service_upgrading_downgrading_test.sh"
+        run_test "service_upgrade_downgrade" "${FRAMEWORK_DIR}/service_upgrade_wrapper.sh"
     fi
 fi
 
 # Test 10: Service secrets test
 if [ "$NOVAULT" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "$NOLOOP" == "1" ] && [ "$ANAX_AVAILABLE" -eq 1 ]; then
     if [ "$TEST_PATTERNS" == "" ]; then
-        run_test "service_secrets" "./service_secrets_test.sh"
+        run_test "service_secrets" "${FRAMEWORK_DIR}/service_secrets_wrapper.sh"
     fi
 elif [ "$NOVAULT" != "1" ] && [ "$NOLOOP" == "1" ] && [ "$ANAX_AVAILABLE" -eq 0 ]; then
     log_message WARN "Skipping service_secrets test - Anax not available on localhost"
@@ -386,7 +386,7 @@ fi
 if [ "$NOHZNREG" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "$ANAX_AVAILABLE" -eq 1 ]; then
     if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" == "" ]; then
         sleep 15
-        run_test "hzn_registration" "./hzn_reg.sh"
+        run_test "hzn_registration" "${FRAMEWORK_DIR}/hzn_reg_wrapper.sh"
     fi
 elif [ "$NOHZNREG" != "1" ] && [ "$ANAX_AVAILABLE" -eq 0 ]; then
     log_message WARN "Skipping hzn_registration test - Anax not available on localhost"
@@ -394,7 +394,7 @@ fi
 
 # Test 12: Service log test
 if [ "$TEST_PATTERNS" == "sall" ] && [ "$NOHZNLOG" != "1" ] && [ "$NOHZNREG" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "$ANAX_AVAILABLE" -eq 1 ]; then
-    run_test "service_log" "./service_log_test.sh"
+    run_test "service_log" "${FRAMEWORK_DIR}/service_log_test_wrapper.sh"
 elif [ "$TEST_PATTERNS" == "sall" ] && [ "$NOHZNLOG" != "1" ] && [ "$ANAX_AVAILABLE" -eq 0 ]; then
     log_message WARN "Skipping service_log test - Anax not available on localhost"
 fi
@@ -402,7 +402,7 @@ fi
 # Test 13: Pattern change test
 if [ "$NOPATTERNCHANGE" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "$ANAX_AVAILABLE" -eq 1 ]; then
     if [ "$TEST_PATTERNS" == "sall" ]; then
-        run_test "pattern_change" "./pattern_change.sh"
+        run_test "pattern_change" "${FRAMEWORK_DIR}/pattern_change_wrapper.sh"
     fi
 elif [ "$NOPATTERNCHANGE" != "1" ] && [ "$ANAX_AVAILABLE" -eq 0 ]; then
     log_message WARN "Skipping pattern_change test - Anax not available on localhost"
@@ -410,7 +410,7 @@ fi
 
 # Test 14: HA test
 if [ "$HA" == "1" ]; then
-    run_test "ha_test" "./ha_test.sh"
+    run_test "ha_test" "${FRAMEWORK_DIR}/ha_test_wrapper.sh"
 fi
 
 # ============================================================================

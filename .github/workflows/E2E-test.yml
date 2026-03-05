@@ -326,15 +326,8 @@ jobs:
             echo "quay.io/open-horizon/exchange-ubi:testing already present, skipping pull"
           fi
 
-      - name: Pull Agbot image if not cached
-        if: steps.cache-agbot-image.outputs.cache-hit != 'true'
-        run: |
-          if ! docker image inspect openhorizon/amd64_agbot:e2edev > /dev/null 2>&1; then
-            echo "Pulling openhorizon/amd64_agbot:e2edev..."
-            docker pull openhorizon/amd64_agbot:e2edev
-          else
-            echo "openhorizon/amd64_agbot:e2edev already present, skipping pull"
-          fi
+      # Agbot image is built by Makefile during test execution (make run-mgmthub -> get-agbot-image)
+      # No need to pull it here - it will be built from source or loaded from cache above
 
       - name: Pull CSS image if not cached
         if: steps.cache-css-image.outputs.cache-hit != 'true'
@@ -478,7 +471,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: /tmp/exchange-image.tar
-          key: exchange-image-${{ runner.os }}-testing-${{ steps.date.outputs.day }}-${{ matrix.tests }}
+          key: exchange-image-${{ runner.os }}-testing-${{ steps.date.outputs.day }}
 
       - name: Create Agbot image tar
         if: always()
@@ -494,7 +487,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: /tmp/agbot-image.tar
-          key: agbot-image-${{ runner.os }}-e2edev-${{ steps.date.outputs.week }}-${{ matrix.tests }}
+          key: agbot-image-${{ runner.os }}-e2edev-${{ steps.date.outputs.week }}
 
       - name: Create CSS image tar
         if: always()
@@ -510,7 +503,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: /tmp/css-image.tar
-          key: css-image-${{ runner.os }}-latest-${{ steps.date.outputs.week }}-${{ matrix.tests }}
+          key: css-image-${{ runner.os }}-latest-${{ steps.date.outputs.week }}
 
       - name: Create MongoDB image tar
         if: always()
@@ -526,7 +519,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: /tmp/mongo-image.tar
-          key: mongo-image-${{ runner.os }}-4.0.6-${{ matrix.tests }}
+          key: mongo-image-${{ runner.os }}-4.0.6
 
       - name: Create PostgreSQL image tar
         if: always()
@@ -542,7 +535,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: /tmp/postgres-image.tar
-          key: postgres-image-${{ runner.os }}-17-${{ matrix.tests }}
+          key: postgres-image-${{ runner.os }}-17
 
       - name: Create OpenBao image tar
         if: always()
@@ -558,7 +551,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: /tmp/openbao-image.tar
-          key: openbao-image-${{ runner.os }}-2.0-${{ matrix.tests }}
+          key: openbao-image-${{ runner.os }}-2.0
 
       # Save base images
       - name: Create Alpine image tar
@@ -575,7 +568,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: /tmp/alpine-image.tar
-          key: alpine-image-${{ runner.os }}-latest-${{ steps.date.outputs.week }}-${{ matrix.tests }}
+          key: alpine-image-${{ runner.os }}-latest-${{ steps.date.outputs.week }}
 
       - name: Create UBI9 image tar
         if: always()
@@ -591,7 +584,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: /tmp/ubi-image.tar
-          key: ubi-image-${{ runner.os }}-ubi9-minimal-latest-${{ steps.date.outputs.week }}-${{ matrix.tests }}
+          key: ubi-image-${{ runner.os }}-ubi9-minimal-latest-${{ steps.date.outputs.week }}
 
       # Save anax-built images
       - name: Create anax agent image tar
@@ -843,14 +836,3 @@ jobs:
             done
           fi
 
-      - name: Upload Test Results as Artifacts
-        if: always()
-        continue-on-error: true
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-${{ matrix.tests }}
-          path: |
-            /tmp/e2etest_results_*/*.log
-            /tmp/e2etest_results_*/*.txt
-          retention-days: 7
-          if-no-files-found: warn
