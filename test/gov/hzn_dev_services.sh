@@ -51,7 +51,7 @@ createProject() {
 
     verify "${buildOut}" "Successfully built" "writing image sha256:[0-9A-Za-z\.[:space:]]* done" "$2 container did not build"
 
-    verify "${buildOut}" "$3" "$2 container did not produce output"
+    verify "${buildOut}" "$3" "$3" "$2 container did not produce output"
 
     make stop ARCH="${ARCH}" > /dev/null 2>&1
 
@@ -253,6 +253,16 @@ verifyProject=$(hzn dev service verify -u "${E2EDEV_ADMIN_AUTH}" -v 2>&1)
 verify "${verifyProject}" "verified" "Horizon UseHello project was not verifiable"
 
 # ============= Start the top level service in the hzn test environment ============
+
+echo -e "Cleaning up any stale service-specific Docker networks from previous hzn dev runs."
+# Only remove service-specific networks created by hzn dev (e2edev-somecomp.com_my.company.com.services.*)
+# Do NOT remove hzn_horizonnet (management hub network) or hzn-dev (CSS/ESS network)
+docker network ls --filter name=e2edev-somecomp.com_my.company.com.services --format "{{.Name}}" | while read -r network; do
+    echo "Removing stale network: $network"
+    docker network rm "$network" 2>/dev/null || true
+done
+# Give Docker a moment to clean up
+sleep 2
 
 echo -e "Starting the top level service in the Horizon test environment."
 

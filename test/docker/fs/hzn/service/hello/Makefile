@@ -9,8 +9,7 @@ HZN_DEV_HOST_IP ?=127.0.0.1
 
 default: build run check
 
-build: clean Dockerfile start.sh server
-	-docker rmi $(BASE)/$(IMAGE):$(VER)
+build: Dockerfile start.sh server
 	docker build -t $(BASE)/$(IMAGE):$(VER) .
 
 server: server.go

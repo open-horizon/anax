@@ -9,7 +9,7 @@ default: all
 
 all: build run
 
-build: clean
+build:
 	docker build -t $(DOCKER_NAME):$(DOCKER_TAG) .
 
 run: stop

@@ -1219,6 +1219,99 @@ All test functions MUST include comprehensive documentation above the function d
 9. **Working Directory Assumptions**: Test scripts may assume they run from specific directories. Always use proper `cd` with error handling and relative paths based on known directory variables.
 10. **Long Timeout Waits**: Not detecting failures early in test loops wastes time. Use connection checks (`nc -z`) to fail fast when services aren't listening, rather than waiting for full timeout periods.
 
+### E2E Test Infrastructure
+
+**Infrastructure Issues Are In-Scope**
+
+E2E (end-to-end) test infrastructure is part of the test scaffolding managed by this project. Infrastructure issues that affect test reliability, performance, or correctness are in-scope and should be fixed, not worked around.
+
+**Scope of Test Infrastructure:**
+
+Test infrastructure includes all components that support test execution:
+- Test orchestration and framework scripts
+- Docker container builds and network management
+- Management hub components (Exchange, Agbot, CSS/ESS, databases)
+- Test services and their dependencies
+- CI/CD pipeline configuration and caching strategies
+
+**Guiding Principles:**
+
+1. **Fix Root Causes, Don't Work Around**:
+   - Infrastructure problems should be resolved at their source
+   - Workarounds mask issues and accumulate technical debt
+   - Proper fixes improve reliability for all developers
+
+2. **Fail Fast with Clear Diagnostics**:
+   - Detect infrastructure problems early rather than waiting for timeouts
+   - Provide actionable error messages that explain what failed and why
+   - Include context about what succeeded to aid debugging
+
+3. **Idempotent and Isolated**:
+   - Tests should work regardless of previous state
+   - Clean up stale resources before starting
+   - Use unique identifiers to avoid conflicts between concurrent tests
+   - Don't assume a clean environment
+
+4. **Performance Matters**:
+   - Optimize build times through proper caching strategies
+   - Minimize unnecessary rebuilds and resource recreation
+   - Balance thoroughness with execution speed
+
+5. **Maintainability Over Convenience**:
+   - Infrastructure code should be clear and well-documented
+   - Prefer explicit cleanup over implicit assumptions
+   - Document why infrastructure decisions were made
+
+**When to Fix vs. Work Around:**
+
+**Fix the Infrastructure When:**
+- The issue affects test reliability (flaky tests)
+- The issue affects test performance (slow builds, long waits)
+- The issue affects test correctness (false positives/negatives)
+- The issue is reproducible and understood
+- The fix improves the test framework for all users
+
+**Work Around Only When:**
+- The issue is in external dependencies beyond project control
+- The fix would require major architectural changes
+- The workaround is well-documented and maintainable
+- The issue is rare and non-critical
+
+**Common Infrastructure Problem Categories:**
+
+1. **Resource Lifecycle Issues**:
+   - Stale containers, networks, or volumes from previous runs
+   - Improper cleanup on test failure or interruption
+   - Resource conflicts between concurrent test executions
+
+2. **Build and Cache Inefficiency**:
+   - Unnecessary rebuilds defeating layer caching
+   - Cache key mismatches preventing cache reuse
+   - Missing or incorrect cache invalidation
+
+3. **Service Readiness and Timing**:
+   - Tests starting before services are ready
+   - Missing health checks or readiness probes
+   - Race conditions in service startup sequences
+
+4. **Environment and Configuration**:
+   - Missing or incorrect environment variable propagation
+   - Configuration conflicts between test modes
+   - Path assumptions that break in different environments
+
+5. **Network and Connectivity**:
+   - Network binding vs. connection confusion (0.0.0.0 vs. specific IPs)
+   - Stale network resources causing connection failures
+   - Port conflicts between services
+
+**Infrastructure Maintenance Practices:**
+
+- **Regular Review**: Monitor test execution times and failure rates
+- **Dependency Updates**: Keep infrastructure dependencies current
+- **Documentation**: Document infrastructure changes and decisions
+- **Cleanup**: Remove obsolete infrastructure and workarounds
+- **Validation**: Test infrastructure changes across different environments
+
 ### Monitoring and Logging
 
 - **Logging**: Uses `glog` with verbosity levels (0-6)
