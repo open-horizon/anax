@@ -206,12 +206,47 @@ if [ "$TESTFAIL" != "1" ] && ! should_skip_test "api_tests"; then
         log_message ERROR "Skipping API tests - Anax binary not available"
         ANAX_AVAILABLE=0
     else
-        # Start Anax for API tests
-        log_message INFO "Starting Anax for API tests using: $ANAX_BIN"
+        # Ensure config files exist by processing templates if needed
+        CONFIG_DIR="/etc/colonus"
+        TEMPLATE_DIR="${GOV_DIR}/../docker/fs/etc/colonus"
+        
         if [ "${CERT_LOC}" -eq "1" ]; then
-            "$ANAX_BIN" -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined.config >/tmp/anax.log 2>&1 &
+            CONFIG_FILE="${CONFIG_DIR}/anax-combined.config"
+            TEMPLATE_FILE="${TEMPLATE_DIR}/anax-combined.config.tmpl"
         else
-            "$ANAX_BIN" -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined-no-cert.config >/tmp/anax.log 2>&1 &
+            CONFIG_FILE="${CONFIG_DIR}/anax-combined-no-cert.config"
+            TEMPLATE_FILE="${TEMPLATE_DIR}/anax-combined-no-cert.config.tmpl"
+        fi
+        
+        # Create config file from template if it doesn't exist
+        if [ ! -f "$CONFIG_FILE" ] && [ -f "$TEMPLATE_FILE" ]; then
+            log_message INFO "Creating config file from template: $CONFIG_FILE"
+            if mkdir -p "$CONFIG_DIR" 2>/dev/null; then
+                EXCH_APP_HOST="${EXCH_APP_HOST}" CSS_URL="${CSS_URL}" HZN_AGBOT_URL="${AGBOT_SAPI_URL}" \
+                    envsubst < "$TEMPLATE_FILE" > "$CONFIG_FILE" 2>/dev/null || {
+                    log_message WARN "Failed to create config file in $CONFIG_DIR, trying temp location"
+                    CONFIG_FILE="/tmp/anax-test.config"
+                    EXCH_APP_HOST="${EXCH_APP_HOST}" CSS_URL="${CSS_URL}" HZN_AGBOT_URL="${AGBOT_SAPI_URL}" \
+                        envsubst < "$TEMPLATE_FILE" > "$CONFIG_FILE"
+                }
+            else
+                log_message WARN "Cannot write to $CONFIG_DIR, using temp location"
+                CONFIG_FILE="/tmp/anax-test.config"
+                EXCH_APP_HOST="${EXCH_APP_HOST}" CSS_URL="${CSS_URL}" HZN_AGBOT_URL="${AGBOT_SAPI_URL}" \
+                    envsubst < "$TEMPLATE_FILE" > "$CONFIG_FILE"
+            fi
+        fi
+        
+        # Verify config file exists
+        if [ ! -f "$CONFIG_FILE" ]; then
+            log_message ERROR "Config file not found: $CONFIG_FILE"
+            log_message ERROR "Skipping API tests - Cannot create config file"
+            ANAX_AVAILABLE=0
+        else
+            # Start Anax for API tests
+            log_message INFO "Starting Anax for API tests using: $ANAX_BIN"
+            log_message INFO "Using config file: $CONFIG_FILE"
+            "$ANAX_BIN" -v=5 -alsologtostderr=true -config "$CONFIG_FILE" >/tmp/anax.log 2>&1 &
         fi
         
         sleep 5

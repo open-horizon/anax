@@ -50,12 +50,13 @@ jobs:
 
       # Restore Go build cache to speed up compilation. We use restore-only here
       # and explicitly save later with actions/cache/save so cache is saved even on test failure.
+      # Cache key uses go.sum for stability - build cache is reusable across code changes.
       - name: Restore Go build cache
         id: cache-go-build
         uses: actions/cache/restore@v4
         with:
           path: ~/.cache/go-build
-          key: go-build-${{ runner.os }}-go1.24-${{ hashFiles('**/*.go') }}
+          key: go-build-${{ runner.os }}-go1.24-${{ hashFiles('go/src/github.com/**/go.sum') }}
           restore-keys: |
             go-build-${{ runner.os }}-go1.24-
 
@@ -71,6 +72,21 @@ jobs:
       # Set up Docker Buildx to enable BuildKit and layer caching support
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
+      # Verify Go build cache status before building
+      - name: Check Go build cache status
+        run: |
+          echo "=== Go Build Cache Status ==="
+          if [ -d ~/.cache/go-build ]; then
+            echo "Cache directory exists"
+            echo "Cache size: $(du -sh ~/.cache/go-build | cut -f1)"
+            echo "Number of cached files: $(find ~/.cache/go-build -type f | wc -l)"
+          else
+            echo "Cache directory does not exist (first run or cache miss)"
+          fi
+          echo ""
+          echo "Go version: $(go version)"
+          echo "GOCACHE: $(go env GOCACHE)"
 
       # Build anax binaries
       - name: Build anax binaries
@@ -404,14 +420,14 @@ jobs:
 
       # Save Go build cache even if tests fail so subsequent runs benefit from compiled artifacts.
       # Uses actions/cache/save which works with the actions/cache/restore used earlier.
-      # Include matrix.tests in key to avoid conflicts between concurrent jobs.
+      # Cache key matches restore key for proper reuse across runs.
       - name: Save Go build cache
         if: always() && steps.cache-go-build.outputs.cache-hit != 'true'
         continue-on-error: true
         uses: actions/cache/save@v4
         with:
           path: ~/.cache/go-build
-          key: go-build-${{ runner.os }}-go1.24-${{ hashFiles('**/*.go') }}-${{ matrix.tests }}
+          key: go-build-${{ runner.os }}-go1.24-${{ hashFiles('go/src/github.com/**/go.sum') }}
 
       # Save Docker registry image to cache (always save even if tests fail)
       # Create tar file first, then save to cache

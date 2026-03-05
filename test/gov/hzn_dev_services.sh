@@ -17,7 +17,11 @@ E2EDEV_ROOT="$(pwd)"
 # $4 - error message
 verify() {
     local resp=$1
-    echo -e "$resp"
+    # Only echo output on first call or on error to avoid duplicate output
+    local should_echo=${5:-1}
+    if [ "$should_echo" = "1" ]; then
+        echo -e "$resp"
+    fi
     respContains=$(echo "$resp" | grep "$2")
     if [ "${respContains}" = "" ]; then
         echo -e "Didn't find \"$2\" in the response, check \"$3\" in response"
@@ -49,9 +53,9 @@ createProject() {
 
     buildOut=$(make ARCH="${ARCH}" 2>&1)
 
-    verify "${buildOut}" "Successfully built" "writing image sha256:[0-9A-Za-z\.[:space:]]* done" "$2 container did not build"
+    verify "${buildOut}" "Successfully built" "writing image sha256:[0-9A-Za-z\.[:space:]]* done" "$2 container did not build" 1
 
-    verify "${buildOut}" "$3" "$3" "$2 container did not produce output"
+    verify "${buildOut}" "$3" "$3" "$2 container did not produce output" 0
 
     make stop ARCH="${ARCH}" > /dev/null 2>&1
 

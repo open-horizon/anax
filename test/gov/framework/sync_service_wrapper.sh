@@ -42,6 +42,10 @@ if [ -n "${CSS_URL:-}" ]; then
     fi
 fi
 
+# Set required environment variables for hzn mms commands
+export HZN_ORG_ID="${DEVICE_ORG}"
+export HZN_EXCHANGE_USER_AUTH="${USER}:${PASS}"
+
 # Run the sync service test
 log_message INFO "Running sync service test"
 if [ "$TEST_RETRY_ENABLED" == "1" ]; then
