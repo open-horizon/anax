@@ -5,7 +5,9 @@
 
 # Source configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck disable=SC1091
 source "${SCRIPT_DIR}/test_config.sh"
+# shellcheck disable=SC1091
 source "${SCRIPT_DIR}/test_utils.sh"
 
 # Initialize test results tracking

@@ -2,7 +2,7 @@
 
 This file provides guidance to agents when working with code in this repository.
 
-> **Last Updated:** February 2026
+> **Last Updated:** March 2026
 
 ## Project Overview
 
@@ -1120,6 +1120,10 @@ All test functions MUST include comprehensive documentation above the function d
 4. **Certificate Handling**: Proper certificate validation required for production
 5. **Worker Communication**: Respect event-driven architecture for worker interactions
 6. **Missing Tests**: Never commit code changes without corresponding test updates
+7. **Test Execution Without Service Checks**: Running tests without verifying services are available leads to long timeout waits. Always check service availability before running dependent tests.
+8. **Network Binding Confusion**: Services bind to `0.0.0.0` to listen on all interfaces, but clients must connect to specific IPs (never `0.0.0.0`). Use separate variables for binding (`E2EDEV_HOST_IP`) and connections (`E2EDEV_CLIENT_IP`).
+9. **Working Directory Assumptions**: Test scripts may assume they run from specific directories. Always use proper `cd` with error handling and relative paths based on known directory variables.
+10. **Long Timeout Waits**: Not detecting failures early in test loops wastes time. Use connection checks (`nc -z`) to fail fast when services aren't listening, rather than waiting for full timeout periods.
 
 ### Monitoring and Logging
 
@@ -1509,5 +1513,638 @@ See [`.github/workflows/E2E-test.yml`](.github/workflows/E2E-test.yml) for a com
 - Base images (alpine:latest, registry.access.redhat.com/ubi9-minimal:latest)
 - Management hub images (Exchange, Agbot, CSS, MongoDB, PostgreSQL, Vault)
 - Service images built during tests
+
+
+## Test Framework Architecture
+
+The anax project uses a comprehensive test framework for E2E (end-to-end) testing located in `test/gov/framework/`.
+
+### Framework Structure
+
+- **Main Orchestrator**: `gov-combined-new.sh` - Coordinates all test execution
+- **Test Wrappers**: `*_wrapper.sh` files - Wrap individual test scripts with framework utilities
+- **Core Utilities**: 
+  - `test_framework.sh` - Core framework functions (logging, test execution, result tracking)
+  - `test_utils.sh` - Utility functions (waiting, service checks, cleanup)
+  - `test_config.sh` - Environment configuration and variable setup
+- **Test Scripts**: Individual test scripts in `test/gov/` directory
+- **Migration Guide**: `MIGRATION_GUIDE.md` - Guide for migrating tests to the framework
+
+### Test Orchestration Flow
+
+The `gov-combined-new.sh` script orchestrates tests in this order:
+
+1. **Environment Setup**: Initialize variables, detect configuration
+2. **Service Registration**: Register services with Exchange
+3. **API Tests**: Start Anax locally and run API tests
+4. **Agbot Verification**: Verify agreement bot connectivity
+5. **Pattern/Policy Tests**: Run pattern-based or policy-based deployment tests
+6. **Compatibility Tests**: Run compatibility check tests
+7. **Surface Error Tests**: Verify error surfacing mechanisms
+8. **Policy Change Tests**: Test policy update scenarios
+9. **Service Tests**: Upgrade/downgrade, secrets, configuration state tests
+10. **HZN CLI Tests**: Test hzn command-line interface
+11. **Kubernetes Tests**: Test Kubernetes cluster agent deployment
+
+### Test Wrapper Pattern
+
+Test wrappers provide consistent interface and error handling:
+
+```bash
+# Example wrapper structure
+source "${FRAMEWORK_DIR}/test_framework.sh"
+
+# Test-specific configuration
+TEST_NAME="example_test"
+TEST_DESCRIPTION="Tests example functionality"
+
+# Run the actual test
+run_test_script "${GOV_DIR}/example_test.sh"
+```
+
+### Test Configuration
+
+Tests are configured via environment variables in `test/Makefile`:
+
+- **Service URLs**: `EXCH_URL`, `CSS_URL`, `AGBOT_API`, etc.
+- **Test Modes**: `REMOTE_HUB`, `CERT_LOC`, `NOLOOP`, `NOCANCEL`
+- **Test Selection**: `TEST_PATTERNS`, `NOCOMPCHECK`, `NOVAULT`, etc.
+- **Network Config**: `E2EDEV_HOST_IP`, `E2EDEV_CLIENT_IP`
+
+### Adding New Tests
+
+To add a new test to the framework:
+
+1. Create test script in `test/gov/`
+2. Create wrapper in `test/gov/framework/` following the pattern
+3. Add test execution to `gov-combined-new.sh`
+4. Update `WRAPPER_INDEX.md` with test documentation
+5. Add any required environment variables to `test_config.sh`
+
+## Test Execution Best Practices
+
+### Conditional Test Execution
+
+Tests should check for service availability before execution:
+
+```bash
+# Track service availability
+ANAX_AVAILABLE=0
+
+# Try to start service
+if wait_for_anax 120; then
+    ANAX_AVAILABLE=1
+    run_test "api_tests" "./apitest.sh"
+else
+    log_message ERROR "Anax failed to start"
+    log_message WARN "Skipping tests that require Anax"
+fi
+
+# Later tests check availability
+if [ "$ANAX_AVAILABLE" -eq 1 ]; then
+    run_test "dependent_test" "./test_requiring_anax.sh"
+else
+    log_message WARN "Skipping dependent_test - Anax not available"
+fi
+```
+
+### Graceful Degradation
+
+When services aren't available, tests should:
+
+1. **Log clear messages** explaining what was skipped and why
+2. **Continue with other tests** that don't require the unavailable service
+3. **Provide context** about what did succeed (e.g., "Kubernetes tests passed")
+4. **Fail fast** instead of waiting for timeouts
+
+### Fast Failure Patterns
+
+Avoid long waits when services aren't running:
+
+```bash
+# BAD: Waits full timeout even when connection fails immediately
+for i in $(seq 1 100); do
+    curl -sS http://localhost:8510/status
+    sleep 5
+done
+
+# GOOD: Detect connection failure early
+for i in $(seq 1 100); do
+    if ! curl -sS http://localhost:8510/status 2>/dev/null; then
+        if ! nc -z localhost 8510 2>/dev/null; then
+            log_message ERROR "Service not listening on port 8510"
+            return 1
+        fi
+    fi
+    sleep 5
+done
+```
+
+### Test Dependencies
+
+Document which tests require which services:
+
+- **Anax on localhost**: Pattern/policy tests, agreement verification, service tests
+- **Kubernetes cluster**: Cluster agent tests, operator tests
+- **Exchange**: All tests (required)
+- **Agbot**: Agreement negotiation tests
+- **CSS/ESS**: Sync service tests, model management tests
+- **Vault**: Secrets manager tests
+
+### Clear Diagnostic Messages
+
+Always provide context in log messages:
+
+```bash
+# BAD: Unclear what failed
+log_message ERROR "Test failed"
+
+# GOOD: Clear context and next steps
+log_message ERROR "Anax failed to start for API tests"
+log_message WARN "Skipping tests that require Anax on localhost"
+log_message INFO "Note: Kubernetes cluster agent tests already completed successfully"
+```
+
+## Network Configuration for Testing
+
+### Service Binding vs. Client Connections
+
+**Critical Distinction**: Services bind to network interfaces, but clients connect to specific IP addresses.
+
+#### Service Binding
+
+Services should bind to `0.0.0.0` to listen on all interfaces:
+
+```bash
+# Service binds to all interfaces
+ANAX_LISTEN_IP=0.0.0.0
+```
+
+This allows the service to accept connections from:
+- localhost (127.0.0.1)
+- Host IP (e.g., 192.168.1.100)
+- Container networks
+- Kubernetes pod networks
+
+#### Client Connections
+
+Clients must connect to a specific IP address, **never** `0.0.0.0`:
+
+```bash
+# BAD: Cannot connect to 0.0.0.0
+curl http://0.0.0.0:8080/status
+
+# GOOD: Connect to specific IP
+curl http://192.168.1.100:8080/status
+curl http://127.0.0.1:8080/status
+```
+
+### IP Detection for Client Connections
+
+Detect the correct IP for client connections:
+
+```bash
+# Detect host IP for client connections
+if [ -z "$E2EDEV_CLIENT_IP" ]; then
+    # Try to detect from default route
+    E2EDEV_CLIENT_IP=$(ip route get 1.1.1.1 | grep -oP 'src \K\S+' 2>/dev/null)
+    
+    # Fallback to localhost if detection fails
+    if [ -z "$E2EDEV_CLIENT_IP" ]; then
+        E2EDEV_CLIENT_IP="127.0.0.1"
+    fi
+fi
+
+# Use for client connections
+EXCH_URL="http://${E2EDEV_CLIENT_IP}:8080/v1"
+```
+
+### Environment Variable Pattern
+
+Separate binding and connection IPs:
+
+```makefile
+# Service binding (all interfaces)
+E2EDEV_HOST_IP ?= 0.0.0.0
+
+# Client connections (specific IP)
+E2EDEV_CLIENT_IP ?= $(shell ip route get 1.1.1.1 | grep -oP 'src \K\S+' 2>/dev/null || echo "127.0.0.1")
+
+# Service URLs use client IP
+EXCH_URL = http://$(E2EDEV_CLIENT_IP):8080/v1
+CSS_URL = http://$(E2EDEV_CLIENT_IP):9443
+```
+
+### Kubernetes Pod Connectivity
+
+When services run in Kubernetes pods:
+
+1. **Pod-to-Host**: Pods can connect to host services via host IP
+2. **Host-to-Pod**: Host connects to pods via NodePort or port forwarding
+3. **Pod-to-Pod**: Pods connect via Kubernetes service names
+
+```bash
+# Detect if running in Kubernetes
+if kubectl get pods -n openhorizon 2>/dev/null; then
+    # Get pod IP for connections
+    POD_IP=$(kubectl get pod agent-pod -n openhorizon -o jsonpath='{.status.podIP}')
+    ANAX_API="http://${POD_IP}:8510"
+else
+    # Use host IP for local Anax
+    ANAX_API="http://${E2EDEV_CLIENT_IP}:8510"
+fi
+```
+
+## Kubernetes Testing
+
+### MicroK8s Test Environment
+
+The E2E tests use MicroK8s for Kubernetes testing:
+
+```bash
+# Start MicroK8s
+sudo -E microk8s.start
+
+# Wait for ready
+microk8s status --wait-ready
+
+# Enable required addons
+microk8s enable dns
+microk8s enable helm3
+```
+
+### Agent Deployment Modes
+
+Anax can run in two modes:
+
+1. **Host Mode**: Anax runs directly on the host system
+   - Used for: Pattern/policy tests, API tests, CLI tests
+   - Connects to: localhost:8510
+
+2. **Kubernetes Mode**: Anax runs in a Kubernetes pod
+   - Used for: Cluster agent tests, operator tests
+   - Connects to: Pod IP or NodePort
+
+### Test Isolation Strategy
+
+Tests are isolated by deployment mode:
+
+```bash
+# Kubernetes cluster agent tests
+if [ "$REMOTE_HUB" -eq 1 ]; then
+    # Deploy agent to Kubernetes
+    kubectl apply -f deployment.yaml
+    
+    # Wait for pod ready
+    kubectl wait --for=condition=ready pod/agent-pod --timeout=90s
+    
+    # Run cluster-specific tests
+    run_test "cluster_agent" "./cluster_agent_test.sh"
+fi
+
+# Host-based tests (only if Anax available on host)
+if [ "$ANAX_AVAILABLE" -eq 1 ]; then
+    run_test "host_agent" "./host_agent_test.sh"
+fi
+```
+
+### Pod Readiness Checks
+
+Always wait for pods to be ready before testing:
+
+```bash
+# Wait for pod with timeout
+kubectl wait --for=condition=ready pod/agent-pod \
+    --namespace=openhorizon \
+    --timeout=90s
+
+# Verify pod is running
+POD_STATUS=$(kubectl get pod agent-pod -n openhorizon -o jsonpath='{.status.phase}')
+if [ "$POD_STATUS" != "Running" ]; then
+    log_message ERROR "Pod not running: $POD_STATUS"
+    exit 1
+fi
+```
+
+### Network Connectivity in Kubernetes
+
+Test connectivity to pods:
+
+```bash
+# Get pod IP
+POD_IP=$(kubectl get pod agent-pod -n openhorizon -o jsonpath='{.status.podIP}')
+
+# Test connectivity
+if curl -sS "http://${POD_IP}:8510/status" > /dev/null; then
+    log_message INFO "Agent pod is accessible"
+else
+    log_message ERROR "Cannot connect to agent pod"
+fi
+```
+
+### Kubernetes Test Cleanup
+
+Always clean up Kubernetes resources:
+
+```bash
+# Cleanup function
+cleanup_kubernetes() {
+    kubectl delete namespace openhorizon --ignore-not-found=true
+    kubectl delete clusterrolebinding agent-cluster-rule --ignore-not-found=true
+}
+
+# Register cleanup
+trap cleanup_kubernetes EXIT
+```
+
+## Test Timeout Management
+
+### Dynamic Timeout Calculation
+
+Calculate timeouts based on test parameters:
+
+```bash
+# Base timeout + per-item timeout
+BASE_TIMEOUT=48
+PER_ITEM_TIMEOUT=12
+TIMEOUT_MULTIPLIER=${TIMEOUT_MUL:-1}
+
+# Calculate total timeout
+NUM_ITEMS=5
+TOTAL_LOOPS=$(( (BASE_TIMEOUT + PER_ITEM_TIMEOUT * NUM_ITEMS) * TIMEOUT_MULTIPLIER ))
+TIMEOUT_SECONDS=$(( TOTAL_LOOPS * 5 ))
+
+log_message INFO "Timeout: ${TIMEOUT_SECONDS}s for ${NUM_ITEMS} items"
+```
+
+### Timeout Multipliers
+
+Use multipliers for different environments:
+
+```bash
+# Fast local testing
+TIMEOUT_MUL=1
+
+# Slower CI environment
+TIMEOUT_MUL=2
+
+# Very slow or resource-constrained environment
+TIMEOUT_MUL=3
+```
+
+### Early Exit on Failures
+
+Detect failures early instead of waiting full timeout:
+
+```bash
+# Track consecutive failures
+CONSECUTIVE_FAILURES=0
+MAX_CONSECUTIVE_FAILURES=3
+
+for i in $(seq 1 "$MAX_LOOPS"); do
+    if curl -sS "$API_URL/status" > /dev/null 2>&1; then
+        CONSECUTIVE_FAILURES=0
+        # Success - continue waiting for condition
+    else
+        ((CONSECUTIVE_FAILURES++))
+        if [ "$CONSECUTIVE_FAILURES" -ge "$MAX_CONSECUTIVE_FAILURES" ]; then
+            log_message ERROR "Service unreachable after $CONSECUTIVE_FAILURES attempts"
+            return 1
+        fi
+    fi
+    sleep 5
+done
+```
+
+### Connection vs. Timeout Failures
+
+Distinguish between connection failures and timeouts:
+
+```bash
+# Check if service is listening
+if ! nc -z localhost 8510 2>/dev/null; then
+    log_message ERROR "Service not listening on port 8510"
+    log_message ERROR "This is a connection failure, not a timeout"
+    return 1
+fi
+
+# Service is listening, but not responding correctly
+if ! curl -sS http://localhost:8510/status > /dev/null 2>&1; then
+    log_message WARN "Service listening but not responding correctly"
+    log_message WARN "Continuing to wait..."
+fi
+```
+
+## Working Directory Management
+
+### Framework vs. Test Directory
+
+The test framework has two key directories:
+
+- **Framework Directory**: `test/gov/framework/` - Contains framework scripts
+- **Test Directory**: `test/gov/` - Contains actual test scripts
+
+### Directory Navigation
+
+Framework scripts must navigate to the test directory:
+
+```bash
+# In framework script (test/gov/framework/wrapper.sh)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+FRAMEWORK_DIR="$SCRIPT_DIR"
+GOV_DIR="$(dirname "$FRAMEWORK_DIR")"
+
+# Change to test directory before running tests
+cd "$GOV_DIR" || {
+    log_message ERROR "Failed to change to test directory: $GOV_DIR"
+    exit 1
+}
+
+# Now test scripts can use relative paths
+./test_script.sh
+```
+
+### Proper cd Error Handling
+
+Always handle directory change failures:
+
+```bash
+# BAD: No error handling
+cd /some/directory
+rm -rf *  # Dangerous if cd failed!
+
+# GOOD: Error handling with exit
+cd /some/directory || {
+    echo "Error: Failed to change to /some/directory"
+    exit 1
+}
+
+# GOOD: Error handling with return
+cd /some/directory || {
+    echo "Error: Failed to change directory"
+    return 1
+}
+```
+
+### Relative Path Handling
+
+Use relative paths consistently:
+
+```bash
+# From test directory (test/gov/)
+./test_script.sh                    # Current directory
+./framework/wrapper.sh              # Subdirectory
+../docker/fs/hzn/service/hello/     # Parent directory
+
+# Avoid absolute paths when possible
+# BAD: /home/user/anax/test/gov/test_script.sh
+# GOOD: ./test_script.sh
+```
+
+### GOV_DIR Variable
+
+Use `GOV_DIR` to track the test directory:
+
+```bash
+# Set in framework initialization
+export GOV_DIR="${GOV_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+
+# Use in test scripts
+source "${GOV_DIR}/framework/test_utils.sh"
+"${GOV_DIR}/test_script.sh"
+```
+
+## E2E Test Environment
+
+### Test Makefile Configuration
+
+The `test/Makefile` configures the E2E test environment:
+
+```makefile
+# Network configuration
+E2EDEV_HOST_IP ?= 0.0.0.0
+E2EDEV_CLIENT_IP ?= $(shell ip route get 1.1.1.1 | grep -oP 'src \K\S+' 2>/dev/null || echo "127.0.0.1")
+
+# Service URLs
+EXCH_URL = http://$(E2EDEV_CLIENT_IP):8080/v1
+CSS_URL = http://$(E2EDEV_CLIENT_IP):9443
+AGBOT_API = http://$(E2EDEV_CLIENT_IP):8046
+
+# Test modes
+REMOTE_HUB ?= 0          # 1 = Kubernetes mode, 0 = host mode
+CERT_LOC ?= 0            # 1 = use certificates, 0 = no certificates
+NOLOOP ?= 0              # 1 = skip loop tests
+NOCANCEL ?= 0            # 1 = skip agreement cancellation tests
+```
+
+### Key Environment Variables
+
+#### Test Mode Variables
+
+- `REMOTE_HUB`: Controls deployment mode
+  - `0` = Host mode (Anax on localhost)
+  - `1` = Kubernetes mode (Anax in pod)
+
+- `CERT_LOC`: Certificate configuration
+  - `0` = No certificates (testing)
+  - `1` = Use certificates (production-like)
+
+- `NOLOOP`: Loop test control
+  - `0` = Run loop tests (agreement verification, etc.)
+  - `1` = Skip loop tests (faster testing)
+
+- `NOCANCEL`: Agreement cancellation tests
+  - `0` = Run cancellation tests
+  - `1` = Skip cancellation tests
+
+#### Test Selection Variables
+
+- `TEST_PATTERNS`: Comma-separated list of patterns to test
+  - Empty = Policy-based deployment
+  - `"sall"` = All patterns
+  - `"sns,sloc"` = Specific patterns
+
+- `NOCOMPCHECK`: Skip compatibility check tests
+- `NOVAULT`: Skip Vault/secrets manager tests
+- `NOUPGRADE`: Skip service upgrade/downgrade tests
+- `NOSVC_CONFIGSTATE`: Skip service configuration state tests
+- `NORETRY`: Skip service retry tests
+- `NOHZNREG`: Skip hzn registration tests
+
+#### Service Configuration
+
+- `EXCH_URL`: Exchange API URL
+- `CSS_URL`: Cloud Sync Service URL
+- `AGBOT_API`: Agreement Bot API URL
+- `AGBOT2_API`: Second Agreement Bot API (for multi-agbot tests)
+- `VAULT_URL`: Vault secrets manager URL
+
+### Test Modes
+
+#### Pattern-Based Testing
+
+Tests services deployed via patterns:
+
+```bash
+export TEST_PATTERNS="sall"  # Test all patterns
+export PATTERN="sns"         # Specific pattern
+
+# Pattern tests include:
+# - Service registration
+# - Node registration with pattern
+# - Agreement formation
+# - Service execution
+# - Agreement cancellation
+```
+
+#### Policy-Based Testing
+
+Tests services deployed via policies:
+
+```bash
+export TEST_PATTERNS=""      # Empty = policy mode
+export PATTERN=""            # No pattern
+
+# Policy tests include:
+# - Business policy creation
+# - Node policy configuration
+# - Policy-based agreement formation
+# - Policy updates
+# - Service deployment
+```
+
+### Test Skipping Strategies
+
+Skip tests based on environment:
+
+```bash
+# Skip test if variable is set
+if [ "$NOCOMPCHECK" != "1" ]; then
+    run_test "compatibility_check" "./compcheck.sh"
+fi
+
+# Skip test if service not available
+if [ "$ANAX_AVAILABLE" -eq 1 ]; then
+    run_test "api_test" "./apitest.sh"
+else
+    log_message WARN "Skipping api_test - Anax not available"
+fi
+
+# Skip test if in wrong mode
+if [ "$REMOTE_HUB" -eq 0 ]; then
+    run_test "host_test" "./host_test.sh"
+fi
+```
+
+### Environment Setup
+
+Tests set up environment in this order:
+
+1. **Load configuration**: Source `test_config.sh`
+2. **Detect network**: Set `E2EDEV_CLIENT_IP`
+3. **Start services**: Exchange, CSS, Agbot, Vault
+4. **Register services**: Publish to Exchange
+5. **Run tests**: Execute test suite
+6. **Cleanup**: Stop services, remove data
 
 This strategy ensures the cache builds up progressively, even when tests are failing during development, significantly reducing iteration time, compilation time, and network bandwidth usage.

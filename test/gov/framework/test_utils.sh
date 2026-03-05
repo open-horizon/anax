@@ -6,6 +6,7 @@
 # Source configuration if not already loaded
 if [ -z "${TEST_CONTINUE_ON_FAILURE:-}" ]; then
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    # shellcheck disable=SC1091
     source "${SCRIPT_DIR}/test_config.sh"
 fi
 
@@ -281,7 +282,8 @@ register_node_policy() {
     
     log_message INFO "Registering node with policy"
     
-    local reg_data=$(cat <<EOF
+    local reg_data
+    reg_data=$(cat <<EOF
 {
     "id": "$node_id",
     "token": "$node_token",
@@ -315,11 +317,13 @@ cleanup_docker_containers() {
     
     log_message INFO "Cleaning up Docker containers matching: $pattern"
     
-    local containers=$(docker ps -a --filter "name=$pattern" -q)
+    local containers
+    containers=$(docker ps -a --filter "name=$pattern" -q)
     
     if [ -n "$containers" ]; then
+        # shellcheck disable=SC2086
         docker rm -f $containers > /dev/null 2>&1
-        log_message INFO "Removed $(echo $containers | wc -w) containers"
+        log_message INFO "Removed $(echo "$containers" | wc -w) containers"
     else
         log_message INFO "No containers to clean up"
     fi
@@ -331,11 +335,13 @@ cleanup_docker_networks() {
     
     log_message INFO "Cleaning up Docker networks matching: $pattern"
     
-    local networks=$(docker network ls --filter "name=$pattern" -q)
+    local networks
+    networks=$(docker network ls --filter "name=$pattern" -q)
     
     if [ -n "$networks" ]; then
+        # shellcheck disable=SC2086
         docker network rm $networks > /dev/null 2>&1
-        log_message INFO "Removed $(echo $networks | wc -w) networks"
+        log_message INFO "Removed $(echo "$networks" | wc -w) networks"
     else
         log_message INFO "No networks to clean up"
     fi
@@ -419,7 +425,8 @@ capture_metrics() {
     local test_name="$1"
     local metrics_file="${TEST_RESULTS_DIR}/metrics_${test_name}.json"
     
-    local metrics=$(cat <<EOF
+    local metrics
+    metrics=$(cat <<EOF
 {
     "timestamp": "$(date -Iseconds)",
     "test_name": "$test_name",

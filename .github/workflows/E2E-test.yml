@@ -411,16 +411,20 @@ jobs:
 
       # Save Go build cache even if tests fail so subsequent runs benefit from compiled artifacts.
       # Uses actions/cache/save which works with the actions/cache/restore used earlier.
+      # Include matrix.tests in key to avoid conflicts between concurrent jobs.
       - name: Save Go build cache
-        if: always()
+        if: always() && steps.cache-go-build.outputs.cache-hit != 'true'
+        continue-on-error: true
         uses: actions/cache/save@v4
         with:
           path: ~/.cache/go-build
-          key: go-build-${{ runner.os }}-go1.24-${{ hashFiles('**/*.go') }}
+          key: go-build-${{ runner.os }}-go1.24-${{ hashFiles('**/*.go') }}-${{ matrix.tests }}
 
       # Save Docker registry image to cache (always save even if tests fail)
+      # Only save if we didn't restore from cache to avoid conflicts
       - name: Save Docker registry image to cache
-        if: always()
+        if: always() && steps.cache-registry-image.outputs.cache-hit != 'true'
+        continue-on-error: true
         uses: actions/cache/save@v4
         with:
           path: /tmp/registry-image.tar
@@ -441,11 +445,12 @@ jobs:
           fi
 
       - name: Save e2edev service images to cache
-        if: always()
+        if: always() && steps.cache-service-images.outputs.cache-hit != 'true'
+        continue-on-error: true
         uses: actions/cache/save@v4
         with:
           path: /tmp/e2edev-service-images.tar
-          key: e2edev-service-images-${{ runner.os }}-${{ hashFiles('go/src/github.com/**/test/docker/fs/hzn/**', 'go/src/github.com/**/test/docker/fs/helm/**') }}
+          key: e2edev-service-images-${{ runner.os }}-${{ hashFiles('go/src/github.com/**/test/docker/fs/hzn/**', 'go/src/github.com/**/test/docker/fs/helm/**') }}-${{ matrix.tests }}
 
       # Save management hub images: create tar files then save to cache
       - name: Create Exchange image tar
@@ -457,11 +462,12 @@ jobs:
           fi
 
       - name: Save Exchange image to cache
-        if: always()
+        if: always() && steps.cache-exchange-image.outputs.cache-hit != 'true'
+        continue-on-error: true
         uses: actions/cache/save@v4
         with:
           path: /tmp/exchange-image.tar
-          key: exchange-image-${{ runner.os }}-testing-${{ steps.date.outputs.day }}
+          key: exchange-image-${{ runner.os }}-testing-${{ steps.date.outputs.day }}-${{ matrix.tests }}
 
       - name: Create Agbot image tar
         if: always()
@@ -472,11 +478,12 @@ jobs:
           fi
 
       - name: Save Agbot image to cache
-        if: always()
+        if: always() && steps.cache-agbot-image.outputs.cache-hit != 'true'
+        continue-on-error: true
         uses: actions/cache/save@v4
         with:
           path: /tmp/agbot-image.tar
-          key: agbot-image-${{ runner.os }}-e2edev-${{ steps.date.outputs.week }}
+          key: agbot-image-${{ runner.os }}-e2edev-${{ steps.date.outputs.week }}-${{ matrix.tests }}
 
       - name: Create CSS image tar
         if: always()
@@ -487,11 +494,12 @@ jobs:
           fi
 
       - name: Save CSS image to cache
-        if: always()
+        if: always() && steps.cache-css-image.outputs.cache-hit != 'true'
+        continue-on-error: true
         uses: actions/cache/save@v4
         with:
           path: /tmp/css-image.tar
-          key: css-image-${{ runner.os }}-latest-${{ steps.date.outputs.week }}
+          key: css-image-${{ runner.os }}-latest-${{ steps.date.outputs.week }}-${{ matrix.tests }}
 
       - name: Create MongoDB image tar
         if: always()
@@ -502,11 +510,12 @@ jobs:
           fi
 
       - name: Save MongoDB image to cache
-        if: always()
+        if: always() && steps.cache-mongo-image.outputs.cache-hit != 'true'
+        continue-on-error: true
         uses: actions/cache/save@v4
         with:
           path: /tmp/mongo-image.tar
-          key: mongo-image-${{ runner.os }}-4.0.6
+          key: mongo-image-${{ runner.os }}-4.0.6-${{ matrix.tests }}
 
       - name: Create PostgreSQL image tar
         if: always()
@@ -517,11 +526,12 @@ jobs:
           fi
 
       - name: Save PostgreSQL image to cache
-        if: always()
+        if: always() && steps.cache-postgres-image.outputs.cache-hit != 'true'
+        continue-on-error: true
         uses: actions/cache/save@v4
         with:
           path: /tmp/postgres-image.tar
-          key: postgres-image-${{ runner.os }}-17
+          key: postgres-image-${{ runner.os }}-17-${{ matrix.tests }}
 
       - name: Create OpenBao image tar
         if: always()
@@ -532,11 +542,12 @@ jobs:
           fi
 
       - name: Save OpenBao image to cache
-        if: always()
+        if: always() && steps.cache-openbao-image.outputs.cache-hit != 'true'
+        continue-on-error: true
         uses: actions/cache/save@v4
         with:
           path: /tmp/openbao-image.tar
-          key: openbao-image-${{ runner.os }}-2.0
+          key: openbao-image-${{ runner.os }}-2.0-${{ matrix.tests }}
 
       # Save base images
       - name: Create Alpine image tar
@@ -548,11 +559,12 @@ jobs:
           fi
 
       - name: Save Alpine base image to cache
-        if: always()
+        if: always() && steps.cache-alpine-image.outputs.cache-hit != 'true'
+        continue-on-error: true
         uses: actions/cache/save@v4
         with:
           path: /tmp/alpine-image.tar
-          key: alpine-image-${{ runner.os }}-latest-${{ steps.date.outputs.week }}
+          key: alpine-image-${{ runner.os }}-latest-${{ steps.date.outputs.week }}-${{ matrix.tests }}
 
       - name: Create UBI9 image tar
         if: always()
@@ -563,11 +575,12 @@ jobs:
           fi
 
       - name: Save Red Hat UBI9 base image to cache
-        if: always()
+        if: always() && steps.cache-ubi-image.outputs.cache-hit != 'true'
+        continue-on-error: true
         uses: actions/cache/save@v4
         with:
           path: /tmp/ubi-image.tar
-          key: ubi-image-${{ runner.os }}-ubi9-minimal-latest-${{ steps.date.outputs.week }}
+          key: ubi-image-${{ runner.os }}-ubi9-minimal-latest-${{ steps.date.outputs.week }}-${{ matrix.tests }}
 
       # Save anax-built images
       - name: Create anax agent image tar
@@ -579,11 +592,12 @@ jobs:
           fi
 
       - name: Save anax agent image to cache
-        if: always()
+        if: always() && steps.cache-anax-image.outputs.cache-hit != 'true'
+        continue-on-error: true
         uses: actions/cache/save@v4
         with:
           path: /tmp/anax-image.tar
-          key: anax-image-${{ runner.os }}-${{ hashFiles('go/src/github.com/**/anax/**', 'go/src/github.com/**/Makefile') }}
+          key: anax-image-${{ runner.os }}-${{ hashFiles('go/src/github.com/**/anax/**', 'go/src/github.com/**/Makefile') }}-${{ matrix.tests }}
 
       - name: Create anax k8s image tar
         if: always()
@@ -594,11 +608,12 @@ jobs:
           fi
 
       - name: Save anax k8s image to cache
-        if: always()
+        if: always() && steps.cache-anax-k8s-image.outputs.cache-hit != 'true'
+        continue-on-error: true
         uses: actions/cache/save@v4
         with:
           path: /tmp/anax-k8s-image.tar
-          key: anax-k8s-image-${{ runner.os }}-${{ hashFiles('go/src/github.com/**/anax-in-k8s/**', 'go/src/github.com/**/Makefile') }}
+          key: anax-k8s-image-${{ runner.os }}-${{ hashFiles('go/src/github.com/**/anax-in-k8s/**', 'go/src/github.com/**/Makefile') }}-${{ matrix.tests }}
 
       - name: Create agbot testing image tar
         if: always()
@@ -609,11 +624,12 @@ jobs:
           fi
 
       - name: Save agbot testing image to cache
-        if: always()
+        if: always() && steps.cache-agbot-testing-image.outputs.cache-hit != 'true'
+        continue-on-error: true
         uses: actions/cache/save@v4
         with:
           path: /tmp/agbot-testing-image.tar
-          key: agbot-testing-image-${{ runner.os }}-${{ hashFiles('go/src/github.com/**/agreementbot/**', 'go/src/github.com/**/Makefile') }}
+          key: agbot-testing-image-${{ runner.os }}-${{ hashFiles('go/src/github.com/**/agreementbot/**', 'go/src/github.com/**/Makefile') }}-${{ matrix.tests }}
 
       - name: Create ESS image tar
         if: always()
@@ -624,11 +640,12 @@ jobs:
           fi
 
       - name: Save ESS image to cache
-        if: always()
+        if: always() && steps.cache-ess-image.outputs.cache-hit != 'true'
+        continue-on-error: true
         uses: actions/cache/save@v4
         with:
           path: /tmp/ess-image.tar
-          key: ess-image-${{ runner.os }}-${{ hashFiles('go/src/github.com/**/ess/**', 'go/src/github.com/**/Makefile') }}
+          key: ess-image-${{ runner.os }}-${{ hashFiles('go/src/github.com/**/ess/**', 'go/src/github.com/**/Makefile') }}-${{ matrix.tests }}
       
       - name: Test Failure Catch - Check Docker Images
         continue-on-error: true

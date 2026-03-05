@@ -6,6 +6,7 @@ if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
 fi
 
 # shellcheck source=test/gov/utils.sh
+# shellcheck disable=SC1091
 source ./gov/utils.sh
 
 echo -e "Pattern is set to $PATTERN"
