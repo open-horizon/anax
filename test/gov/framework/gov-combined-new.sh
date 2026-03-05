@@ -3,8 +3,16 @@
 # Refactored E2E Test Suite using Test Framework
 # This script replaces gov-combined.sh with improved test isolation and result collection
 
-# Get script directory
+# Get script directory and change to parent gov directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+GOV_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+# Change to gov directory so test scripts can be found
+cd "${GOV_DIR}" || {
+    echo "ERROR: Failed to change to gov directory: ${GOV_DIR}"
+    exit 1
+}
+
 # PARENT_DIR is used by sourced scripts
 # shellcheck disable=SC2034
 PARENT_DIR="$(pwd)"
