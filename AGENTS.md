@@ -1516,10 +1516,86 @@ GitHub Actions automatically copy documentation on pushes to master branch. See 
 
 ## Related Projects
 
-- **exchange-api**: Central service registry and agreement coordination
-- **edge-sync-service**: Model and file distribution to edge nodes
-- **horizon-deb-packager**: Debian package builder for multiple architectures
-- **anax-ui**: Web-based management interface (deprecated)
+The Open Horizon ecosystem consists of multiple interconnected projects. Understanding these relationships helps agents work effectively across the platform.
+
+### Core Platform Components
+
+- **[exchange-api](https://github.com/open-horizon/exchange-api)**: Central management hub and system state
+  - System state management for all Open Horizon resources
+  - Authentication, authorization, and identity management
+  - Service, pattern, and policy registry
+  - Node registration and lifecycle management
+  - Agreement proposal and acceptance workflow
+  - Used by: anax (this project), agbot, hzn CLI
+
+- **[edge-sync-service](https://github.com/open-horizon/edge-sync-service)**: Model and file distribution (CSS/ESS)
+  - Cloud Sync Service (CSS) for centralized model storage
+  - Edge Sync Service (ESS) running on edge nodes
+  - Automatic synchronization of ML models and configuration files
+  - Used by: anax for model management and file distribution
+
+- **[edge-utilities](https://github.com/open-horizon/edge-utilities)**: Shared utilities and logging
+  - Common logging functions and configuration
+  - Shared utilities for sync services, anax, hzn, and agbots
+  - Consistent logging patterns across Open Horizon components
+  - Used by: anax, edge-sync-service, agbot for logging and utilities
+
+- **[OpenBao](https://github.com/openbao/openbao)**: Secrets management (fork of HashiCorp Vault)
+  - Secure storage for credentials, API keys, and certificates
+  - Open source secrets management solution
+  - Used by: anax for secrets injection into services
+
+- **[openbao-plugin-auth-openhorizon](https://github.com/open-horizon/openbao-plugin-auth-openhorizon)**: OpenBao authentication plugin
+  - Custom authentication plugin for Open Horizon integration
+  - Enables OpenBao to authenticate Open Horizon nodes and services
+  - Used by: anax to authenticate with OpenBao for secrets access
+
+### Development and Deployment Tools
+
+- **[devops](https://github.com/open-horizon/devops)**: Development and operations tools
+  - Docker Compose configurations for local development
+  - Management hub deployment scripts
+  - CI/CD pipeline examples
+  - Used for: Setting up local test environments
+
+### Documentation and Examples
+
+- **[examples](https://github.com/open-horizon/examples)**: Sample services and patterns
+  - Edge service examples (hello world, CPU usage, GPS, etc.)
+  - Pattern and policy examples
+  - Deployment tutorials
+  - Used for: Learning and testing Open Horizon
+
+- **[open-horizon.github.io](https://github.com/open-horizon/open-horizon.github.io)**: Official documentation
+  - User guides and tutorials
+  - API reference documentation
+  - Architecture overviews
+  - Note: Documentation from this repository (anax/docs/) is automatically published here
+
+### Deprecated Projects
+
+- **[anax-ui](https://github.com/open-horizon/anax-ui)**: Web-based management interface (deprecated)
+  - Replaced by hzn CLI and direct API access
+  - Maintained for historical reference only
+
+### Cross-Project Dependencies
+
+When working on anax, be aware of these key dependencies:
+
+1. **Exchange API**: anax communicates with Exchange for all system state, authentication, service discovery, and agreement negotiation
+2. **CSS/ESS**: anax uses sync services for model and file distribution
+3. **edge-utilities**: anax uses shared logging and utility functions
+4. **OpenBao**: anax integrates with OpenBao for secrets management via the Open Horizon auth plugin
+5. **Examples**: Test services in anax/test/ are based on patterns from examples repository
+
+### Finding Related Issues
+
+When investigating issues that span multiple projects:
+- Check exchange-api for authentication, authorization, service registration, or agreement issues
+- Check edge-sync-service for model distribution or file sync issues
+- Check edge-utilities for logging or shared utility issues
+- Check openbao-plugin-auth-openhorizon for secrets management authentication issues
+- Check devops for deployment and configuration issues
 
 ## Troubleshooting
 
