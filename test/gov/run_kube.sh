@@ -336,7 +336,7 @@ $cprefix microk8s.kubectl cp "$PWD/gov/input_files/k8s_deploy/topservice-operato
 #   4. business policy has "clusterNamespace": "ns-in-policy", policy constraints match the node. service deploy to "ns-in-policy" (update bp_k8s)
 # After test, the cluster agent will register with userdev/bp_k8s, service pod will be deployed in "ns-in-policy"
 
-# shellcheck source=test/gov/verify_edge_cluster.sh
+# shellcheck disable=SC1091
 source gov/verify_edge_cluster.sh
 kubecmd="$cprefix microk8s.kubectl"
 

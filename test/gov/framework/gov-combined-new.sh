@@ -5,11 +5,16 @@
 
 # Get script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# PARENT_DIR is used by sourced scripts
+# shellcheck disable=SC2034
 PARENT_DIR="$(pwd)"
 
 # Source test framework
+# shellcheck disable=SC1091
 source "${SCRIPT_DIR}/test_config.sh"
+# shellcheck disable=SC1091
 source "${SCRIPT_DIR}/test_utils.sh"
+# shellcheck disable=SC1091
 source "${SCRIPT_DIR}/test_framework.sh"
 
 # Initialize test suite
@@ -44,7 +49,7 @@ function set_exports {
         export ANAX_API="http://localhost:${HZN_AGENT_PORT}"
         export EXCH="${EXCH_APP_HOST}"
         
-        if [ ${CERT_LOC} -eq "1" ]; then
+        if [ "${CERT_LOC}" -eq "1" ]; then
             export HZN_MGMT_HUB_CERT_PATH="/certs/css.crt"
         fi
 
@@ -67,28 +72,38 @@ else
 fi
 log_message INFO "REMOTE_HUB is set to ${REMOTE_HUB}"
 
-# Update hosts file if needed
-if [ "$ICP_HOST_IP" != "0" ]; then
+# Update hosts file if needed (only in containerized environments)
+if [ "$ICP_HOST_IP" != "0" ] && [ -w /etc/hosts ]; then
     log_message INFO "Updating hosts file"
     HOST_NAME_ICP=$(echo "$EXCH_URL" | awk -F/ '{print $3}' | sed 's/:.*//g')
     HOST_NAME=$(echo "$EXCH_URL" | awk -F/ '{print $3}' | sed 's/:.*//g' | sed 's/\.icp*//g')
     echo "$ICP_HOST_IP $HOST_NAME_ICP $HOST_NAME" >> /etc/hosts
+elif [ "$ICP_HOST_IP" != "0" ]; then
+    log_message INFO "Skipping /etc/hosts update (not writable, likely running in GitHub Actions)"
 fi
 
-cd /root || {
-    echo "Warning: Failed to change to /root directory, continuing in current directory"
-}
+# Change to /root only if it exists and is accessible (containerized environment)
+if [ -d /root ] && [ -r /root ]; then
+    cd /root || {
+        log_message WARN "Failed to change to /root directory, continuing in current directory"
+    }
+else
+    log_message INFO "Skipping /root directory change (not accessible, likely running in GitHub Actions)"
+fi
 
 # Setup certificate variable
-if [ ${CERT_LOC} -eq "1" ]; then
+if [ "${CERT_LOC}" -eq "1" ]; then
     CERT_VAR="--cacert /certs/css.crt"
 else
     CERT_VAR=""
 fi
 
-# Create horizon directories
-mkdir -p /var/horizon
-mkdir -p /var/horizon/.colonus
+# Create horizon directories (only if writable, skip in GitHub Actions)
+if [ -w /var ] || mkdir -p /var/horizon 2>/dev/null; then
+    mkdir -p /var/horizon/.colonus 2>/dev/null || log_message INFO "Skipping /var/horizon creation (not writable)"
+else
+    log_message INFO "Skipping /var/horizon creation (not writable, likely running in GitHub Actions)"
+fi
 
 # Verify prerequisites
 log_message INFO "Verifying test prerequisites"
@@ -99,11 +114,12 @@ fi
 
 # Setup real ARCH value in all test files
 log_message INFO "Setting up architecture in test files"
-for in_file in "$PWD"/input_files/compcheck/*.json; do
-    sed -i -e "s#__ARCH__#${ARCH}#g" "$in_file"
-    if [ $? -ne 0 ]; then
-        log_message ERROR "Failed to set architecture in $in_file"
-        exit 1
+for in_file in "$PWD"/gov/input_files/compcheck/*.json; do
+    if [ -f "$in_file" ]; then
+        if ! sed -i -e "s#__ARCH__#${ARCH}#g" "$in_file"; then
+            log_message ERROR "Failed to set architecture in $in_file"
+            exit 1
+        fi
     fi
 done
 
@@ -127,7 +143,7 @@ if [ "$TESTFAIL" != "1" ] && ! should_skip_test "api_tests"; then
     
     # Start Anax for API tests
     log_message INFO "Starting Anax for API tests"
-    if [ ${CERT_LOC} -eq "1" ]; then
+    if [ "${CERT_LOC}" -eq "1" ]; then
         /usr/local/bin/anax -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined.config >/tmp/anax.log 2>&1 &
     else
         /usr/local/bin/anax -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined-no-cert.config >/tmp/anax.log 2>&1 &
@@ -141,11 +157,14 @@ if [ "$TESTFAIL" != "1" ] && ! should_skip_test "api_tests"; then
         
         # Cleanup after API tests
         log_message INFO "Cleaning up after API tests"
+        # shellcheck disable=SC2046
         kill $(pidof anax) 2>/dev/null
         rm -fr /var/horizon/.colonus/*.db
         rm -fr /var/horizon/.colonus/policy.d/*
     else
         log_message ERROR "Anax failed to start for API tests"
+        # TEST_RESULTS is used by test framework
+        # shellcheck disable=SC2034
         TEST_RESULTS["api_tests"]="FAIL"
         ((FAILED_TESTS++))
     fi
@@ -203,7 +222,7 @@ if [ "$TESTFAIL" != "1" ]; then
         # Pattern-based deployment
         log_message INFO "Testing pattern-based deployment"
         
-        last_pattern=$(echo "$TEST_PATTERNS" | sed -e 's/^.*,//')
+        last_pattern="${TEST_PATTERNS##*,}"
         
         for pat in $(echo "$TEST_PATTERNS" | tr "," " "); do
             export PATTERN=$pat
@@ -215,7 +234,7 @@ if [ "$TESTFAIL" != "1" ]; then
                 ma_pattern="sns"
             fi
             
-            set_exports $pat
+            set_exports "$pat"
             
             # Start node with pattern
             if ! should_skip_test "node_start_${pat}"; then
@@ -224,6 +243,7 @@ if [ "$TESTFAIL" != "1" ]; then
             
             # Start multiple agents if configured
             if [ -n "$MULTIAGENTS" ] && [ "$MULTIAGENTS" != "0" ]; then
+                # shellcheck disable=SC1091
                 source ./multiple_agents.sh
                 if ! should_skip_test "multiagent_start_${pat}"; then
                     run_test "multiagent_start_${pat}" "PATTERN=${ma_pattern} startMultiAgents"
@@ -270,7 +290,7 @@ if [ "$TESTFAIL" != "1" ]; then
             
             # Unregister if not last pattern
             if [ "$pat" != "$last_pattern" ]; then
-                mv /tmp/anax.log /tmp/anax_$pat.log
+                mv /tmp/anax.log "/tmp/anax_${pat}.log"
                 run_test "unregister_${pat}" "./unregister.sh"
                 sleep 10
             fi
@@ -354,13 +374,20 @@ if [ ${REMOTE_HUB} -eq 1 ]; then
     log_message INFO "Cleaning up remote environment"
     
     # Delete organizations
+    # CERT_VAR intentionally unquoted - it's either empty or contains --cacert flag
+    # shellcheck disable=SC2086
     curl -X DELETE $CERT_VAR -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/e2edev@somecomp.com" > /dev/null 2>&1
+    # shellcheck disable=SC2086
     curl -X DELETE $CERT_VAR -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/userdev" > /dev/null 2>&1
+    # shellcheck disable=SC2086
     curl -X DELETE $CERT_VAR -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/Customer1" > /dev/null 2>&1
+    # shellcheck disable=SC2086
     curl -X DELETE $CERT_VAR -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/Customer2" > /dev/null 2>&1
     
     # Delete users
+    # shellcheck disable=SC2086
     curl -X DELETE $CERT_VAR -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/users/ibmadmin" > /dev/null 2>&1
+    # shellcheck disable=SC2086
     curl -X DELETE $CERT_VAR -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/users/agbot1" > /dev/null 2>&1
     
     log_message INFO "Remote cleanup completed"
@@ -373,7 +400,7 @@ fi
 print_test_summary
 
 # Determine exit code based on results
-if [ $FAILED_TESTS -gt 0 ]; then
+if [ "$FAILED_TESTS" -gt 0 ]; then
     log_message ERROR "Test suite completed with failures"
     exit 1
 else
