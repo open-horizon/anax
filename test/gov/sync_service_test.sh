@@ -810,7 +810,7 @@ if [ "$(echo "$OBJS_CMD" | jq -r '.[0].objectID')" != ${RESULT_OBJ_ID} ]; then
 fi
 
 WRONGFMT_EXP_TIME_BEFORE="20301002T150000Z"
-if ! hzn mms object list --expirationTime=${WRONGFMT_EXP_TIME_BEFORE}; then
+if hzn mms object list --expirationTime=${WRONGFMT_EXP_TIME_BEFORE}; then
     echo -e "Should return error message when list with --expirationTime in wrong format"
     exit 1
 fi
