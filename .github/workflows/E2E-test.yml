@@ -421,9 +421,20 @@ jobs:
           key: go-build-${{ runner.os }}-go1.24-${{ hashFiles('**/*.go') }}-${{ matrix.tests }}
 
       # Save Docker registry image to cache (always save even if tests fail)
-      # Only save if we didn't restore from cache to avoid conflicts
-      - name: Save Docker registry image to cache
+      # Create tar file first, then save to cache
+      - name: Create Docker registry image tar
         if: always() && steps.cache-registry-image.outputs.cache-hit != 'true'
+        continue-on-error: true
+        run: |
+          # Find any registry image (tag or digest)
+          if docker images registry --format '{{.Repository}}:{{.Tag}}' | grep -v '<none>' | head -1 | xargs -r docker save -o /tmp/registry-image.tar; then
+            echo "Saved registry image to tar"
+          else
+            echo "No registry image found to save"
+          fi
+
+      - name: Save Docker registry image to cache
+        if: always() && steps.cache-registry-image.outputs.cache-hit != 'true' && hashFiles('/tmp/registry-image.tar') != ''
         continue-on-error: true
         uses: actions/cache/save@v4
         with:
@@ -445,7 +456,7 @@ jobs:
           fi
 
       - name: Save e2edev service images to cache
-        if: always() && steps.cache-service-images.outputs.cache-hit != 'true'
+        if: always() && steps.cache-service-images.outputs.cache-hit != 'true' && hashFiles('/tmp/e2edev-service-images.tar') != ''
         continue-on-error: true
         uses: actions/cache/save@v4
         with:
@@ -462,7 +473,7 @@ jobs:
           fi
 
       - name: Save Exchange image to cache
-        if: always() && steps.cache-exchange-image.outputs.cache-hit != 'true'
+        if: always() && steps.cache-exchange-image.outputs.cache-hit != 'true' && hashFiles('/tmp/exchange-image.tar') != ''
         continue-on-error: true
         uses: actions/cache/save@v4
         with:
@@ -478,7 +489,7 @@ jobs:
           fi
 
       - name: Save Agbot image to cache
-        if: always() && steps.cache-agbot-image.outputs.cache-hit != 'true'
+        if: always() && steps.cache-agbot-image.outputs.cache-hit != 'true' && hashFiles('/tmp/agbot-image.tar') != ''
         continue-on-error: true
         uses: actions/cache/save@v4
         with:
@@ -494,7 +505,7 @@ jobs:
           fi
 
       - name: Save CSS image to cache
-        if: always() && steps.cache-css-image.outputs.cache-hit != 'true'
+        if: always() && steps.cache-css-image.outputs.cache-hit != 'true' && hashFiles('/tmp/css-image.tar') != ''
         continue-on-error: true
         uses: actions/cache/save@v4
         with:
@@ -510,7 +521,7 @@ jobs:
           fi
 
       - name: Save MongoDB image to cache
-        if: always() && steps.cache-mongo-image.outputs.cache-hit != 'true'
+        if: always() && steps.cache-mongo-image.outputs.cache-hit != 'true' && hashFiles('/tmp/mongo-image.tar') != ''
         continue-on-error: true
         uses: actions/cache/save@v4
         with:
@@ -526,7 +537,7 @@ jobs:
           fi
 
       - name: Save PostgreSQL image to cache
-        if: always() && steps.cache-postgres-image.outputs.cache-hit != 'true'
+        if: always() && steps.cache-postgres-image.outputs.cache-hit != 'true' && hashFiles('/tmp/postgres-image.tar') != ''
         continue-on-error: true
         uses: actions/cache/save@v4
         with:
@@ -542,7 +553,7 @@ jobs:
           fi
 
       - name: Save OpenBao image to cache
-        if: always() && steps.cache-openbao-image.outputs.cache-hit != 'true'
+        if: always() && steps.cache-openbao-image.outputs.cache-hit != 'true' && hashFiles('/tmp/openbao-image.tar') != ''
         continue-on-error: true
         uses: actions/cache/save@v4
         with:
@@ -559,7 +570,7 @@ jobs:
           fi
 
       - name: Save Alpine base image to cache
-        if: always() && steps.cache-alpine-image.outputs.cache-hit != 'true'
+        if: always() && steps.cache-alpine-image.outputs.cache-hit != 'true' && hashFiles('/tmp/alpine-image.tar') != ''
         continue-on-error: true
         uses: actions/cache/save@v4
         with:
@@ -575,7 +586,7 @@ jobs:
           fi
 
       - name: Save Red Hat UBI9 base image to cache
-        if: always() && steps.cache-ubi-image.outputs.cache-hit != 'true'
+        if: always() && steps.cache-ubi-image.outputs.cache-hit != 'true' && hashFiles('/tmp/ubi-image.tar') != ''
         continue-on-error: true
         uses: actions/cache/save@v4
         with:
@@ -592,7 +603,7 @@ jobs:
           fi
 
       - name: Save anax agent image to cache
-        if: always() && steps.cache-anax-image.outputs.cache-hit != 'true'
+        if: always() && steps.cache-anax-image.outputs.cache-hit != 'true' && hashFiles('/tmp/anax-image.tar') != ''
         continue-on-error: true
         uses: actions/cache/save@v4
         with:
@@ -608,7 +619,7 @@ jobs:
           fi
 
       - name: Save anax k8s image to cache
-        if: always() && steps.cache-anax-k8s-image.outputs.cache-hit != 'true'
+        if: always() && steps.cache-anax-k8s-image.outputs.cache-hit != 'true' && hashFiles('/tmp/anax-k8s-image.tar') != ''
         continue-on-error: true
         uses: actions/cache/save@v4
         with:
@@ -624,7 +635,7 @@ jobs:
           fi
 
       - name: Save agbot testing image to cache
-        if: always() && steps.cache-agbot-testing-image.outputs.cache-hit != 'true'
+        if: always() && steps.cache-agbot-testing-image.outputs.cache-hit != 'true' && hashFiles('/tmp/agbot-testing-image.tar') != ''
         continue-on-error: true
         uses: actions/cache/save@v4
         with:
@@ -640,7 +651,7 @@ jobs:
           fi
 
       - name: Save ESS image to cache
-        if: always() && steps.cache-ess-image.outputs.cache-hit != 'true'
+        if: always() && steps.cache-ess-image.outputs.cache-hit != 'true' && hashFiles('/tmp/ess-image.tar') != ''
         continue-on-error: true
         uses: actions/cache/save@v4
         with:
