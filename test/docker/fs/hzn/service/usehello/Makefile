@@ -19,6 +19,7 @@ horizonstop:
 	hzn -v dev service stop
 
 run:
+	-docker rm -f $(IMAGE) 2> /dev/null || :
 	docker run --name $(IMAGE) --network=hzn_horizonnet -e MY_VAR1='outside' -e HZN_ARCH=$(ARCH) -d -t $(BASE)/$(IMAGE):$(VER)
 
 check:

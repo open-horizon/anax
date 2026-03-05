@@ -111,8 +111,12 @@ run_delete_loops() {
 EXCH_URL="${EXCH_APP_HOST}"
 
 # the horizon var base for storing the keys. It is the default value for HZN_VAR_BASE.
-mkdir -p /var/horizon
-mkdir -p /var/horizon/.colonus
+# Create horizon directories (only if writable, skip in environments without permissions)
+if [ -w /var ] || mkdir -p /var/horizon 2>/dev/null; then
+    mkdir -p /var/horizon/.colonus 2>/dev/null || echo "INFO: Skipping /var/horizon creation (not writable)"
+else
+    echo "INFO: /var/horizon not writable, tests will use alternative paths if needed"
+fi
 
 # check if the hub is all-in-1 management hub or not
 if [[ ${EXCH_APP_HOST} = *"://127.0.0.1:"* ]]; then

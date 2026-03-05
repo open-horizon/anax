@@ -12,7 +12,8 @@ all: build run
 build:
 	docker build -t $(DOCKER_NAME):$(DOCKER_TAG) .
 
-run: stop
+run:
+	-docker rm -f $(DOCKER_NAME) 2> /dev/null || :
 	docker run -d --name $(DOCKER_NAME) --publish=8347:8347 --volume `pwd`:/outside -e HELLO_VAR='test1' -e HELLO_PORT='8347' $(DOCKER_NAME):$(DOCKER_TAG)
 
 check:

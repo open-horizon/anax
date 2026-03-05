@@ -21,7 +21,8 @@ horizonstart:
 horizonstop:
 	hzn -v dev service stop
 
-run: stop build
+run:
+	-docker rm -f $(IMAGE) 2> /dev/null || :
 	docker run --name $(IMAGE) --network=hzn_horizonnet -e MY_S_VAR1='outside' -e HZN_ARCH=$(ARCH) -p 8000:8000 -d -t "$(BASE)/$(IMAGE):$(VER)"
 	sleep 3
 

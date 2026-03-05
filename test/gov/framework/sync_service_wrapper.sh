@@ -43,8 +43,16 @@ if [ -n "${CSS_URL:-}" ]; then
 fi
 
 # Set required environment variables for hzn mms commands
+# Note: Use explicit username instead of $USER to avoid conflict with shell's USER variable
+EXCH_USER="${USER:-anax1}"
+if [ "$TEST_DIFF_ORG" = "1" ]; then
+    EXCH_USER="useranax1"
+fi
+
 export HZN_ORG_ID="${DEVICE_ORG}"
-export HZN_EXCHANGE_USER_AUTH="${USER}:${PASS}"
+export HZN_EXCHANGE_USER_AUTH="${EXCH_USER}:${PASS}"
+export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
+export HZN_FSS_CSSURL="${CSS_URL}"
 
 # Run the sync service test
 log_message INFO "Running sync service test"

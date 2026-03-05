@@ -115,6 +115,44 @@ make macpkg
 
 ## Development Conventions
 
+### Documentation Guidelines
+
+**Do Not Create Fix Documentation Files**
+
+When fixing bugs or issues, agents should NOT create separate documentation files (e.g., `FIX_*.md`, `*_FIX.md`, `BUGFIX_*.md`) to document the changes. Instead:
+
+1. **Use Git Commit Messages**: Document the fix in the commit message with clear description of the problem and solution
+2. **Update Existing Documentation**: If the fix reveals a gap in documentation, update the relevant existing documentation files
+3. **Add Code Comments**: Add comments in the code explaining why the fix was necessary if it's not obvious
+4. **Update AGENTS.md**: If the fix reveals a pattern that agents should follow, add it to this file in the appropriate section
+
+**Why This Policy Exists:**
+- Fix documentation files accumulate as technical debt
+- Information becomes stale and outdated
+- Creates maintenance burden
+- Proper commit messages and code comments are more maintainable
+- Existing documentation should be kept up-to-date instead
+
+**Example of What NOT to Do:**
+```bash
+# DON'T create files like:
+test/gov/framework/SYNC_SERVICE_AUTH_FIX.md
+test/gov/FIX_USER_VARIABLE_CONFLICT.md
+BUGFIX_AUTHENTICATION.md
+```
+
+**Example of What TO Do:**
+```bash
+# DO write clear commit messages:
+git commit -m "Fix sync service authentication in GitHub Actions
+
+The hzn CLI was failing with 401 errors because:
+1. Missing HZN_EXCHANGE_URL environment variable
+2. Shell's USER variable conflicted with test framework's USER variable
+
+Fixed by adding missing env vars and using EXCH_USER local variable."
+```
+
 ### Code Organization
 
 - **Main entry point**: `main.go` - initializes workers and event system

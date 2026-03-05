@@ -13,7 +13,8 @@ all: build run check
 build:
 	docker build -t $(DOCKER_HUB_ID)/$(DOCKER_NAME):$(DOCKER_TAG) .
 
-run: stop
+run:
+	-docker rm -f $(DOCKER_NAME) 2> /dev/null || :
 	docker run -d --name $(DOCKER_NAME) --network=hzn_horizonnet --publish=8348:8347 --volume `pwd`:/outside $(DOCKER_HUB_ID)/$(DOCKER_NAME):$(DOCKER_TAG)
 
 check:

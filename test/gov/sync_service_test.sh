@@ -162,8 +162,17 @@ dd if=/dev/zero of=/tmp/data-large.txt count=512 bs=1048576
 
 RESOURCE_ORG1=e2edev@somecomp.com
 
+# Set all required HZN environment variables for CLI commands
+# Note: Use explicit username instead of $USER to avoid conflict with shell's USER variable
+EXCH_USER="${USER:-anax1}"
+if [ "$TEST_DIFF_ORG" = "1" ]; then
+    EXCH_USER="useranax1"
+fi
+
 export HZN_FSS_CSSURL=${CSS_URL}
 export HZN_ORG_ID=${DEVICE_ORG}
+export HZN_EXCHANGE_URL=${EXCH_APP_HOST}
+export HZN_EXCHANGE_USER_AUTH=${EXCH_USER}:${PASS}
 
 # Test medium object publish
 echo "Testing 128MB object publish"

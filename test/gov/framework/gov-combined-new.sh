@@ -44,7 +44,9 @@ export ANAX_API="http://localhost:${HZN_AGENT_PORT}"
 export DEVICE_ORG=${DEVICE_ORG:-"e2edev@somecomp.com"}
 export DEVICE_ID=${DEVICE_ID:-"an12345"}
 export DEVICE_NAME=${DEVICE_NAME:-"anaxdev1"}
-export USER=${USER:-"anax1"}
+# Note: USER is a shell built-in variable, so we must explicitly set it
+# to override the current username (e.g., 'runner' in GitHub Actions)
+export USER="anax1"
 export PASS=${PASS:-"anax1pw"}
 export TOKEN=${TOKEN:-"Abcdefghijklmno1"}
 export EXCH="${EXCH_APP_HOST}"

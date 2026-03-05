@@ -23,8 +23,8 @@ for dir in */; do
 	cd "$justDirName" || { echo "Error: resource_package.sh - ln 18 - Failure to change directories"; error 1; }
 	# Find all the files in the directory, excluding the . directory and any gzipped tarball
 	# that might be there. This allows us to run the script over and over without causing damaged tarballs.
-	res=$(find . -not -name "*.tgz" -not -path ".")
-	tar -czvf "$justDirName".tgz "$res"
+	# Use find with -print0 and xargs to handle filenames with spaces/newlines correctly
+	find . -not -name "*.tgz" -not -path "." -print0 | xargs -0 tar -czvf "$justDirName".tgz
 
 	echo "Installing resource package ${justDirName}.tgz."
 
@@ -68,8 +68,8 @@ cd "${EXEC_DIR}/docker/fs/resources/public" || { echo "Error: resource_package.s
 RESOURCE_ORG=IBM
 RESOURCE_TYPE=public
 
-res=$(find . -not -name "*.tgz" -not -path ".")
-tar -czvf public.tgz "$res"
+# Use find with -print0 and xargs to handle filenames with spaces/newlines correctly
+find . -not -name "*.tgz" -not -path "." -print0 | xargs -0 tar -czvf public.tgz
 
 echo "Installing resource package public.tgz. in ${RESOURCE_ORG} org"
 ls "${EXEC_DIR}/docker/fs/resources/public"
