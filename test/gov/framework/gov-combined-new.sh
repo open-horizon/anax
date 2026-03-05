@@ -164,7 +164,7 @@ export CSS_URL="${CSS_URL}"
 export EXCH_ROOTPW="${EXCH_ROOTPW}"
 
 # Test 1: Build old anax if needed
-if [ "$OLDANAX" == "1" ]; then
+if [ "$OLDANAX" = "1" ]; then
     run_test "build_old_anax" "./build_old_anax.sh"
 fi
 
@@ -217,6 +217,17 @@ if [ "$TESTFAIL" != "1" ] && ! should_skip_test "api_tests"; then
             ANAX_DB_PATH="/root/.colonus"
         fi
         export ANAX_DB_PATH
+        
+        # Create service storage directory required by container worker
+        # This prevents panic: "unable to access service storage dir"
+        SERVICE_STORAGE_DIR="/tmp/service_storage"
+        if [ ! -d "$SERVICE_STORAGE_DIR" ]; then
+            mkdir -p "$SERVICE_STORAGE_DIR" || {
+                log_message ERROR "Failed to create service storage directory: $SERVICE_STORAGE_DIR"
+                ANAX_AVAILABLE=0
+            }
+            log_message INFO "Created service storage directory: $SERVICE_STORAGE_DIR"
+        fi
         
         # Ensure config files exist by processing templates if needed
         CONFIG_DIR="/etc/colonus"
@@ -290,7 +301,7 @@ if [ "$NOAGBOT" != "1" ] && [ "$TESTFAIL" != "1" ] && [ ${REMOTE_HUB} -eq 0 ]; t
     if ! should_skip_test "agbot_verification"; then
         run_test "agbot_verification" "curl -sSL ${AGBOT_API}/agreement > /dev/null"
         
-        if [ "$MULTIAGBOT" == "1" ]; then
+        if [ "$MULTIAGBOT" = "1" ]; then
             run_test "agbot2_verification" "curl -sSL ${AGBOT2_API}/agreement > /dev/null"
         fi
     fi
@@ -315,11 +326,11 @@ if [ "$TESTFAIL" != "1" ]; then
         
         if ! should_skip_test "agreement_verification_policy"; then
             admin_auth="e2edevadmin:e2edevadminpw"
-            if [ "$DEVICE_ORG" == "userdev" ]; then
+            if [ "$DEVICE_ORG" = "userdev" ]; then
                 admin_auth="userdevadmin:userdevadminpw"
             fi
             
-            if [ "$NOLOOP" == "1" ]; then
+            if [ "$NOLOOP" = "1" ]; then
                 run_test "verify_agreements_policy" "ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ${FRAMEWORK_DIR}/verify_agreements_wrapper.sh"
 
                 if [ "$NOCANCEL" != "1" ]; then
@@ -349,7 +360,7 @@ if [ "$TESTFAIL" != "1" ]; then
             
             # Determine multi-agent pattern
             ma_pattern=$PATTERN
-            if [ "${PATTERN}" == "sall" ]; then
+            if [ "${PATTERN}" = "sall" ]; then
                 ma_pattern="sns"
             fi
             
@@ -372,11 +383,11 @@ if [ "$TESTFAIL" != "1" ]; then
             # Run agreement verification
             if ! should_skip_test "verify_agreements_${pat}"; then
                 admin_auth="e2edevadmin:e2edevadminpw"
-                if [ "$DEVICE_ORG" == "userdev" ]; then
+                if [ "$DEVICE_ORG" = "userdev" ]; then
                     admin_auth="userdevadmin:userdevadminpw"
                 fi
                 
-                if [ "$NOLOOP" == "1" ]; then
+                if [ "$NOLOOP" = "1" ]; then
                     run_test "verify_agreements_${pat}" "ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ${FRAMEWORK_DIR}/verify_agreements_wrapper.sh"
 
                     if [ "$NOCANCEL" != "1" ]; then
@@ -419,9 +430,14 @@ fi
 
 # Test 6: Compatibility check tests
 if [ "$NOCOMPCHECK" != "1" ] && [ "$TESTFAIL" != "1" ]; then
-    if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" == "" ]; then
-        # Agbot compcheck doesn't require local Anax
-        run_test "agbot_compcheck" "${FRAMEWORK_DIR}/agbot_apitest_wrapper.sh"
+    if [ "$TEST_PATTERNS" = "sall" ] || [ "$TEST_PATTERNS" = "" ]; then
+        # Agbot compcheck doesn't require local Anax, but requires agbot to be accessible
+        # Skip if NOAGBOT is set or if REMOTE_HUB=1 (agbot not running locally)
+        if [ "$NOAGBOT" != "1" ] && [ ${REMOTE_HUB} -eq 0 ]; then
+            run_test "agbot_compcheck" "${FRAMEWORK_DIR}/agbot_apitest_wrapper.sh"
+        else
+            log_message WARN "Skipping agbot_compcheck test - agbot not accessible (REMOTE_HUB=${REMOTE_HUB}, NOAGBOT=${NOAGBOT:-0})"
+        fi
         
         # hzn_compcheck requires nodes to be registered in Exchange (from pattern/policy tests)
         # Skip if pattern/policy tests were skipped
@@ -442,8 +458,8 @@ fi
 
 # Test 7: Surface error verification
 if [ "$NOSURFERR" != "1" ] && [ "$TESTFAIL" != "1" ] && [ ${REMOTE_HUB} -eq 0 ] && [ "$ANAX_AVAILABLE" -eq 1 ]; then
-    if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" == "" ]; then
-        if [ "$NOLOOP" == "1" ]; then
+    if [ "$TEST_PATTERNS" = "sall" ] || [ "$TEST_PATTERNS" = "" ]; then
+        if [ "$NOLOOP" = "1" ]; then
             run_test "verify_surfaced_error" "${FRAMEWORK_DIR}/verify_surfaced_error_wrapper.sh"
         fi
     fi
@@ -453,30 +469,30 @@ fi
 
 # Test 8: Policy change test
 if [ "$NOSURFERR" != "1" ] && [ "$TESTFAIL" != "1" ] && [ ${REMOTE_HUB} -eq 0 ]; then
-    if [ "$TEST_PATTERNS" == "" ] && [ "$NOLOOP" == "1" ]; then
+    if [ "$TEST_PATTERNS" = "" ] && [ "$NOLOOP" = "1" ]; then
         run_test "policy_change" "${FRAMEWORK_DIR}/policy_change_wrapper.sh"
     fi
 fi
 
 # Test 9: Service upgrade/downgrade test
 if [ "$NOUPGRADE" != "1" ] && [ "$TESTFAIL" != "1" ] && [ ${REMOTE_HUB} -eq 0 ]; then
-    if [ "$TEST_PATTERNS" == "sall" ]; then
+    if [ "$TEST_PATTERNS" = "sall" ]; then
         run_test "service_upgrade_downgrade" "${FRAMEWORK_DIR}/service_upgrade_wrapper.sh"
     fi
 fi
 
 # Test 10: Service secrets test
-if [ "$NOVAULT" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "$NOLOOP" == "1" ] && [ "$ANAX_AVAILABLE" -eq 1 ]; then
-    if [ "$TEST_PATTERNS" == "" ]; then
+if [ "$NOVAULT" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "$NOLOOP" = "1" ] && [ "$ANAX_AVAILABLE" -eq 1 ]; then
+    if [ "$TEST_PATTERNS" = "" ]; then
         run_test "service_secrets" "${FRAMEWORK_DIR}/service_secrets_wrapper.sh"
     fi
-elif [ "$NOVAULT" != "1" ] && [ "$NOLOOP" == "1" ] && [ "$ANAX_AVAILABLE" -eq 0 ]; then
+elif [ "$NOVAULT" != "1" ] && [ "$NOLOOP" = "1" ] && [ "$ANAX_AVAILABLE" -eq 0 ]; then
     log_message WARN "Skipping service_secrets test - Anax not available on localhost"
 fi
 
 # Test 11: HZN registration tests
 if [ "$NOHZNREG" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "$ANAX_AVAILABLE" -eq 1 ]; then
-    if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" == "" ]; then
+    if [ "$TEST_PATTERNS" = "sall" ] || [ "$TEST_PATTERNS" = "" ]; then
         sleep 15
         run_test "hzn_registration" "${FRAMEWORK_DIR}/hzn_reg_wrapper.sh"
     fi
@@ -485,15 +501,15 @@ elif [ "$NOHZNREG" != "1" ] && [ "$ANAX_AVAILABLE" -eq 0 ]; then
 fi
 
 # Test 12: Service log test
-if [ "$TEST_PATTERNS" == "sall" ] && [ "$NOHZNLOG" != "1" ] && [ "$NOHZNREG" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "$ANAX_AVAILABLE" -eq 1 ]; then
+if [ "$TEST_PATTERNS" = "sall" ] && [ "$NOHZNLOG" != "1" ] && [ "$NOHZNREG" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "$ANAX_AVAILABLE" -eq 1 ]; then
     run_test "service_log" "${FRAMEWORK_DIR}/service_log_test_wrapper.sh"
-elif [ "$TEST_PATTERNS" == "sall" ] && [ "$NOHZNLOG" != "1" ] && [ "$ANAX_AVAILABLE" -eq 0 ]; then
+elif [ "$TEST_PATTERNS" = "sall" ] && [ "$NOHZNLOG" != "1" ] && [ "$ANAX_AVAILABLE" -eq 0 ]; then
     log_message WARN "Skipping service_log test - Anax not available on localhost"
 fi
 
 # Test 13: Pattern change test
 if [ "$NOPATTERNCHANGE" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "$ANAX_AVAILABLE" -eq 1 ]; then
-    if [ "$TEST_PATTERNS" == "sall" ]; then
+    if [ "$TEST_PATTERNS" = "sall" ]; then
         run_test "pattern_change" "${FRAMEWORK_DIR}/pattern_change_wrapper.sh"
     fi
 elif [ "$NOPATTERNCHANGE" != "1" ] && [ "$ANAX_AVAILABLE" -eq 0 ]; then
@@ -501,7 +517,7 @@ elif [ "$NOPATTERNCHANGE" != "1" ] && [ "$ANAX_AVAILABLE" -eq 0 ]; then
 fi
 
 # Test 14: HA test
-if [ "$HA" == "1" ]; then
+if [ "$HA" = "1" ]; then
     run_test "ha_test" "${FRAMEWORK_DIR}/ha_test_wrapper.sh"
 fi
 

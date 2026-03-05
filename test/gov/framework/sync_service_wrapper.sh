@@ -5,9 +5,12 @@
 
 # Source test framework
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PARENT_DIR="$(pwd)"
+FRAMEWORK_DIR="$SCRIPT_DIR"
+GOV_DIR="$(dirname "$FRAMEWORK_DIR")"
 # shellcheck disable=SC1091
 source "${SCRIPT_DIR}/test_config.sh"
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/test_framework.sh"
 # shellcheck disable=SC1091
 source "${SCRIPT_DIR}/test_utils.sh"
 
@@ -54,13 +57,19 @@ export HZN_EXCHANGE_USER_AUTH="${EXCH_USER}:${PASS}"
 export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
 export HZN_FSS_CSSURL="${CSS_URL}"
 
+# Change to test directory before running test
+cd "$GOV_DIR" || {
+    log_message ERROR "Failed to change to test directory: $GOV_DIR"
+    exit 1
+}
+
 # Run the sync service test
 log_message INFO "Running sync service test"
-if [ "$TEST_RETRY_ENABLED" == "1" ]; then
-    retry_command "$TEST_MAX_RETRIES" "$TEST_RETRY_DELAY" "${PARENT_DIR}/sync_service_test.sh"
+if [ "$TEST_RETRY_ENABLED" = "1" ]; then
+    retry_command "$TEST_MAX_RETRIES" "$TEST_RETRY_DELAY" "./sync_service_test.sh"
     result=$?
 else
-    "${PARENT_DIR}/sync_service_test.sh"
+    ./sync_service_test.sh
     result=$?
 fi
 
@@ -82,9 +91,9 @@ else
     
     log_message ERROR "Exchange status:"
     if [ -n "${HZN_EXCHANGE_USER_AUTH:-}" ]; then
-        curl -sS -u "${HZN_EXCHANGE_USER_AUTH}" "${EXCH_APP_HOST}/v1/admin/version" || echo "Failed to get Exchange version"
+        curl -sS -u "${HZN_EXCHANGE_USER_AUTH}" "${EXCH_APP_HOST}/admin/version" 2>&1 || echo "Failed to get Exchange version"
     else
-        curl -sS "${EXCH_APP_HOST}/v1/admin/version" || echo "Failed to get Exchange version (no auth)"
+        curl -sS "${EXCH_APP_HOST}/admin/version" 2>&1 || echo "Failed to get Exchange version (no auth)"
     fi
 fi
 

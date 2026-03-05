@@ -15,7 +15,7 @@ organizations=( e2edev@somecomp.com userdev IBM Customer1 Customer2 )
 # $3 - error message
 verify() {
     respContains=$(echo "$1" | grep "$2")
-    if [ "${respContains}" = "" ]; then
+    if [ -z "${respContains}" ]; then
         echo -e "\nERROR: $3. Output was:"
         echo -e "$1"
         exit 1
@@ -40,7 +40,7 @@ checkOrganizationsInMMS() {
     fi
   done
 
-  if [ ${found} = false ]; then
+  if [ "$found" = "false" ]; then
     echo -e "\nERROR: Org $1 is not found in CSS"
     exit 1
   fi

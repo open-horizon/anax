@@ -764,6 +764,62 @@ jobs:
             echo "Searching for any horizon install logs..."
             find /var/log /tmp "$HOME" -name "*horizon*install*.log" -type f 2>/dev/null || echo "No install logs found"
           fi
+      - name: Test Failure Catch - Check Anax Process and Logs
+        continue-on-error: true
+        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
+        run: |
+          echo "=== Anax Process Information ==="
+          # Find anax process
+          anax_pids=$(pgrep -f "anax" || true)
+          
+          if [ -n "$anax_pids" ]; then
+            echo "Found Anax process(es) with PID(s): $anax_pids"
+            echo ""
+            for pid in $anax_pids; do
+              echo "--- Process $pid Details ---"
+              ps -fp "$pid" 2>/dev/null || echo "Failed to get process details for PID $pid"
+              echo ""
+              echo "--- Process $pid Command Line ---"
+              cat "/proc/$pid/cmdline" 2>/dev/null | tr '\0' ' ' || echo "Failed to get command line for PID $pid"
+              echo ""
+              echo ""
+            done
+          else
+            echo "No Anax process found running"
+          fi
+          
+          echo ""
+          echo "=== Anax Log Files ==="
+          # Common Anax log locations
+          anax_log_paths=(
+            "/tmp/anax.log"
+            "/var/log/anax.log"
+            "/var/horizon/anax.log"
+            "$HOME/anax.log"
+          )
+          
+          log_found=false
+          for log_path in "${anax_log_paths[@]}"; do
+            if [ -f "$log_path" ]; then
+              echo "Found Anax log at: $log_path"
+              echo ""
+              echo "--- Log Content (last 500 lines) ---"
+              tail -n 500 "$log_path" 2>&1 || echo "Failed to read $log_path"
+              log_found=true
+              echo ""
+            fi
+          done
+          
+          if [ "$log_found" = false ]; then
+            echo "Anax log not found in common locations:"
+            for log_path in "${anax_log_paths[@]}"; do
+              echo "  - $log_path"
+            done
+            echo ""
+            echo "Searching for any anax log files..."
+            find /tmp /var/log "$HOME" -name "*anax*.log" -type f 2>/dev/null || echo "No anax log files found"
+          fi
+
 
       - name: Test Failure Catch - Check Agbot Docker Log
         continue-on-error: true
