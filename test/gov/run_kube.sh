@@ -52,9 +52,33 @@ sleep 2
 if [ $RC -ne 0 ]
 then
 	echo "Try to install microk8s"
-	sudo snap install microk8s --classic --channel=1.33/stable
-	IRC=$?
-	if [ $IRC -ne 0 ]; then echo "Unable to install microk8s: $IRC"; exit 1; fi
+	
+	# Retry snap install with exponential backoff (network timeouts are common in CI)
+	# Maximum total time: ~270s (4.5 minutes) to stay under 5 minute limit
+	MAX_RETRIES=3
+	RETRY_DELAY=5
+	for attempt in $(seq 1 $MAX_RETRIES); do
+		echo "Attempt $attempt of $MAX_RETRIES to install microk8s..."
+		
+		# Use timeout to prevent hanging indefinitely (90s per attempt)
+		if timeout 90 sudo snap install microk8s --classic --channel=1.33/stable; then
+			echo "Successfully installed microk8s on attempt $attempt"
+			break
+		else
+			IRC=$?
+			echo "Failed to install microk8s on attempt $attempt (exit code: $IRC)"
+			
+			if [ "$attempt" -lt "$MAX_RETRIES" ]; then
+				echo "Waiting ${RETRY_DELAY}s before retry..."
+				sleep $RETRY_DELAY
+				RETRY_DELAY=$((RETRY_DELAY * 2))  # Exponential backoff (5s, 10s)
+			else
+				echo "Unable to install microk8s after $MAX_RETRIES attempts: $IRC"
+				echo "This may be due to network timeouts accessing snapcraft.io"
+				exit 1
+			fi
+		fi
+	done
 
 fi
 
