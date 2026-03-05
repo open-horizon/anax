@@ -413,39 +413,70 @@ if [ -z "$VARIABLE" ]; then
 
 #### 9. Testing Shell Scripts
 
-**MANDATORY: Always run shellcheck on shell script changes:**
+**CRITICAL REQUIREMENT: shellcheck is MANDATORY for ALL shell script changes**
 
-All shell script modifications MUST pass shellcheck validation before committing. This catches common errors, security issues, and ensures best practices are followed.
+**Zero Tolerance Policy:**
+- ALL shell script modifications MUST pass shellcheck with exit code 0
+- NO exceptions - shellcheck failures MUST be fixed before committing
+- NO warnings allowed - all shellcheck warnings MUST be addressed
+- NO bypassing shellcheck with disable directives unless absolutely necessary and documented
+- Code reviews WILL reject any shell script changes without shellcheck validation
+
+**Why This Is Non-Negotiable:**
+- Prevents common shell scripting errors that cause production failures
+- Catches security vulnerabilities (command injection, path traversal, etc.)
+- Ensures POSIX compliance and portability across different shells
+- Detects quoting issues that lead to word splitting and glob expansion
+- Identifies unsafe practices before they reach production
+
+**MANDATORY Validation Process:**
 
 ```bash
-# REQUIRED: Run shellcheck on all modified shell scripts
+# STEP 1: Run shellcheck on ALL modified shell scripts
 shellcheck script.sh
 
-# shellcheck must exit with code 0 (no errors or warnings)
-# Fix all issues reported by shellcheck before committing
+# STEP 2: Verify exit code is 0 (no errors or warnings)
+echo $?  # Must be 0
+
+# STEP 3: Fix ALL issues reported by shellcheck
+# - Address errors immediately
+# - Address warnings immediately
+# - Document any necessary disable directives with clear justification
+
+# STEP 4: Re-run shellcheck until clean
+shellcheck script.sh && echo "PASS: Ready to commit"
 ```
 
-**Additional validation steps:**
+**Enforcement:**
+- CI/CD pipelines SHOULD include shellcheck validation
+- Pre-commit hooks SHOULD run shellcheck automatically
+- Code reviewers MUST verify shellcheck was run
+- Pull requests with shellcheck failures WILL be rejected
+
+**Additional Validation Steps:**
 
 ```bash
-# Syntax check
+# Syntax check (catches basic syntax errors)
 bash -n script.sh
 
-# Test with different shells
+# Test with different shells (verify POSIX compliance)
 sh script.sh
 bash script.sh
 
-# Verify executable permissions
+# Verify executable permissions (required for .sh files)
 ls -la script.sh
+chmod +x script.sh  # If not executable
 ```
 
-**When to run shellcheck:**
-- After creating a new shell script
-- After modifying any existing shell script
-- Before committing changes
-- During code review
+**When to Run Shellcheck:**
+- **ALWAYS** after creating a new shell script
+- **ALWAYS** after modifying any existing shell script
+- **ALWAYS** before committing changes
+- **ALWAYS** during code review
+- **RECOMMENDED** in pre-commit hooks
+- **RECOMMENDED** in CI/CD pipelines
 
-**Installing shellcheck:**
+**Installing Shellcheck:**
 ```bash
 # Debian/Ubuntu
 apt-get install shellcheck
@@ -453,8 +484,71 @@ apt-get install shellcheck
 # macOS
 brew install shellcheck
 
+# Fedora/RHEL
+dnf install shellcheck
+
 # Or use online: https://www.shellcheck.net/
 ```
+
+**Common Shellcheck Issues and Fixes:**
+
+1. **Unquoted Variables (SC2086)**
+   ```bash
+   # BAD
+   curl $URL
+   
+   # GOOD
+   curl "$URL"
+   ```
+
+2. **Useless Cat (SC2002)**
+   ```bash
+   # BAD
+   cat file.txt | grep pattern
+   
+   # GOOD
+   grep pattern file.txt
+   ```
+
+3. **Unquoted Command Substitution (SC2046)**
+   ```bash
+   # BAD
+   for file in $(ls *.txt); do
+   
+   # GOOD
+   for file in *.txt; do
+   ```
+
+4. **Missing Error Handling (SC2164)**
+   ```bash
+   # BAD
+   cd /some/directory
+   
+   # GOOD
+   cd /some/directory || exit 1
+   ```
+
+**Acceptable Disable Directives:**
+
+Only use shellcheck disable directives when absolutely necessary:
+
+```bash
+# Acceptable: Intentional word splitting
+# shellcheck disable=SC2086
+docker network rm $networks
+
+# Document WHY the directive is needed
+# In this case, $networks contains space-separated list that needs splitting
+```
+
+**Unacceptable Reasons to Disable:**
+- "It's too much work to fix"
+- "The script works fine without it"
+- "I don't understand the warning"
+- "It's just a warning, not an error"
+
+**Bottom Line:**
+If you modify a shell script and don't run shellcheck, your changes WILL be rejected. No exceptions.
 
 #### 10. Security Considerations
 
