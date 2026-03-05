@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 echo -e "\nBC setting is $BC"
 
 if [ "$BC" != "1" ]
@@ -8,7 +13,7 @@ then
 echo -e "Pattern is set to $PATTERN"
 
   # add user input with /node/userinput api
-  read -d '' nodeui <<EOF
+  cat > /tmp/nodeui.tmp <<'EOF'
 [
     {
       "serviceOrgid": "IBM",
@@ -37,15 +42,16 @@ echo -e "Pattern is set to $PATTERN"
 ]
 
 EOF
+  nodeui=$(cat /tmp/nodeui.tmp)
   echo "Adding service configurarion for service-gps with /node/userinput api..."
   RES=$(echo "$nodeui" | curl -sS -X PATCH -w "%{http_code}" -H "Content-Type: application/json" --data @- "$ANAX_API/node/userinput")
-  if [ "$RES" == "" ]
+  if [ "$RES" = "" ]
   then
-    echo -e "$newhznpolicy \nresulted in empty response"
+    echo -e "$nodeui \nresulted in empty response"
     exit 2
   fi
 
-  ERR=$(echo $RES | jq -r '.' | tail -1)
+  ERR=$(echo "$RES" | jq -r '.' | tail -1)
   if [ "$ERR" != "201" ]
   then
     echo -e "$nodeui \nresulted in incorrect response: $RES"
@@ -56,7 +62,7 @@ EOF
 # blockchain is in use
 else
 
-read -d '' splitgpsservice <<EOF
+cat > /tmp/splitgpsservice.tmp <<'EOF'
 {
   "sensor_url": "https://bluehorizon.network/microservices/gps",
   "sensor_name": "gps",
@@ -110,6 +116,7 @@ read -d '' splitgpsservice <<EOF
   ]
 }
 EOF
+splitgpsservice=$(cat /tmp/splitgpsservice.tmp)
 
 echo -e "\n\n[D] split gps service payload with BC: $splitgpsservice"
 

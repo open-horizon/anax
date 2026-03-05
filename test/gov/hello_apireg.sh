@@ -1,13 +1,20 @@
 #!/bin/bash
 
-source ./utils.sh
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
+# shellcheck source=test/gov/utils.sh
+# shellcheck disable=SC1091
+source ./gov/utils.sh
 
 echo -e "Pattern is set to $PATTERN"
 
-if [ "$PATTERN" == "susehello" ] || [ "$PATTERN" == "sall" ]
+if [ "$PATTERN" == "susehello" ] || [ "$PATTERN" = "sall" ]
 then
 
-  read -d '' helloconfig <<EOF
+  helloconfig=$(cat <<EOF
 [
   {
     "serviceOrgid": "e2edev@somecomp.com",
@@ -44,12 +51,13 @@ then
   }
 ]
 EOF
+)
 
   echo -e "\n\n[D] user input for usehello service: $helloconfig"
 
   echo "Registering user input for usehello service"
 
-  RES=$(echo "$helloconfig" | curl -sS -w %{http_code} -X PATCH -H "Content-Type: application/json" --data @- "$ANAX_API/node/userinput")
+  RES=$(curl -sS -w '%{http_code}' -X PATCH -H "Content-Type: application/json" --data "$helloconfig" "$ANAX_API/node/userinput")
   check_api_result "201" "$RES"
 
 fi

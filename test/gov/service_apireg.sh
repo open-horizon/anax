@@ -1,11 +1,20 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
+# Base directory for test resources (test/ directory - current working directory when script is called).
+E2EDEV_ROOT="$(pwd)"
+export E2EDEV_ROOT
+
 # $1 - results
 # $2 -
 
 TEST_DIFF_ORG=${TEST_DIFF_ORG:-1}
 
-function results {
+results() {
   if [ "$(echo "$1" | jq -r '.code')" != "ok" ]
   then
     echo -e "Error: $(echo "$1" | jq -r '.msg')"
@@ -13,14 +22,14 @@ function results {
   fi
 }
 
-if [ ${CERT_LOC} -eq "1" ]; then
-  CERT_VAR="--cacert /certs/css.crt"
+if [ "${CERT_LOC}" = "1" ]; then
+  CERT_VAR=(--cacert /certs/css.crt)
 else
-  CERT_VAR=""
+  CERT_VAR=(--silent)
 fi
 
 # check if the hub is all-in-1 management hub or not
-if [[ ${EXCH_APP_HOST} == *"://exchange-api:"* ]]; then
+if [[ ${EXCH_APP_HOST} = *"://127.0.0.1:"* ]]; then
   export REMOTE_HUB=0
 else
   export REMOTE_HUB=1
@@ -41,8 +50,7 @@ export CPU_IMAGE_TAG="${DOCKER_CPU_TAG}"
 export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
 
 # Register services via the hzn dev exchange commands
-./hzn_dev_services.sh ${EXCH_URL} ${E2EDEV_ADMIN_AUTH} 0
-if [ $? -ne 0 ]
+if ! ./gov/hzn_dev_services.sh "${EXCH_URL}" ${E2EDEV_ADMIN_AUTH} 0
 then
     echo -e "hzn service and pattern registration with hzn dev failed."
     exit 1
@@ -51,24 +59,21 @@ fi
 KEY_TEST_DIR="/tmp/keytest"
 mkdir -p $KEY_TEST_DIR
 
-cd $KEY_TEST_DIR
-ls *.key &> /dev/null
-if [ $? -eq 0 ]
+cd $KEY_TEST_DIR || { echo "Error: service_apireg.sh - ln ${LINENO} - Failure to change directories"; exit 1; }
+if ls ./*.key > /dev/null 2>&1
 then
     echo -e "Using existing key"
 else
   echo -e "Generate new signing keys:"
-  hzn key create -l 4096 e2edev@somecomp.com e2edev@gmail.com -d .
-  if [ $? -ne 0 ]
+  if ! hzn key create -l 4096 e2edev@somecomp.com e2edev@gmail.com -d .
   then
     echo -e "hzn key create failed."
     exit 2
   fi
 fi
 
-
 # test service amd64
-read -d '' sdef <<EOF
+sdef=$(cat <<EOF
 {
   "label":"Test service",
   "description":"Test service",
@@ -83,13 +88,14 @@ read -d '' sdef <<EOF
   "deploymentSignature":""
 }
 EOF
+)
 echo -e "Register amd64 test service:"
 
-  RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR -H "Content-Type: application/json" -H "Accept: application/json" -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" -H "Content-Type: application/json" -H "Accept: application/json" -u "$E2EDEV_ADMIN_AUTH" --data "$sdef" "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
 results "$RES"
 
 # test service arm64
-read -d '' sdef <<EOF
+sdef=$(cat <<EOF
 {
   "label":"Test service",
   "description":"Test service",
@@ -104,14 +110,15 @@ read -d '' sdef <<EOF
   "deploymentSignature":""
 }
 EOF
+)
 echo -e "Register arm64 test service:"
 
-  RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR -H "Content-Type: application/json" -H "Accept: application/json" -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" -H "Content-Type: application/json" -H "Accept: application/json" -u "$E2EDEV_ADMIN_AUTH" --data "$sdef" "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
 
 results "$RES"
 
 # test service arm
-read -d '' sdef <<EOF
+sdef=$(cat <<EOF
 {
   "label":"Test service",
   "description":"Test service",
@@ -126,14 +133,15 @@ read -d '' sdef <<EOF
   "deploymentSignature":""
 }
 EOF
+)
 echo -e "Register arm test service:"
 
-  RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR -H "Content-Type: application/json" -H "Accept: application/json" -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" -H "Content-Type: application/json" -H "Accept: application/json" -u "$E2EDEV_ADMIN_AUTH" --data "$sdef" "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
 
 results "$RES"
 
 # test service ppc64le
-read -d '' sdef <<EOF
+sdef=$(cat <<EOF
 {
   "label":"Test service",
   "description":"Test service",
@@ -148,14 +156,15 @@ read -d '' sdef <<EOF
   "deploymentSignature":""
 }
 EOF
+)
 echo -e "Register ppc64le test service:"
 
-  RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR -H "Content-Type: application/json" -H "Accept: application/json" -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" -H "Content-Type: application/json" -H "Accept: application/json" -u "$E2EDEV_ADMIN_AUTH" --data "$sdef" "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
 
 # Helm service
 # VERS="1.0.0"
 # echo -e "Register Helm service $VERS:"
-# hzn exchange service publish -I -u root/root:${EXCH_ROOTPW} -o IBM -f /root/helm/hello/external/horizon/service.definition.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
+# hzn exchange service publish -I -u root/root:${EXCH_ROOTPW} -o IBM -f "${E2EDEV_ROOT}"/docker/fs/helm/hello/external/horizon/service.definition.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 # if [ $? -ne 0 ]
 # then
 #     echo -e "hzn exchange service publish failed for Helm service."
@@ -163,23 +172,22 @@ echo -e "Register ppc64le test service:"
 # fi
 
 if [ "${NOVAULT}" != "1" ]; then
-  CPU_FILE_IBM="/root/service_defs/IBM/service-cpu_1.2.2_secrets.json"
-  CPU_FILE_E2EDEV="/root/service_defs/e2edev@somecomp.com/service-cpu_1.0_secrets.json"
+  CPU_FILE_IBM="${E2EDEV_ROOT}/gov/service_defs/IBM/service-cpu_1.2.2_secrets.json"
+  CPU_FILE_E2EDEV="${E2EDEV_ROOT}/gov/service_defs/e2edev@somecomp.com/service-cpu_1.0_secrets.json"
 
 else
-  CPU_FILE_IBM="/root/service_defs/IBM/service-cpu_1.2.2.json"
-  CPU_FILE_E2EDEV="/root/service_defs/e2edev@somecomp.com/service-cpu_1.0.json"
+  CPU_FILE_IBM="${E2EDEV_ROOT}/gov/service_defs/IBM/service-cpu_1.2.2.json"
+  CPU_FILE_E2EDEV="${E2EDEV_ROOT}/gov/service_defs/e2edev@somecomp.com/service-cpu_1.0.json"
 
 fi
 
 # IBM cpu service - needed by the hzn dev tests, netspeed, and the location top level service as a 3rd level dependency.
 export VERS="1.2.2"
 
-cat ${CPU_FILE_IBM} | envsubst > $KEY_TEST_DIR/svc_cpu.json
+cat "${CPU_FILE_IBM}" | envsubst > $KEY_TEST_DIR/svc_cpu.json
 
 echo -e "Register IBM/cpu service $VERS:"
-hzn exchange service publish -I -u $IBM_ADMIN_AUTH -o IBM -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
-if [ $? -ne 0 ]
+if ! hzn exchange service publish -I -u $IBM_ADMIN_AUTH -o IBM -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 then
     echo -e "hzn exchange service publish failed for IBM/cpu."
     exit 2
@@ -188,11 +196,10 @@ fi
 # e2edev@somecomp.com cpu service - needed by the e2edev@somecomp.com/netspeed
 export VERS="1.0"
 
-cat ${CPU_FILE_E2EDEV} | envsubst > $KEY_TEST_DIR/svc_cpu.json
+cat "${CPU_FILE_E2EDEV}" | envsubst > $KEY_TEST_DIR/svc_cpu.json
 
 echo -e "Register e2edev@somecomp.com/cpu service $VERS:"
-hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
-if [ $? -ne 0 ]
+if ! hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 then
     echo -e "hzn exchange service publish failed for e2edev@somecomp.com/cpu."
     exit 2
@@ -200,7 +207,7 @@ fi
 
 # A no-op network service used by the netspeed service as a dependency.
 VERS="1.5.0"
-read -d '' sdef <<EOF
+sdef=$(cat <<EOF
 {
   "label":"Network for ${ARCH}",
   "description":"Network service",
@@ -215,21 +222,21 @@ read -d '' sdef <<EOF
   "deploymentSignature":""
 }
 EOF
+)
 echo -e "Register IBM/network service $VERS:"
 
-  RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" --data @- "${EXCH_URL}/orgs/IBM/services" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" --data "$sdef" "${EXCH_URL}/orgs/IBM/services" | jq -r '.')
 
 results "$RES"
 
 echo -e "Register e2edev@somecomp.com/network service $VERS:"
 
-  RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" --data "$sdef" "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
 
 results "$RES"
 
-
 VERS="1.5.0"
-read -d '' sdef <<EOF
+sdef=$(cat <<EOF
 {
   "label":"Network for ${ARCH}",
   "description":"Network service",
@@ -244,18 +251,18 @@ read -d '' sdef <<EOF
   "deploymentSignature":""
 }
 EOF
+)
 echo -e "Register IBM/network service $VERS:"
 
-  RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" --data @- "${EXCH_URL}/orgs/IBM/services" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" --data "$sdef" "${EXCH_URL}/orgs/IBM/services" | jq -r '.')
 
 results "$RES"
 
 echo -e "Register e2edev@somecomp.com/network service $VERS:"
 
-  RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" --data "$sdef" "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
 
 results "$RES"
-
 
 # GPS service
 VERS="2.0.3"
@@ -289,8 +296,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_gps.json
 }
 EOF
 echo -e "Register GPS service $VERS"
-hzn exchange service publish -I -u $IBM_ADMIN_AUTH  -o IBM -f $KEY_TEST_DIR/svc_gps.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
-if [ $? -ne 0 ]
+if ! hzn exchange service publish -I -u $IBM_ADMIN_AUTH  -o IBM -f $KEY_TEST_DIR/svc_gps.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 then
     echo -e "hzn exchange service publish failed for GPS."
     exit 2
@@ -327,8 +333,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_gps2.json
 }
 EOF
 echo -e "Register GPS service $VERS:"
-hzn exchange service publish -I -u $IBM_ADMIN_AUTH -o IBM -f $KEY_TEST_DIR/svc_gps2.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
-if [ $? -ne 0 ]
+if ! hzn exchange service publish -I -u $IBM_ADMIN_AUTH -o IBM -f $KEY_TEST_DIR/svc_gps2.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 then
     echo -e "hzn exchange service publish failed for GPS."
     exit 2
@@ -374,8 +379,7 @@ if [[ $TEST_DIFF_ORG -eq 1 ]]; then
     sed -i  's/"public":false/"public":true/g' $KEY_TEST_DIR/svc_locgps.json
 fi
 echo -e "Register GPS Loc service $VERS:"
-hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_locgps.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
-if [ $? -ne 0 ]
+if ! hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_locgps.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 then
     echo -e "hzn exchange service publish failed for LocGPS."
     exit 2
@@ -422,13 +426,11 @@ if [[ $TEST_DIFF_ORG -eq 1 ]]; then
     sed -i  's/"public":false/"public":true/g' $KEY_TEST_DIR/svc_locgps2.json
 fi
 echo -e "Register GPS Loc service $VERS:"
-hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_locgps2.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
-if [ $? -ne 0 ]
+if ! hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_locgps2.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 then
     echo -e "hzn exchange service publish failed for LocGPS."
     exit 2
 fi
-
 
 # ============================= Top Level services here =============================
 
@@ -439,32 +441,30 @@ fi
 # register version 2.3.0 for execution purposes
 
 if [ "${NOVAULT}" != "1" ]; then
-  NS_FILE_IBM="/root/service_defs/IBM/netspeed_2.3.0_secrets.json"
-  NS_FILE_E2EDEV="/root/service_defs/e2edev@somecomp.com/netspeed_2.3.0_secrets.json"
+  NS_FILE_IBM="${E2EDEV_ROOT}/gov/service_defs/IBM/netspeed_2.3.0_secrets.json"
+  NS_FILE_E2EDEV="${E2EDEV_ROOT}/gov/service_defs/e2edev@somecomp.com/netspeed_2.3.0_secrets.json"
 
 else
-  NS_FILE_IBM="/root/service_defs/IBM/netspeed_2.3.0.json"
-  NS_FILE_E2EDEV="/root/service_defs/e2edev@somecomp.com/netspeed_2.3.0.json"
+  NS_FILE_IBM="${E2EDEV_ROOT}/gov/service_defs/IBM/netspeed_2.3.0.json"
+  NS_FILE_E2EDEV="${E2EDEV_ROOT}/gov/service_defs/e2edev@somecomp.com/netspeed_2.3.0.json"
 
 fi
 
 export VERS="2.3.0"
 
-cat ${NS_FILE_IBM} | envsubst > $KEY_TEST_DIR/svc_netspeed.json
+cat "${NS_FILE_IBM}" | envsubst > $KEY_TEST_DIR/svc_netspeed.json
 
 echo -e "Register IBM/netspeed service $VERS:"
-hzn exchange service publish -I -u $IBM_ADMIN_AUTH -o IBM -f $KEY_TEST_DIR/svc_netspeed.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
-if [ $? -ne 0 ]
+if ! hzn exchange service publish -I -u $IBM_ADMIN_AUTH -o IBM -f $KEY_TEST_DIR/svc_netspeed.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 then
     echo -e "hzn exchange service publish failed for IBM/netspeed."
     exit 2
 fi
 
-cat ${NS_FILE_E2EDEV} | envsubst > $KEY_TEST_DIR/svc_netspeed.json
+cat "${NS_FILE_E2EDEV}" | envsubst > $KEY_TEST_DIR/svc_netspeed.json
 
 echo -e "Register e2edev@somecomp.com/netspeed service $VERS:"
-hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_netspeed.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
-if [ $? -ne 0 ]
+if ! hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_netspeed.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 then
     echo -e "hzn exchange service publish failed for e2edev@somecomp.com/netspeed."
     exit 2
@@ -501,13 +501,11 @@ if [[ $TEST_DIFF_ORG -eq 1 ]]; then
 fi
 
 echo -e "Register GPSTest service $VERS:"
-hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_gpstest.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
-if [ $? -ne 0 ]
+if ! hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_gpstest.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 then
     echo -e "hzn exchange service publish failed for GPSTest."
     exit 2
 fi
-
 
 # Location definition
 VERS="2.0.6"
@@ -540,8 +538,7 @@ if [[ $TEST_DIFF_ORG -eq 1 ]]; then
     sed -i  's/"public":false/"public":true/g' $KEY_TEST_DIR/svc_location.json
 fi
 echo -e "Register service based location $VERS:"
-hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_location.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
-if [ $? -ne 0 ]
+if ! hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_location.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 then
     echo -e "hzn exchange service publish failed for Location."
     exit 2
@@ -577,8 +574,7 @@ if [[ $TEST_DIFF_ORG -eq 1 ]]; then
     sed -i  's/"public":false/"public":true/g' $KEY_TEST_DIR/svc_location2.json
 fi
 echo -e "Register service based location $VERS:"
-hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_location2.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
-if [ $? -ne 0 ]
+if ! hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_location2.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 then
     echo -e "hzn exchange service publish failed for Location."
     exit 2
@@ -622,8 +618,7 @@ if [[ $TEST_DIFF_ORG -eq 1 ]]; then
     sed -i  's/"public":false/"public":true/g' $KEY_TEST_DIR/svc_weather.json
 fi
 echo -e "Register service based PWS $VERS:"
-hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_weather.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
-if [ $? -ne 0 ]
+if ! hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_weather.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 then
     echo -e "hzn exchange service publish failed for PWS."
     exit 2
@@ -659,15 +654,14 @@ cat <<EOF >$KEY_TEST_DIR/svc_k8s1.json
       }
   ],
   "clusterDeployment": {
-    "operatorYamlArchive": "/root/input_files/k8s_deploy/topservice-operator/topservice-operator.tar.gz"
+    "operatorYamlArchive": "${E2EDEV_ROOT}/gov/input_files/k8s_deploy/topservice-operator/topservice-operator.tar.gz"
    },
   "clusterDeploymentSignature": ""
 }
 EOF
 
 echo -e "Register k8s-service1 $VERS:"
-hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_k8s1.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
-if [ $? -ne 0 ]
+if ! hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_k8s1.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 then
     echo -e "hzn exchange service publish failed for k8s-service1."
     exit 2
@@ -702,15 +696,14 @@ cat <<EOF >$KEY_TEST_DIR/svc_k8s_embedded_ns.json
       }
   ],
   "clusterDeployment": {
-    "operatorYamlArchive": "/root/input_files/k8s_deploy/topservice-operator-with-embedded-ns/topservice-operator-with-embedded-ns.tar.gz"
+    "operatorYamlArchive": "${E2EDEV_ROOT}/gov/input_files/k8s_deploy/topservice-operator-with-embedded-ns/topservice-operator-with-embedded-ns.tar.gz"
    },
   "clusterDeploymentSignature": ""
 }
 EOF
 
 echo -e "Register k8s-service-embedded-ns $VERS:"
-hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_k8s_embedded_ns.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
-if [ $? -ne 0 ]
+if ! hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_k8s_embedded_ns.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 then
     echo -e "hzn exchange service publish failed for k8s-service-embedded-ns."
     exit 2
@@ -745,7 +738,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_k8s_secret.json
       }
   ],
   "clusterDeployment": {
-    "operatorYamlArchive": "/root/input_files/k8s_deploy/k8s-secret-operator/k8s-secret-operator.tar.gz",
+    "operatorYamlArchive": "${E2EDEV_ROOT}/gov/input_files/k8s_deploy/k8s-secret-operator/k8s-secret-operator.tar.gz",
     "secrets": {
           "secret1": {"description": "Secret 1 for cluster hello-secret."},
           "secret2": {
@@ -759,8 +752,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_k8s_secret.json
 EOF
 
 echo -e "Register k8s-hello-secret $VERS:"
-hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_k8s_secret.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
-if [ $? -ne 0 ]
+if ! hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_k8s_secret.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 then
     echo -e "hzn exchange service publish failed for k8s-hello-secret."
     exit 2
@@ -796,26 +788,22 @@ cat <<EOF >$KEY_TEST_DIR/svc_k8s_mms.json
     }
   ],
   "clusterDeployment": {
-    "operatorYamlArchive": "/root/input_files/k8s_deploy/k8s-mms-operator/k8s-mms-operator.tar.gz"
+    "operatorYamlArchive": "${E2EDEV_ROOT}/gov/input_files/k8s_deploy/k8s-mms-operator/k8s-mms-operator.tar.gz"
   },
   "clusterDeploymentSignature": ""
 }
 EOF
 
 echo -e "Register k8s-hello-mms $VERS:"
-hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_k8s_mms.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
-if [ $? -ne 0 ]
+if ! hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_k8s_mms.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 then
     echo -e "hzn exchange service publish failed for k8s-hello-mms."
     exit 2
 fi
 
-
 echo -e "Listing services:"
-hzn exchange service list -o e2edev@somecomp.com
-hzn exchange service list -o IBM
-
-
+hzn exchange service list -u "$E2EDEV_ADMIN_AUTH" -o e2edev@somecomp.com
+hzn exchange service list -u "$IBM_ADMIN_AUTH" -o IBM
 
 # ======================= Patterns that use top level services ======================
 # sns pattern
@@ -830,20 +818,20 @@ fi
 export VERS="2.3.0"
 
 if [ "${NOVAULT}" != "1" ]; then
-  NS_PATTERN="/root/patterns/e2edev@somecomp.com/netspeed_secrets.json"
+  NS_PATTERN="${E2EDEV_ROOT}/gov/patterns/e2edev@somecomp.com/netspeed_secrets.json"
 
 else
-  NS_PATTERN="/root/patterns/e2edev@somecomp.com/netspeed.json"
+  NS_PATTERN="${E2EDEV_ROOT}/gov/patterns/e2edev@somecomp.com/netspeed.json"
 
 fi
 
 export VERS="2.3.0"
 
-cat ${NS_PATTERN} | envsubst > $KEY_TEST_DIR/pattern_netspeed.json
+cat "${NS_PATTERN}" | envsubst > $KEY_TEST_DIR/pattern_netspeed.json
 
 echo -e "Register sns (service based netspeed) pattern $VERS:"
 
-RES=$(cat $KEY_TEST_DIR/pattern_netspeed.json | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sns" | jq -r '.')
+RES=$(cat $KEY_TEST_DIR/pattern_netspeed.json | curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sns" | jq -r '.')
 
 results "$RES"
 
@@ -857,7 +845,7 @@ else
 fi
 
 VERS="1.0.0"
-read -d '' sdef <<EOF
+sdef=$(cat <<EOF
 {
   "label": "GPS Test",
   "description": "a GPS Test pattern",
@@ -890,9 +878,10 @@ read -d '' sdef <<EOF
   ]
 }
 EOF
+)
 echo -e "Register gps service pattern $VERS:"
 
-  RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sgps" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data "$sdef" "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sgps" | jq -r '.')
 
 results "$RES"
 
@@ -906,7 +895,7 @@ results "$RES"
 # fi
 
 # VERS="1.0.0"
-# read -d '' sdef <<EOF
+# read -dr '' sdef <<EOF
 # {
 #   "label": "Helm Test",
 #   "description": "a Helm Test pattern",
@@ -941,11 +930,11 @@ results "$RES"
 # EOF
 # echo -e "Register Helm service pattern $VERS:"
 
-#   RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/shelm" | jq -r '.')
+#   RES=$(echo "$sdef" | curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/shelm" | jq -r '.')
 
 # results "$RES"
 
-if [ "${NOHZNDEV}" == "1" ] && [ "${NOHELLO}" == "1" ] && [ "${TEST_PATTERNS}" != "sall" ] && [ "${TEST_PATTERNS}" != "susehello" ]; then
+if [ "${NOHZNDEV}" == "1" ] && [ "${NOHELLO}" = "1" ] && [ "${TEST_PATTERNS}" != "sall" ] && [ "${TEST_PATTERNS}" != "susehello" ]; then
     echo -e "Skipping use hello pattern creation"
 else
 
@@ -959,7 +948,7 @@ else
 fi
 
 VERS="1.0.0"
-read -d '' sdef <<EOF
+sdef=$(cat <<EOF
 {
   "label": "UseHello",
   "description": "Multi-dependency Service pattern",
@@ -992,9 +981,10 @@ read -d '' sdef <<EOF
   ]
 }
 EOF
+)
 echo -e "Register usehello service pattern $VERS:"
 
-  RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/susehello" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data "$sdef" "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/susehello" | jq -r '.')
 
 results "$RES"
 
@@ -1020,18 +1010,18 @@ export LOCVERS1="2.0.6"
 export LOCVERS2="2.0.7"
 
 if [ "${NOVAULT}" != "1" ]; then
-  SLOC_PATTERN="/root/patterns/e2edev@somecomp.com/sloc_secrets.json"
+  SLOC_PATTERN="${E2EDEV_ROOT}/gov/patterns/e2edev@somecomp.com/sloc_secrets.json"
 else
-  SLOC_PATTERN="/root/patterns/e2edev@somecomp.com/sloc.json"
+  SLOC_PATTERN="${E2EDEV_ROOT}/gov/patterns/e2edev@somecomp.com/sloc.json"
 fi
 
-cat $SLOC_PATTERN | envsubst > $KEY_TEST_DIR/pattern_sloc.json
+cat "$SLOC_PATTERN" | envsubst > $KEY_TEST_DIR/pattern_sloc.json
 
 sdef=$(cat $KEY_TEST_DIR/pattern_sloc.json)
 
 echo -e "Register location service pattern $VERS:"
 
-RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sloc" | jq -r '.')
+RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data "$sdef" "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sloc" | jq -r '.')
 
 results "$RES"
 
@@ -1044,7 +1034,7 @@ else
   CAS=600
 fi
 VERS="1.5.0"
-read -d '' sdef <<EOF
+sdef=$(cat <<EOF
 {
   "label": "Weather",
   "description": "a weather pattern",
@@ -1107,9 +1097,10 @@ read -d '' sdef <<EOF
   ]
 }
 EOF
+)
 echo -e "Register weather service pattern $VERS:"
 
-  RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/spws" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data "$sdef" "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/spws" | jq -r '.')
 
 results "$RES"
 
@@ -1122,7 +1113,7 @@ else
   CAS=600
 fi
 K8SVERS="1.0.0"
-read -d '' sdef <<EOF
+sdef=$(cat <<EOF
 {
   "label": "K8s",
   "description": "a k8s pattern",
@@ -1150,15 +1141,16 @@ read -d '' sdef <<EOF
   ]
 }
 EOF
+)
 echo -e "Register k8s service pattern $K8SVERS:"
 
-  RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sk8s" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data "$sdef" "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sk8s" | jq -r '.')
 
 results "$RES"
 
 # k8s pattern with cluster namespace
 K8SVERS="1.0.0"
-read -d '' sdef <<EOF
+sdef=$(cat <<EOF
 {
   "label": "K8s",
   "description": "a k8s pattern",
@@ -1187,15 +1179,16 @@ read -d '' sdef <<EOF
   ]
 }
 EOF
+)
 echo -e "Register k8s service pattern $K8SVERS:"
 
-  RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sk8s-with-cluster-ns" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data "$sdef" "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sk8s-with-cluster-ns" | jq -r '.')
 
 results "$RES"
 
 # k8s pattern with service has embedded ns
 K8SVERS="1.0.0"
-read -d '' sdef <<EOF
+sdef=$(cat <<EOF
 {
   "label": "K8s",
   "description": "k8s pattern with service that has embedded ns",
@@ -1223,32 +1216,29 @@ read -d '' sdef <<EOF
   ]
 }
 EOF
+)
 echo -e "Register k8s service with embedded namesapce pattern $K8SVERS:"
 
-  RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sk8s-with-embedded-ns" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data "$sdef" "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sk8s-with-embedded-ns" | jq -r '.')
 
 results "$RES"
 
 if [ "${NOVAULT}" != "1" ]; then
-  K8S_SECRET_PATTERN="/root/patterns/e2edev@somecomp.com/sk8s_secrets.json"
-  cat $K8S_SECRET_PATTERN | envsubst > $KEY_TEST_DIR/pattern_k8s_secret.json
+  K8S_SECRET_PATTERN="${E2EDEV_ROOT}/gov/patterns/e2edev@somecomp.com/sk8s_secrets.json"
+  cat "$K8S_SECRET_PATTERN" | envsubst > $KEY_TEST_DIR/pattern_k8s_secret.json
 
   sdef=$(cat $KEY_TEST_DIR/pattern_k8s_secret.json)
 
   echo -e "Register k8s service with secret pattern $K8SVERS:"
 
-  RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sk8s-with-secrets" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data "$sdef" "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sk8s-with-secrets" | jq -r '.')
 
   results "$RES"
-
-
-
 fi
-
 
 # the sall pattern
 
-if [ "${NOHZNDEV}" == "1" ] && [ "${NOHELLO}" == "1" ] && [ "${TEST_PATTERNS}" != "sall" ]; then
+if [ "${NOHZNDEV}" == "1" ] && [ "${NOHELLO}" = "1" ] && [ "${TEST_PATTERNS}" != "sall" ]; then
     echo -e "Skipping sall pattern creation"
 else
 
@@ -1278,24 +1268,24 @@ else
 fi
 
 if [ "${NOVAULT}" != "1" ]; then
-  SALL_PATTERN="/root/patterns/e2edev@somecomp.com/sall_secrets.json"
+  SALL_PATTERN="${E2EDEV_ROOT}/gov/patterns/e2edev@somecomp.com/sall_secrets.json"
 
 else
-  SALL_PATTERN="/root/patterns/e2edev@somecomp.com/sall.json"
+  SALL_PATTERN="${E2EDEV_ROOT}/gov/patterns/e2edev@somecomp.com/sall.json"
 
 fi
 
-cat $SALL_PATTERN | envsubst > $KEY_TEST_DIR/pattern_sall.json
+cat "$SALL_PATTERN" | envsubst > $KEY_TEST_DIR/pattern_sall.json
 
 msdef=$(cat $KEY_TEST_DIR/pattern_sall.json)
 
 if [[ $TEST_DIFF_ORG -eq 0 ]]; then
-  msdef=$(echo $msdef |jq 'del(.services[] | select(.serviceUrl == "https://bluehorizon.network/services/netspeed") | select(.serviceOrgid == "e2edev@somecomp.com"))')
+  msdef=$(echo "$msdef" |jq 'del(.services[] | select(.serviceUrl == "https://bluehorizon.network/services/netspeed") | select(.serviceOrgid == "e2edev@somecomp.com"))')
 fi
 
 echo -e "Register service based all pattern:"
 
-  RES=$(echo $msdef | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sall" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data "$msdef" "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sall" | jq -r '.')
 
 results "$RES"
 
@@ -1305,39 +1295,39 @@ fi
 
 # netspeed policy
 if [ "${NOVAULT}" != "1" ]; then
-  NS_DP="/root/deployment_policies/userdev/netspeed_secrets.json"
+  NS_DP="${E2EDEV_ROOT}/gov/deployment_policies/userdev/netspeed_secrets.json"
 
 else
-  NS_DP="/root/deployment_policies/userdev/netspeed.json"
+  NS_DP="${E2EDEV_ROOT}/gov/deployment_policies/userdev/netspeed.json"
 
 fi
 
-cat ${NS_DP} | envsubst > $KEY_TEST_DIR/policy_netspeed.json
+cat "${NS_DP}" | envsubst > $KEY_TEST_DIR/policy_netspeed.json
 
 echo -e "Register business policy for netspeed:"
 
-RES=$(cat $KEY_TEST_DIR/policy_netspeed.json | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_netspeed" | jq -r '.')
+RES=$(cat $KEY_TEST_DIR/policy_netspeed.json | curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_netspeed" | jq -r '.')
 
 results "$RES"
 
 # location policy 
 if [ "${NOVAULT}" != "1" ]; then
-  NS_DP="/root/deployment_policies/userdev/location_secrets.json"
+  NS_DP="${E2EDEV_ROOT}/gov/deployment_policies/userdev/location_secrets.json"
 
 else
-  NS_DP="/root/deployment_policies/userdev/location.json"
+  NS_DP="${E2EDEV_ROOT}/gov/deployment_policies/userdev/location.json"
 fi
 
-cat ${NS_DP} | envsubst > $KEY_TEST_DIR/policy_location.json
+cat "${NS_DP}" | envsubst > $KEY_TEST_DIR/policy_location.json
 
 echo -e "Register business policy for netspeed:"
 
-RES=$(cat $KEY_TEST_DIR/policy_location.json | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_location" | jq -r '.')
+RES=$(cat $KEY_TEST_DIR/policy_location.json | curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_location" | jq -r '.')
 
 results "$RES"
 
 # gpstest policy
-read -d '' bpgpstestdef <<EOF
+bpgpstestdef=$(cat <<EOF
 {
   "label": "business policy for gpstest",
   "description": "for gpstest",
@@ -1374,13 +1364,14 @@ read -d '' bpgpstestdef <<EOF
   ]
 }
 EOF
+)
 echo -e "Register business policy for gpstest:"
 
-  RES=$(echo "$bpgpstestdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_gpstest" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data "$bpgpstestdef" "${EXCH_URL}/orgs/userdev/business/policies/bp_gpstest" | jq -r '.')
 
 results "$RES"
 
-read -d '' bppwsdef <<EOF
+bppwsdef=$(cat <<EOF
 {
   "label": "business policy for personal weather station",
   "description": "for pws",
@@ -1464,17 +1455,17 @@ read -d '' bppwsdef <<EOF
   ]
 }
 EOF
+)
 echo -e "Register business policy for pws:"
 
-  RES=$(echo "$bppwsdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_pws" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data "$bppwsdef" "${EXCH_URL}/orgs/userdev/business/policies/bp_pws" | jq -r '.')
 
 results "$RES"
 
-if [ "${NOHZNDEV}" == "1" ] && [ "${NOHELLO}" == "1" ] && [ "${TEST_PATTERNS}" != "susehello" ]; then
+if [ "${NOHZNDEV}" == "1" ] && [ "${NOHELLO}" = "1" ] && [ "${TEST_PATTERNS}" != "susehello" ]; then
     echo -e "Skipping usehello policy creation"
 else
-
-read -d '' bphellodef <<EOF
+  bphellodef=$(cat <<EOF
 {
   "label": "business policy for usehello",
   "description": "for usehello",
@@ -1513,15 +1504,15 @@ read -d '' bphellodef <<EOF
   ]
 }
 EOF
-echo -e "Register business policy for usehelllo:"
+)
+  echo -e "Register business policy for usehelllo:"
 
-  RES=$(echo "$bphellodef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_usehello" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data "$bphellodef" "${EXCH_URL}/orgs/userdev/business/policies/bp_usehello" | jq -r '.')
 
-results "$RES"
-
+  results "$RES"
 fi
 
-read -d '' bpk8ssvc1def <<EOF
+bpk8ssvc1def=$(cat <<EOF
 {
   "label": "business policy for k8s-service1",
   "description": "for gpstest",
@@ -1556,13 +1547,14 @@ read -d '' bpk8ssvc1def <<EOF
   ]
 }
 EOF
+)
 echo -e "Register business policy bp_k8s for k8s-service1:"
 
-  RES=$(echo "$bpk8ssvc1def" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_k8s" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data "$bpk8ssvc1def" "${EXCH_URL}/orgs/userdev/business/policies/bp_k8s" | jq -r '.')
 
 results "$RES"
 
-read -d '' bpk8swithembeddednsdef <<EOF
+bpk8swithembeddednsdef=$(cat <<EOF
 {
   "label": "business policy for k8s-service-embedded-ns",
   "description": "for k8s embedded namespace test",
@@ -1597,14 +1589,15 @@ read -d '' bpk8swithembeddednsdef <<EOF
   ]
 }
 EOF
+)
 echo -e "Register business policy bp_k8s_embedded_ns for k8s-service-embedded-ns:"
 
-  RES=$(echo "$bpk8swithembeddednsdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_k8s_embedded_ns" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data "$bpk8swithembeddednsdef" "${EXCH_URL}/orgs/userdev/business/policies/bp_k8s_embedded_ns" | jq -r '.')
 
 results "$RES"
 
 if [ "${NOVAULT}" != "1" ]; then
-read -d '' bpk8ssvc1def <<EOF
+  bpk8ssvc1def=$(cat <<EOF
 {
   "label": "business policy for k8s-hello-secret",
   "description": "Deployment Policy for k8s-hello-secret using a secret",
@@ -1661,14 +1654,15 @@ read -d '' bpk8ssvc1def <<EOF
   ]
 }
 EOF
-echo -e "Register business policy bp_k8s_secret for k8s-hello-secret:"
+)
+  echo -e "Register business policy bp_k8s_secret for k8s-hello-secret:"
 
-  RES=$(echo "$bpk8ssvc1def" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_k8s_secret" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data "$bpk8ssvc1def" "${EXCH_URL}/orgs/userdev/business/policies/bp_k8s_secret" | jq -r '.')
 
-results "$RES"
+  results "$RES"
 fi
 
-read -d '' bpk8smmsdef <<EOF
+bpk8smmsdef=$(cat <<EOF
 {
   "label": "business policy for k8s-hello-mms",
   "description": "Deployment Policy for k8s-hello-mms",
@@ -1703,16 +1697,16 @@ read -d '' bpk8smmsdef <<EOF
   ]
 }
 EOF
+)
 
 echo -e "Register business policy bp_k8s_mms for k8s-hello-mms service:"
 
-  RES=$(echo "$bpk8smmsdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_k8s_mms" | jq -r '.')
+  RES=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data "$bpk8smmsdef" "${EXCH_URL}/orgs/userdev/business/policies/bp_k8s_mms" | jq -r '.')
 
 results "$RES"
 
-
 # ======================= Service Policies that use top level services ======================
-read -d '' nspoldef <<EOF
+nspoldef=$(cat <<EOF
 {
   "properties": [
       {
@@ -1729,13 +1723,14 @@ read -d '' nspoldef <<EOF
   ]
 }
 EOF
+)
 echo -e "Register service policy for netspeed:"
 
-  RES=$(echo "$nspoldef" | curl -sLX PUT $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services/bluehorizon.network-services-netspeed_2.3.0_${ARCH}/policy" | jq -r '.')
+  RES=$(curl -sLX PUT "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data "$nspoldef" "${EXCH_URL}/orgs/e2edev@somecomp.com/services/bluehorizon.network-services-netspeed_2.3.0_${ARCH}/policy" | jq -r '.')
 
 results "$RES"
 
-read -d '' gpstestpoldef <<EOF
+gpstestpoldef=$(cat <<EOF
 {
   "properties": [
       {
@@ -1752,13 +1747,14 @@ read -d '' gpstestpoldef <<EOF
   ]
 }
 EOF
+)
 echo -e "Register service policy for gpstest:"
 
-  RES=$(echo "$gpstestpoldef" | curl -sLX PUT $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services/bluehorizon.network-services-gpstest_1.0.0_${ARCH}/policy" | jq -r '.')
+  RES=$(curl -sLX PUT "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data "$gpstestpoldef" "${EXCH_URL}/orgs/e2edev@somecomp.com/services/bluehorizon.network-services-gpstest_1.0.0_${ARCH}/policy" | jq -r '.')
 
 results "$RES"
 
-read -d '' locpoldef <<EOF
+locpoldef=$(cat <<EOF
 {
   "properties": [
       {
@@ -1775,9 +1771,10 @@ read -d '' locpoldef <<EOF
   ]
 }
 EOF
+)
 echo -e "Register service policy for location:"
 
-  RES=$(echo "$locpoldef" | curl -sLX PUT $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services/bluehorizon.network-services-location_2.0.6_${ARCH}/policy" | jq -r '.')
+  RES=$(curl -sLX PUT "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data "$locpoldef" "${EXCH_URL}/orgs/e2edev@somecomp.com/services/bluehorizon.network-services-location_2.0.6_${ARCH}/policy" | jq -r '.')
 
 results "$RES"
 

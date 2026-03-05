@@ -1,7 +1,16 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 # bootstrap the exchange
 
+AGBOT_NAME=${AGBOT_NAME:-agbot1}
+AGBOT_ORG=${AGBOT_ORG:-IBM}
+AGBOT_TOKEN=${AGBOT_TOKEN:-Abcdefghijklmno1}
+AGBOT_AUTH=${AGBOT_AUTH:-"${AGBOT_ORG}/${AGBOT_NAME}:${AGBOT_TOKEN}"}
 TEST_DIFF_ORG=${TEST_DIFF_ORG:-1}
 
 EXCH_URL="${EXCH_APP_HOST}"
@@ -9,86 +18,92 @@ EXCH_URL="${EXCH_APP_HOST}"
 export ARCH=${ARCH}
 
 # the horizon var base for storing the keys. It is the default value for HZN_VAR_BASE.
-mkdir -p /var/horizon
-mkdir -p /var/horizon/.colonus
+# Create horizon directories (only if writable, skip in environments without permissions)
+if [ -w /var ] 2>/dev/null; then
+    mkdir -p /var/horizon/.colonus 2>/dev/null || echo "INFO: Skipping /var/horizon creation (not writable)"
+elif mkdir -p /var/horizon 2>/dev/null; then
+    mkdir -p /var/horizon/.colonus 2>/dev/null || echo "INFO: Skipping /var/horizon/.colonus creation (not writable)"
+else
+    echo "INFO: /var/horizon not writable, tests will use alternative paths if needed"
+fi
 
 docker version
 
 # update host file if needed
-if [ "$ICP_HOST_IP" != "0" ]
-then
-  echo "Updating hosts file."
-  HOST_NAME_ICP=`echo $EXCH_URL | awk -F/ '{print $3}' | sed 's/:.*//g'`
-  HOST_NAME=`echo $EXCH_URL | awk -F/ '{print $3}' | sed 's/:.*//g' | sed 's/\.icp*//g'`
-  echo "$ICP_HOST_IP $HOST_NAME_ICP $HOST_NAME"
-  echo "$ICP_HOST_IP $HOST_NAME_ICP $HOST_NAME" >> /etc/hosts
-fi
+#if [ "$ICP_HOST_IP" != "0" ]
+#then
+#  echo "Updating hosts file."
+#  HOST_NAME_ICP=$(echo $EXCH_URL | awk -F/ '{print $3}' | sed 's/:.*//g')
+#  HOST_NAME=$(echo $EXCH_URL | awk -F/ '{print $3}' | sed 's/:.*//g' | sed 's/\.icp*//g')
+#  echo "$ICP_HOST_IP $HOST_NAME_ICP $HOST_NAME"
+#  echo "$ICP_HOST_IP $HOST_NAME_ICP $HOST_NAME" >> /etc/hosts
+#fi
 
 #--cacert /certs/css.crt
-if [ ${CERT_LOC} -eq "1" ]; then
-  CERT_VAR="--cacert /certs/css.crt"
+if [ "${CERT_LOC}" = "1" ]; then
+  CERT_VAR=(--cacert /certs/css.crt)
 else
-  CERT_VAR=""
+  CERT_VAR=(--silent)
 fi
 
-  cd /root
+  #cd /root
 
   echo "Delete e2edev@somecomp.com..."
-  DL8ORG=$(curl -X DELETE $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"label":"E2EDev","description":"E2EDevTest","orgType":"IBM"}' "${EXCH_URL}/orgs/e2edev@somecomp.com" | jq -r '.msg')
+  DL8ORG=$(curl -sSL -X DELETE "${CERT_VAR[@]}" --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/$(echo -n "e2edev@somecomp.com" | jq -rRs @uri)" | jq -r '.code, .msg')
   echo "$DL8ORG"
 
   echo "Delete userdev organization..."
-  DL8UORG=$(curl -X DELETE $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"label":"UserDev","description":"UserDevTest"}' "${EXCH_URL}/orgs/userdev" | jq -r '.msg')
+  DL8UORG=$(curl -sSL -X DELETE "${CERT_VAR[@]}" --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/userdev" | jq -r '.code, .msg')
   echo "$DL8UORG"
 
   echo "Delete Customer1 organization..."
-  DL8C1ORG=$(curl -X DELETE $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"label":"Customer1","description":"The Customer1 org"}' "${EXCH_URL}/orgs/Customer1" | jq -r '.msg')
+  DL8C1ORG=$(curl -sSL -X DELETE "${CERT_VAR[@]}" --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/Customer1" | jq -r '.code, .msg')
   echo "$DL8C1ORG"
 
   echo "Delete Customer2 organization..."
-  DL8C2ORG=$(curl -X DELETE $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"label":"Customer2","description":"The Customer2 org"}' "${EXCH_URL}/orgs/Customer2" | jq -r '.msg')
+  DL8C2ORG=$(curl -sSL -X DELETE "${CERT_VAR[@]}" --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/Customer2" | jq -r '.code, .msg')
   echo "$DL8C2ORG"
 
   # Delete an IBM admin user in the exchange
-  echo "Delete an admin user for IBM org..."
-  DL8IBM=$(curl -X DELETE $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"password":"ibmadminpw","email":"ibmadmin%40ibm.com","admin":true}' "${EXCH_URL}/orgs/IBM/users/ibmadmin" | jq -r '.msg')
-  echo "$DL8IBM"
+ # echo "Delete an admin user for IBM org..."
+ # DL8IBM=$(curl -X DELETE "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"password":"ibmadminpw","email":"ibmadmin%40ibm.com","admin":true}' "${EXCH_URL}/orgs/IBM/users/ibmadmin" | jq -r '.code, .msg')
+ # echo "$DL8IBM"
 
-  # Delete agreement bot user in the exchange
-  echo "Delete Agbot user..."
-  DL8AGBOT=$(curl -X DELETE $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"password":"agbot1pw","email":"me%40gmail.com","admin":false}' "${EXCH_URL}/orgs/IBM/users/agbot1" | jq -r '.msg')
-  echo "$DL8AGBOT"
+  # Delete agreement bot in the exchange
+  # echo "Delete Agbot..."
+  # DL8AGBOT=$(curl -X DELETE "${CERT_VAR[@]}" --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/agbot1" | jq -r '.code, .msg')
+  # echo "$DL8AGBOT"
 
   echo "Delete network_1.5.0 ..."
-  DLHELM100=$(curl -X DELETE $CERT_VAR  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/bluehorizon.network-services-network_1.5.0_${ARCH}")
-  echo "$DL150"
+  DLNET150=$(curl -X DELETE "${CERT_VAR[@]}" --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/bluehorizon.network-services-network_1.5.0_${ARCH}" | jq -r '.code, .msg')
+  echo "$DLNET150"
 
   echo "Delete network2_1.5.0 ..."
-  DLHELM100=$(curl -X DELETE $CERT_VAR  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/bluehorizon.network-services-network2_1.5.0_${ARCH}")
-  echo "$DL2150"
+  DLNET2150=$(curl -X DELETE "${CERT_VAR[@]}" --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/bluehorizon.network-services-network2_1.5.0_${ARCH}" | jq -r '.code, .msg')
+  echo "$DLNET2150"
 
   echo "Delete helm-service_1.0.0 ..."
-  DLHELM100=$(curl -X DELETE $CERT_VAR  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/my.company.com-services-helm-service_1.0.0_${ARCH}")
+  DLHELM100=$(curl -X DELETE "${CERT_VAR[@]}" --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/my.company.com-services-helm-service_1.0.0_${ARCH}" | jq -r '.code, .msg')
   echo "$DLHELM100"
 
   echo "Delete Userdev Org Definition ..."
-  DL8USERDEVDEF=$(curl -X DELETE $CERT_VAR  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/${AGBOT_NAME}/businesspols/userdev_*_userdev")
+  DL8USERDEVDEF=$(curl -X DELETE "${CERT_VAR[@]}" --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/${AGBOT_NAME}/deployment/policies/userdev_*_userdev" | jq -r '.code, .msg')
   echo "$DL8USERDEVDEF"
 
   echo "Delete E2E Org Definition ..."
-  DL8E2EDEF=$(curl -X DELETE $CERT_VAR  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/${AGBOT_NAME}/businesspols/e2edev@somecomp.com_*_e2edev@somecomp.com")
+  DL8E2EDEF=$(curl -X DELETE "${CERT_VAR[@]}" --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/${AGBOT_NAME}/deployment/policies/e2edev@somecomp.com_*_e2edev@somecomp.com" | jq -r '.code, .msg')
   echo "$DL8E2EDEF"
 
   echo "Delete Pattern Definition E2E ..."
-  DL8PATTERNDEFE2E=$(curl -X DELETE $CERT_VAR  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/${AGBOT_NAME}/patterns/e2edev@somecomp.com_*_e2edev@somecomp.com")
+  DL8PATTERNDEFE2E=$(curl -X DELETE "${CERT_VAR[@]}" --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/${AGBOT_NAME}/deployment/patterns/e2edev@somecomp.com_*_e2edev@somecomp.com" | jq -r '.code, .msg')
   echo "$DL8PATTERNDEFE2E"
 
   echo "Delete Pattern Definition UserDev ..."
-  DL8PATTERNDUSERDEV=$(curl -X DELETE $CERT_VAR  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/${AGBOT_NAME}/patterns/e2edev@somecomp.com_*_userdev")
+  DL8PATTERNDUSERDEV=$(curl -X DELETE "${CERT_VAR[@]}" --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/${AGBOT_NAME}/deployment/patterns/e2edev@somecomp.com_*_userdev" | jq -r '.code, .msg')
   echo "$DL8PATTERNDUSERDEV"
 
   echo "Delete Pattern Definition SNS ..."
-  DL8PATTERNSNS=$(curl -X DELETE $CERT_VAR  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/${AGBOT_NAME}/patterns/e2edev@somecomp.com_sns_e2edev@somecomp.com")
+  DL8PATTERNSNS=$(curl -X DELETE "${CERT_VAR[@]}" --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/${AGBOT_NAME}/deployment/patterns/e2edev@somecomp.com_sns_e2edev@somecomp.com" | jq -r '.code, .msg')
   echo "$DL8PATTERNSNS"
 
   sleep 30
@@ -96,164 +111,171 @@ fi
 # Create the organizations we need
 echo "Creating e2edev@somecomp.com organization..."
 
-CR8EORG=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"label":"E2EDev","description":"E2EDevTest","orgType":"IBM"}' "${EXCH_URL}/orgs/e2edev@somecomp.com" | jq -r '.msg')
+CR8EORG=$(curl -sSL -X POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"label":"E2EDev","description":"E2EDevTest","orgType":"IBM"}' "${EXCH_URL}/orgs/e2edev@somecomp.com" | jq -r '.code, .msg')
 echo "$CR8EORG"
 
 echo "Creating userdev organization..."
-CR8UORG=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"label":"UserDev","description":"UserDevTest"}' "${EXCH_URL}/orgs/userdev" | jq -r '.msg')
+CR8UORG=$(curl -sSL -X POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"label":"UserDev","description":"UserDevTest"}' "${EXCH_URL}/orgs/userdev" | jq -r '.code, .msg')
 echo "$CR8UORG"
 
 echo "Creating Customer1 organization..."
-CR8C1ORG=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"label":"Customer1","description":"The Customer1 org"}' "${EXCH_URL}/orgs/Customer1" | jq -r '.msg')
+CR8C1ORG=$(curl -sSL -X POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"label":"Customer1","description":"The Customer1 org"}' "${EXCH_URL}/orgs/Customer1" | jq -r '.code, .msg')
 echo "$CR8C1ORG"
 
 echo "Creating Customer2 organization..."
-CR8C2ORG=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"label":"Customer2","description":"The Customer2 org"}' "${EXCH_URL}/orgs/Customer2" | jq -r '.msg')
+CR8C2ORG=$(curl -sSL -X POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"label":"Customer2","description":"The Customer2 org"}' "${EXCH_URL}/orgs/Customer2" | jq -r '.code, .msg')
 echo "$CR8C2ORG"
 
 # Register a hub admin user in the exchange
 echo "Creating a hub admin user in the exchange"
-CR8EADM=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d "{\"password\":\"${EXCHANGE_HUB_ADMIN_PW}\",\"email\":\"me%40gmail.com\",\"hubAdmin\":true}" "${EXCH_URL}/orgs/root/users/hubadmin" | jq -r '.msg')
+CR8EADM=$(curl -sSL -X POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d "{\"password\":\"${EXCHANGE_HUB_ADMIN_PW}\",\"email\":\"me%40gmail.com\",\"hubAdmin\":true}" "${EXCH_URL}/orgs/root/users/hubadmin" | jq -r '.code, .msg')
 echo "$CR8EADM"
 
 # Register an e2edev@somecomp.com admin user in the exchange
 echo "Creating an admin user for e2edev@somecomp.com organization..."
-CR8EADM=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"password":"e2edevadminpw","email":"me%40gmail.com","admin":true}' "${EXCH_URL}/orgs/e2edev@somecomp.com/users/e2edevadmin" | jq -r '.msg')
+CR8EADM=$(curl -sSL -X POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"password":"e2edevadminpw","email":"me%40gmail.com","admin":true}' "${EXCH_URL}/orgs/e2edev@somecomp.com/users/e2edevadmin" | jq -r '.code, .msg')
 echo "$CR8EADM"
 
 # Register an userdev admin user in the exchange
 echo "Creating an admin user for userdev organization..."
-CR8UADM=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"password":"userdevadminpw","email":"me%40gmail.com","admin":true}' "${EXCH_URL}/orgs/userdev/users/userdevadmin" | jq -r '.msg')
+CR8UADM=$(curl -sSL -X POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"password":"userdevadminpw","email":"me%40gmail.com","admin":true}' "${EXCH_URL}/orgs/userdev/users/userdevadmin" | jq -r '.code, .msg')
 echo "$CR8UADM"
 
 # Register an ICP user in the customer1 org
 echo "Creating an ICP admin user for Customer1 organization..."
-CR81ICPADM=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"password":"icpadminpw","email":"me%40gmail.com","admin":true}' "${EXCH_URL}/orgs/Customer1/users/icpadmin" | jq -r '.msg')
+CR81ICPADM=$(curl -sSL -X POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"password":"icpadminpw","email":"me%40gmail.com","admin":true}' "${EXCH_URL}/orgs/Customer1/users/icpadmin" | jq -r '.code, .msg')
 echo "$CR81ICPADM"
 
 # Register an ICP user in the customer2 org
 echo "Creating an ICP admin user for Customer2 organization..."
-CR82ICPADM=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"password":"icpadminpw","email":"me%40gmail.com","admin":true}' "${EXCH_URL}/orgs/Customer2/users/icpadmin" | jq -r '.msg')
+CR82ICPADM=$(curl -sSL -X POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"password":"icpadminpw","email":"me%40gmail.com","admin":true}' "${EXCH_URL}/orgs/Customer2/users/icpadmin" | jq -r '.code, .msg')
 echo "$CR82ICPADM"
 
 # Register an IBM admin user in the exchange
 echo "Creating an admin user for IBM org..."
-CR8IBM=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d "{\"password\":\"${EXCHANGE_SYSTEM_ADMIN_PW}\",\"email\":\"ibmadmin%40ibm.com\",\"admin\":true}" "${EXCH_URL}/orgs/IBM/users/ibmadmin" | jq -r '.msg')
+CR8IBM=$(curl -sSL -X POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d "{\"password\":\"${EXCHANGE_SYSTEM_ADMIN_PW}\",\"email\":\"ibmadmin%40ibm.com\",\"admin\":true}" "${EXCH_URL}/orgs/IBM/users/ibmadmin" | jq -r '.code, .msg')
 echo "$CR8IBM"
 
 # Register agreement bot user in the exchange
-echo "Creating Agbot user..."
-CR8AGBOT=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"password":"Abcdefghijklmno1","email":"me%40gmail.com","admin":false}' "${EXCH_URL}/orgs/IBM/users/agbot1" | jq -r '.msg')
-echo "$CR8AGBOT"
+# echo "Creating Agbot user..."
+# CR8AGBOT=$(curl -sSL -X POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"name":"agbot1","publicKey":"","token":"Abcdefghijklmno1",}' "${EXCH_URL}/orgs/IBM/agbot/agbot1" | jq -r '.code, .msg')
+# echo "$CR8AGBOT"
 
 # Register users in the exchange
 echo "Creating Anax user in e2edev@somecomp.com org..."
-CR8ANAX=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"password":"anax1pw","email":"me%40gmail.com","admin":false}' "${EXCH_URL}/orgs/e2edev@somecomp.com/users/anax1" | jq -r '.msg')
+CR8ANAX=$(curl -sSL -X POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"password":"anax1pw","email":"me%40gmail.com","admin":false}' "${EXCH_URL}/orgs/e2edev@somecomp.com/users/anax1" | jq -r '.code, .msg')
 echo "$CR8ANAX"
 
 echo "Creating Anax user in userdev org..."
-CR8UANAX=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"password":"useranax1pw","email":"me%40gmail.com","admin":false}' "${EXCH_URL}/orgs/userdev/users/useranax1" | jq -r '.msg')
+CR8UANAX=$(curl -sSL -X POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"password":"useranax1pw","email":"me%40gmail.com","admin":false}' "${EXCH_URL}/orgs/userdev/users/useranax1" | jq -r '.code, .msg')
 echo "$CR8UANAX"
 
-echo "Registering Anax device1..."
-REGANAX1=$(curl -sLX PUT $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "e2edev@somecomp.com/anax1:anax1pw" -d '{"token":"Abcdefghijklmno1","name":"anaxdev","registeredServices":[],"msgEndPoint":"","softwareVersions":{},"publicKey":"","pattern":"","arch":"${ARCH}"}' "${EXCH_URL}/orgs/e2edev@somecomp.com/nodes/an12345" | jq -r '.msg')
+echo "Registering Anax device 1..."
+REGANAX1=$(curl -sSL -X PUT "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "e2edev@somecomp.com/anax1:anax1pw" -d "{\"token\":\"Abcdefghijklmno1\",\"name\":\"anaxdev\",\"registeredServices\":[],\"msgEndPoint\":\"\",\"softwareVersions\":{},\"publicKey\":\"\",\"pattern\":\"\",\"arch\":\"${ARCH}\"}" "${EXCH_URL}/orgs/e2edev@somecomp.com/nodes/an12345" | jq -r '.code, .msg')
 echo "$REGANAX1"
 
 echo "Registering Anax device2..."
-REGANAX2=$(curl -sLX PUT $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "e2edev@somecomp.com/anax1:anax1pw" -d '{"token":"Abcdefghijklmno1","name":"anaxdev","registeredServices":[],"msgEndPoint":"","softwareVersions":{},"publicKey":"","pattern":"","arch":"${ARCH}"}' "${EXCH_URL}/orgs/e2edev@somecomp.com/nodes/an54321" | jq -r '.msg')
+REGANAX2=$(curl -sSL -X PUT "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "e2edev@somecomp.com/anax1:anax1pw" -d "{\"token\":\"Abcdefghijklmno1\",\"name\":\"anaxdev\",\"registeredServices\":[],\"msgEndPoint\":\"\",\"softwareVersions\":{},\"publicKey\":\"\",\"pattern\":\"\",\"arch\":\"${ARCH}\"}" "${EXCH_URL}/orgs/e2edev@somecomp.com/nodes/an54321" | jq -r '.code, .msg')
 echo "$REGANAX2"
 
 # register an anax devices for userdev in order to test the case where the pattern is from a different org than the device org.
-echo "Registering Anax device1 in userdev org..."
-REGUANAX1=$(curl -sLX PUT $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "userdev/useranax1:useranax1pw" -d '{"token":"Abcdefghijklmno1","name":"anaxdev","registeredServices":[],"msgEndPoint":"","softwareVersions":{},"publicKey":"","pattern":"","arch":"${ARCH}"}' "${EXCH_URL}/orgs/userdev/nodes/an12345" | jq -r '.msg')
+echo "Registering Anax device 1 in userdev org..."
+REGUANAX1=$(curl -sSL -X PUT "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "userdev/useranax1:useranax1pw" -d "{\"token\":\"Abcdefghijklmno1\",\"name\":\"anaxdev\",\"registeredServices\":[],\"msgEndPoint\":\"\",\"softwareVersions\":{},\"publicKey\":\"\",\"pattern\":\"\",\"arch\":\"${ARCH}\"}" "${EXCH_URL}/orgs/userdev/nodes/an12345" | jq -r '.code, .msg')
 echo "$REGUANAX1"
 
-echo "Registering Anax device2 in userdev org..."
-REGUANAX2=$(curl -sLX PUT $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "userdev/useranax1:useranax1pw" -d '{"token":"Abcdefghijklmno1","name":"anaxdev","registeredServices":[],"msgEndPoint":"","softwareVersions":{},"publicKey":"","pattern":"","arch":"${ARCH}"}' "${EXCH_URL}/orgs/userdev/nodes/an54321" | jq -r '.msg')
+echo "Registering Anax device 2 in userdev org..."
+REGUANAX2=$(curl -sSL -X PUT "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "userdev/useranax1:useranax1pw" -d "{\"token\":\"Abcdefghijklmno1\",\"name\":\"anaxdev\",\"registeredServices\":[],\"msgEndPoint\":\"\",\"softwareVersions\":{},\"publicKey\":\"\",\"pattern\":\"\",\"arch\":\"${ARCH}\"}" "${EXCH_URL}/orgs/userdev/nodes/an54321" | jq -r '.code, .msg')
 echo "$REGUANAX2"
 
-echo "Registering Anax device1 in customer org..."
-REGANAX1C=$(curl -sLX PUT $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "Customer1/icpadmin:icpadminpw" -d '{"token":"Abcdefghijklmno1","name":"anaxdev","registeredServices":[],"msgEndPoint":"","softwareVersions":{},"publicKey":"","pattern":"","arch":"${ARCH}"}' "${EXCH_URL}/orgs/Customer1/nodes/an12345" | jq -r '.msg')
+echo "Registering Anax device 1 in customer org..."
+REGANAX1C=$(curl -sSL -X PUT "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "Customer1/icpadmin:icpadminpw" -d "{\"token\":\"Abcdefghijklmno1\",\"name\":\"anaxdev\",\"registeredServices\":[],\"msgEndPoint\":\"\",\"softwareVersions\":{},\"publicKey\":\"\",\"pattern\":\"\",\"arch\":\"${ARCH}\"}" "${EXCH_URL}/orgs/Customer1/nodes/an12345" | jq -r '.code, .msg')
 echo "$REGANAX1C"
 
 DEVICE_NUM=6
-NUM_AGENTS=$((${MULTIAGENTS}+$DEVICE_NUM))
+MULTIAGENTS=${MULTIAGENTS:-0}
+if ! [[ "$MULTIAGENTS" =~ ^[0-9]+$ ]]; then
+    echo "Error: MULTIAGENTS must be a number, got: $MULTIAGENTS"
+    exit 255
+fi
+NUM_AGENTS=$(( MULTIAGENTS + DEVICE_NUM ))
 while [ ${DEVICE_NUM} -lt ${NUM_AGENTS} ]; do
-  echo "Registering Anax device${DEVICE_NUM}..."
-  REGANAXMUL=$(curl -sLX PUT $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "e2edev@somecomp.com/anax1:anax1pw" -d '{"token":"Abcdefghijklmno1","name":"anaxdev","registeredServices":[],"msgEndPoint":"","softwareVersions":{},"publicKey":"","pattern":"","arch":"${ARCH}"}' "${EXCH_URL}/orgs/e2edev@somecomp.com/nodes/anaxdevice${DEVICE_NUM}" | jq -r '.msg')
+  echo "Registering Anax device ${DEVICE_NUM}..."
+  REGANAXMUL=$(curl -sSL -X PUT "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "e2edev@somecomp.com/anax1:anax1pw" -d "{\"token\":\"Abcdefghijklmno1\",\"name\":\"anaxdev\",\"registeredServices\":[],\"msgEndPoint\":\"\",\"softwareVersions\":{},\"publicKey\":\"\",\"pattern\":\"\",\"arch\":\"${ARCH}\"}" "${EXCH_URL}/orgs/e2edev@somecomp.com/nodes/anaxdevice${DEVICE_NUM}" | jq -r '.code, .msg')
   echo "$REGANAXMUL"
-  echo "Registering Anax device${DEVICE_NUM} in userdev org..."
-  REGUANAXMULU=$(curl -sLX PUT $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "userdev/useranax1:useranax1pw" -d '{"token":"Abcdefghijklmno1","name":"anaxdev","registeredServices":[],"msgEndPoint":"","softwareVersions":{},"publicKey":"","pattern":"","arch":"${ARCH}"}' "${EXCH_URL}/orgs/userdev/nodes/anaxdevice${DEVICE_NUM}" | jq -r '.msg')
+  echo "Registering Anax device ${DEVICE_NUM} in userdev org..."
+  REGUANAXMULU=$(curl -sSL -X PUT "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "userdev/useranax1:useranax1pw" -d "{\"token\":\"Abcdefghijklmno1\",\"name\":\"anaxdev\",\"registeredServices\":[],\"msgEndPoint\":\"\",\"softwareVersions\":{},\"publicKey\":\"\",\"pattern\":\"\",\"arch\":\"${ARCH}\"}" "${EXCH_URL}/orgs/userdev/nodes/anaxdevice${DEVICE_NUM}" | jq -r '.code, .msg')
   echo "$REGUANAXMULU"
-  echo "Registering Anax device${DEVICE_NUM} in customer org..."
-  REGANAXMULC=$(curl -sLX PUT $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "Customer1/icpadmin:icpadminpw" -d '{"token":"Abcdefghijklmno1","name":"anaxdev","registeredServices":[],"msgEndPoint":"","softwareVersions":{},"publicKey":"","pattern":"","arch":"${ARCH}"}' "${EXCH_URL}/orgs/Customer1/nodes/anaxdevice${DEVICE_NUM}" | jq -r '.msg')
+  echo "Registering Anax device ${DEVICE_NUM} in customer org..."
+  REGANAXMULC=$(curl -sSL -X PUT "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "Customer1/icpadmin:icpadminpw" -d "{\"token\":\"Abcdefghijklmno1\",\"name\":\"anaxdev\",\"registeredServices\":[],\"msgEndPoint\":\"\",\"softwareVersions\":{},\"publicKey\":\"\",\"pattern\":\"\",\"arch\":\"${ARCH}\"}" "${EXCH_URL}/orgs/Customer1/nodes/anaxdevice${DEVICE_NUM}" | jq -r '.code, .msg')
   echo "$REGANAXMULC"
-  let DEVICE_NUM=DEVICE_NUM+1
+  DEVICE_NUM=$(( DEVICE_NUM + 1 ))
 done
 
-
-# Register agreement bot in the exchange
-if [ "$NOAGBOT" != "1" ] && [ "$TESTFAIL" != "1" ]
-then
-  AGBOT_AUTH="root/root:${EXCH_ROOTPW}"
-  ORG="IBM"
-
-  # register all patterns and business policies for e2edev@somecomp.com org to agbot1
-  REGAGBOTE2EDEV=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"patternOrgid":"e2edev@somecomp.com","pattern":"*", "nodeOrgid": "e2edev@somecomp.com"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/patterns" | jq -r '.msg')
-  echo "$REGAGBOTE2EDEV"
-
-  REGAGBOTE2EDEV=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"businessPolOrgid":"e2edev@somecomp.com","businessPol":"*", "nodeOrgid": "e2edev@somecomp.com"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/businesspols" | jq -r '.msg')
-  echo "$REGAGBOTE2EDEV"
-
-  # register all patterns and business policies for userdev org to agbot1
-  REGAGBOTUSERDEV=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"patternOrgid":"e2edev@somecomp.com","pattern":"*", "nodeOrgid": "userdev"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/patterns" | jq -r '.msg')
-  echo "$REGAGBOTUSERDEV"
-
-  REGAGBOTUSERDEV=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"businessPolOrgid":"userdev","businessPol":"*", "nodeOrgid": "userdev"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/businesspols" | jq -r '.msg')
-  echo "$REGAGBOTUSERDEV"
-
-  sleep 30
+# Create Orgs in CSS
+if [ -f ./gov/init_sync_service.sh ]; then
+    ./gov/init_sync_service.sh
+else
+    echo "Error: init_sync_service.sh not found"
+    exit 255
 fi
 
-
-# Create Orgs in CSS
- ./init_sync_service.sh
-
 # package resources
-./resource_package.sh
-if [ $? -ne 0 ]
+if ! ./gov/resource_package.sh
 then
   echo -e "Resource registration failure."
-  exit -1
+  exit 255
 fi
 
 # Start the API Key tests if it has been set
-if [ ${API_KEY} != "0" ]; then
+if [ "${API_KEY}" != "0" ]; then
   echo -e "Starting API Key test."
-  ./api_key.sh
-  if [ $? -ne 0 ]
+  if ! ./gov/api_key.sh
   then
     echo -e "API Key test failure."
-    exit -1
+    exit 255
   fi
 fi
 
 echo "Register services"
-./service_apireg.sh
-if [ $? -ne 0 ]
+if ! ./gov/service_apireg.sh
 then
   echo -e "Service registration failure."
-  exit -1
+  exit 255
 else
   echo "Register services SUCCESSFUL"
 fi
 
-# add just one specific pattern for agbot served patterns, just for testing.
+# Register agreement bot patterns and business policies in the exchange
+# This must happen AFTER patterns and business policies are created in the exchange
 if [ "$NOAGBOT" != "1" ] && [ "$TESTFAIL" != "1" ]
 then
-  AGBOT_AUTH="root/root:${EXCH_ROOTPW}"
-  ORG="IBM"
+  ORG="${AGBOT_ORG}"
+
+  echo "Registering agbot to manage patterns and business policies..."
+  echo "DEBUG: AGBOT_NAME=${AGBOT_NAME}"
+  echo "DEBUG: AGBOT_ORG=${AGBOT_ORG}"
+  echo "DEBUG: AGBOT_TOKEN=${AGBOT_TOKEN}"
+  echo "DEBUG: AGBOT_AUTH=${AGBOT_AUTH}"
+  echo "DEBUG: EXCH_URL=${EXCH_URL}"
+
+  # register all patterns and business policies for e2edev@somecomp.com org to agbot1
+  REGAGBOTE2EDEV=$(curl -sSL -X POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"patternOrgid":"e2edev@somecomp.com","pattern":"*", "nodeOrgid": "e2edev@somecomp.com"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/patterns" | jq -r '.code, .msg')
+  echo "$REGAGBOTE2EDEV"
+
+  REGAGBOTE2EDEV=$(curl -sSL -X POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"businessPolOrgid":"e2edev@somecomp.com","businessPol":"*", "nodeOrgid": "e2edev@somecomp.com"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/businesspols" | jq -r '.code, .msg')
+  echo "$REGAGBOTE2EDEV"
+
+  # register all patterns and business policies for userdev org to agbot1
+  REGAGBOTUSERDEV=$(curl -sSL -X POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"patternOrgid":"e2edev@somecomp.com","pattern":"*", "nodeOrgid": "userdev"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/patterns" | jq -r '.code, .msg')
+  echo "$REGAGBOTUSERDEV"
+
+  REGAGBOTUSERDEV=$(curl -sSL -X POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"businessPolOrgid":"userdev","businessPol":"*", "nodeOrgid": "userdev"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/businesspols" | jq -r '.code, .msg')
+  echo "$REGAGBOTUSERDEV"
+
+  # add just one specific pattern for agbot served patterns, just for testing.
   # keep one just for testing this api
-  REGAGBOTSNS=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"patternOrgid":"e2edev@somecomp.com","pattern":"sns"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/patterns" | jq -r '.msg')
+  REGAGBOTSNS=$(curl -sLX POST "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"patternOrgid":"e2edev@somecomp.com","pattern":"sns"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/deployment/patterns" | jq -r '.msg')
   echo "$REGAGBOTSNS"
+
+  sleep 30
 fi

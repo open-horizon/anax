@@ -1,80 +1,81 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 # tar up the raw resource files used in the test services.
 echo "Building resource packages."
 
 EXEC_DIR=$PWD
-cd /root/resources/private
+cd "${EXEC_DIR}/docker/fs/resources/private" || { echo "Error: resource_package.sh - ln 7 - Failure to change directories"; error 1; }
 
-RESOURCE_ORG1=e2edev@somecomp.com
-RESOURCE_ORG2=userdev
-RESOURCE_TYPE=model
+RESOURCE_ORG1="e2edev@somecomp.com"
+RESOURCE_ORG2="userdev"
+RESOURCE_TYPE="model"
 
 # For each directory in the resources folder, make zipped tarball of directory contents and then register the resources in the Cloud side sync service (CSS).
 for dir in */; do
 	# Remove the trailing slash from the directory name
 	justDirName=${dir%"/"}
 	echo "Making resource tarball for ${justDirName}"
-	cd $justDirName
+	cd "$justDirName" || { echo "Error: resource_package.sh - ln 18 - Failure to change directories"; error 1; }
 	# Find all the files in the directory, excluding the . directory and any gzipped tarball
 	# that might be there. This allows us to run the script over and over without causing damaged tarballs.
-	res=$(find . -not -name "*.tgz" -not -path ".")
-	tar -czvf $justDirName.tgz $res
+	# Use find with -print0 and xargs to handle filenames with spaces/newlines correctly
+	find . -not -name "*.tgz" -not -path "." -print0 | xargs -0 tar -czvf "$justDirName".tgz
 
 	echo "Installing resource package ${justDirName}.tgz."
 
 	if [ "${TEST_PATTERNS}" != "" ]
 	then
-		$EXEC_DIR/deploy_file.sh /root/resources/private/${dir}${justDirName}.tgz 1.0.0 ${RESOURCE_ORG1} ${RESOURCE_TYPE} none none none false
-		if [ $? -ne 0 ]
+		if ! "${EXEC_DIR}/gov/deploy_file.sh" "${EXEC_DIR}/docker/fs/resources/private/${dir}${justDirName}.tgz" 1.0.0 "${RESOURCE_ORG1}" "${RESOURCE_TYPE}" none none none false
 		then
-			exit -1
+			exit 255
 		fi
 
-		$EXEC_DIR/deploy_file.sh /root/resources/private/${dir}${justDirName}.tgz 1.0.0 ${RESOURCE_ORG2} ${RESOURCE_TYPE} none none none false
-		if [ $? -ne 0 ]
+		if ! "${EXEC_DIR}/gov/deploy_file.sh" "${EXEC_DIR}/docker/fs/resources/private/${dir}${justDirName}.tgz" 1.0.0 "${RESOURCE_ORG2}" "${RESOURCE_TYPE}" none none none false
 		then
-			exit -1
+			exit 255
 		fi
 	else
 		# Create policy files from templates by passing current ARCH to them
-		for in_file in /root/objects/*.policy
+		for in_file in "${EXEC_DIR}"/docker/fs/objects/*.policy
 		do
-			sed -i -e "s#__ARCH__#${ARCH}#g" $in_file
-			if [ $? -ne 0 ]
+			if ! sed -i -e "s#__ARCH__#${ARCH}#g" "$in_file"
 			then
-				exit -1
+				exit 255
 			fi
 		done
 
-		$EXEC_DIR/deploy_file.sh /root/resources/private/${dir}${justDirName}.tgz 1.0.0 ${RESOURCE_ORG1} ${RESOURCE_TYPE} none none "$(cat /root/objects/${justDirName}.policy)" false
-		if [ $? -ne 0 ]
+		if ! "${EXEC_DIR}/gov/deploy_file.sh" "${EXEC_DIR}/docker/fs/resources/private/${dir}${justDirName}.tgz" 1.0.0 "${RESOURCE_ORG1}" "${RESOURCE_TYPE}" none none "$(cat "${EXEC_DIR}/docker/fs/objects/${justDirName}".policy)" false
 		then
-			exit -1
+			exit 255
 		fi
 
-		$EXEC_DIR/deploy_file.sh /root/resources/private/${dir}${justDirName}.tgz 1.0.0 ${RESOURCE_ORG2} ${RESOURCE_TYPE} none none "$(cat /root/objects/${justDirName}.policy)" false
-		if [ $? -ne 0 ]
+		if ! "${EXEC_DIR}/gov/deploy_file.sh" "${EXEC_DIR}/docker/fs/resources/private/${dir}${justDirName}.tgz" 1.0.0 "${RESOURCE_ORG2}" "${RESOURCE_TYPE}" none none "$(cat "${EXEC_DIR}/docker/fs/objects/${justDirName}".policy)" false
 		then
-			exit -1
+			exit 255
 		fi
 	fi
 
-	cd ..
+	cd .. || exit
 done
 
 echo "Making resource tarball for public resource"
-cd /root/resources/public
+cd "${EXEC_DIR}/docker/fs/resources/public" || { echo "Error: resource_package.sh - ln 64 - Failure to change directories"; error 1; }
 RESOURCE_ORG=IBM
 RESOURCE_TYPE=public
 
-res=$(find . -not -name "*.tgz" -not -path ".")
-tar -czvf public.tgz $res
+# Use find with -print0 and xargs to handle filenames with spaces/newlines correctly
+find . -not -name "*.tgz" -not -path "." -print0 | xargs -0 tar -czvf public.tgz
 
 echo "Installing resource package public.tgz. in ${RESOURCE_ORG} org"
-ls /root/resources/public
-$EXEC_DIR/deploy_file.sh /root/resources/public/public.tgz 1.0.0 ${RESOURCE_ORG} ${RESOURCE_TYPE} none none none true
-if [ $? -ne 0 ]
+ls "${EXEC_DIR}/docker/fs/resources/public"
+if ! "${EXEC_DIR}/gov/deploy_file.sh" "${EXEC_DIR}/docker/fs/resources/public/public.tgz" 1.0.0 "${RESOURCE_ORG}" "${RESOURCE_TYPE}" none none none true
 then
-	exit -1
+	exit 255
 fi
+
+cd "${EXEC_DIR}" || { echo "Error: resource_package.sh - ln 78 - Failure to change directories"; error 1; }

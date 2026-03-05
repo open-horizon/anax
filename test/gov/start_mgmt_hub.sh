@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 PREFIX="All-in-one management hub deployment:"
 # the environment variables set by the Makefile are:
 #  EXCHANGE_ROOT_PW 
@@ -32,7 +37,6 @@ export AGBOT_AGREEMENT_BATCH_SIZE=1300
 export AGBOT_RETRY_LOOK_BACK_WINDOW=900
 export AGBOT_MMS_GARBAGE_COLLECTION_INTERVAL=20
 
-
 # CSS configuration
 export CSS_PERSISTENCE_PATH="/tmp/persist"
 export CSS_LOG_LEVEL="TRACE"
@@ -42,11 +46,8 @@ export CSS_TRACE_LEVEL="INFO"
 export CSS_TRACE_ROOT_PATH="/tmp/trace"
 export CSS_MONGO_AUTH_DB_NAME="admin"
 
-# vault configuration
-VAULT_LOG_LEVEL=debug
-
 # check if we need start the second agbot
-if [ "$MULTIAGBOT" == "1" ]; then
+if [ "$MULTIAGBOT" = "1" ]; then
     export START_SECOND_AGBOT=true
 else
     export START_SECOND_AGBOT=false
@@ -54,18 +55,16 @@ fi
 
 echo -e "${PREFIX} START_SECOND_AGBOT setting is ${START_SECOND_AGBOT}."
 
-cd /tmp
+cd /tmp || { echo "Error: start_mgmt_hub.sh - ln 57 - Failure to change directories."; exit 1; }
 rm -f deploy-mgmt-hub.sh
-wget https://raw.githubusercontent.com/open-horizon/devops/new-mongodb/mgmt-hub/deploy-mgmt-hub.sh
-if [ $? -ne 0 ]; then
+if ! wget https://raw.githubusercontent.com/open-horizon/devops/refs/heads/master/mgmt-hub/deploy-mgmt-hub.sh; then
   echo -e "${PREFIX} Failed to download deploy-mgmt-hub.sh file."
   exit 1
 fi
 chmod +x /tmp/deploy-mgmt-hub.sh
 
 # run the management hub deployment script
-sudo -sE /tmp/deploy-mgmt-hub.sh -A -E
-if [ $? -ne 0 ]; then
+if ! sudo -sE /tmp/deploy-mgmt-hub.sh -A -E; then
   echo -e "${PREFIX} Failed deploy."
   exit 1
 fi

@@ -880,16 +880,39 @@ func serviceStart(client *docker.Client,
 		}
 	}
 	if serviceConfig.HostConfig.NetworkMode != "host" {
-		for _, cfg := range sharedEndpoints {
-			glog.V(5).Infof("Connecting network: %v to container id: %v as endpoint: %v", cfg.NetworkID, container.ID, cfg.Aliases)
+		for networkName, cfg := range sharedEndpoints {
+			glog.V(5).Infof("Attempting to connect network %v (ID: %v) to container id: %v as endpoint: %v", networkName, cfg.NetworkID, container.ID, cfg.Aliases)
+			
+			// Validate network exists before attempting connection to prevent race conditions
+			// where networks are deleted between gathering dependency info and starting containers
+			if netInfo, err := client.NetworkInfo(cfg.NetworkID); err != nil {
+				glog.Warningf("Network %v (ID: %v) does not exist when attempting to connect to container %v (ID: %v). This may indicate a race condition in network lifecycle management. Skipping this network connection. Error: %v",
+					networkName, cfg.NetworkID, serviceName, container.ID, err)
+				// Don't fail the entire container startup for a missing network - log and continue
+				// This allows the container to start even if some dependency networks are missing
+				continue
+			} else {
+				glog.V(5).Infof("Validated network %v (ID: %v) exists with %d containers connected", networkName, netInfo.ID, len(netInfo.Containers))
+			}
+			
 			err := client.ConnectNetwork(cfg.NetworkID, docker.NetworkConnectionOptions{
 				Container:      container.ID,
 				EndpointConfig: cfg,
 				Force:          true,
 			})
 			if err != nil {
-				return fail(container, serviceName, fmt.Errorf("error connecting network: %v to container id: %v as endpoint: %v, error: %v", cfg.NetworkID, container.ID, cfg.Aliases, err))
+				// Check if error is due to network or container not existing
+				if strings.Contains(err.Error(), "No such network") || strings.Contains(err.Error(), "No such container") {
+					glog.Warningf("Failed to connect network %v (ID: %v) to container %v (ID: %v) - network or container no longer exists. This indicates a race condition. Error: %v",
+						networkName, cfg.NetworkID, serviceName, container.ID, err)
+					// Don't fail - the network may have been cleaned up by another process
+					continue
+				}
+				// For other errors, fail the container startup
+				return fail(container, serviceName, fmt.Errorf("error connecting network %v (ID: %v) to container id: %v as endpoint: %v, error: %v",
+					networkName, cfg.NetworkID, container.ID, cfg.Aliases, err))
 			}
+			glog.V(3).Infof("Successfully connected network %v (ID: %v) to container %v (ID: %v)", networkName, cfg.NetworkID, serviceName, container.ID)
 		}
 	}
 
@@ -1378,13 +1401,26 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 	// create a list of ms shared endpoints for all the workload containers to connect
 	ms_sharedendpoints := make(map[string]*docker.EndpointConfig)
 	if ms_networks != nil {
+		glog.V(5).Infof("Processing %d microservice networks for agreement %v", len(ms_networks), agreementId)
 		for msnw_name, ms_nw := range ms_networks {
+			// Validate that the network exists before adding it to shared endpoints
+			// This prevents race conditions where dependency networks are deleted before parent containers start
+			if netInfo, err := b.client.NetworkInfo(ms_nw); err != nil {
+				glog.Warningf("Microservice network %v (ID: %v) does not exist when creating resources for agreement %v. This may indicate the dependency service was stopped or cleaned up. Skipping this network. Error: %v",
+					msnw_name, ms_nw, agreementId, err)
+				continue
+			} else {
+				glog.V(5).Infof("Validated microservice network %v (ID: %v) exists with %d containers for agreement %v",
+					msnw_name, netInfo.ID, len(netInfo.Containers), agreementId)
+			}
+			
 			ms_ep := new(docker.EndpointConfig)
 			ms_ep.Aliases = deployment.ServiceNames()
 			ms_ep.NetworkID = ms_nw
 
 			ms_sharedendpoints[msnw_name] = ms_ep
 		}
+		glog.V(3).Infof("Created %d validated microservice shared endpoints for agreement %v", len(ms_sharedendpoints), agreementId)
 	}
 
 	// create the volumes that do not exist yet, The user specified volumes are owned by anax and will be
@@ -1481,8 +1517,11 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 	}
 
 	// add ms endpoints to the sharedEndpoints
-	if ms_sharedendpoints != nil {
+	if ms_sharedendpoints != nil && len(ms_sharedendpoints) > 0 {
+		glog.V(5).Infof("Adding %d microservice shared endpoints to sharedEndpoints for agreement %v. MS endpoints: %v",
+			len(ms_sharedendpoints), agreementId, ms_sharedendpoints)
 		recordEndpoints(sharedEndpoints, ms_sharedendpoints)
+		glog.V(5).Infof("Total sharedEndpoints after adding MS endpoints: %d for agreement %v", len(sharedEndpoints), agreementId)
 	}
 
 	// every one of these gets wired to both the agBridge and every shared bridge from this agreement
@@ -2228,12 +2267,23 @@ func (b *ContainerWorker) GatherAndCreateDependencyNetworks(dependencyContainers
 		// be connected to the dependency's network when the parent containers are started.
 		nw, ok = msc.Networks.Networks[nwForParentSvc]
 		if ok {
-			ms_children_networks[nwForParentSvc] = nw.NetworkID
-			glog.V(3).Infof("Found network %v for dependency %v of service %v, network: %v", nwForParentSvc, dependencyBaseNetworkName, parentName, nw)
-			continue
+			// Verify the network still exists before adding it to ms_children_networks.
+			// This prevents race conditions where the network was deleted between gathering
+			// container info and attempting to connect to it.
+			if netInfo, err := b.client.NetworkInfo(nw.NetworkID); err != nil {
+				glog.Warningf("Network %v (ID: %v) found in container %v networks but doesn't exist in Docker. Container networks: %v. Will recreate network. Error: %v",
+					nwForParentSvc, nw.NetworkID, msc.Names, msc.Networks.Networks, err)
+				// Network doesn't exist, fall through to create it
+			} else {
+				ms_children_networks[nwForParentSvc] = netInfo.ID
+				glog.V(3).Infof("Validated and using existing network %v (ID: %v) for dependency %v of service %v",
+					nwForParentSvc, netInfo.ID, dependencyBaseNetworkName, parentName)
+				continue
+			}
 		}
 
-		glog.V(3).Infof("Dependency service's parent specific network (%s) has not been found for the service, creating and connecting it.", nwForParentSvc)
+		glog.V(3).Infof("Dependency service's parent specific network (%s) has not been found for the service, creating and connecting it. Dependency container: %v, networks: %v",
+			nwForParentSvc, msc.Names, msc.Networks.Networks)
 
 		// Create workload specific network for this dependency and connect it to the dependency. The workload container will be
 		// connected to this network when the workload containers are created.

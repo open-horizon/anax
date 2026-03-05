@@ -2,11 +2,14 @@ FROM ubuntu:24.04
 
 ARG ARCH
 
-RUN apt-get update \
-    && apt-get -y install vim iptables build-essential wget git iputils-ping net-tools curl jq kafkacat apt-transport-https socat software-properties-common lsb-release gettext-base
+ENV DEBIAN_FRONTEND=noninteractive
 
-ARG DOCKER_VER=26.1.2
-ARG GO_VER=1.24.6
+RUN apt-get update \
+    && apt-get upgrade -y; \
+    apt-get install -y vim iptables build-essential wget git iputils-ping net-tools curl jq kafkacat apt-transport-https socat software-properties-common lsb-release gettext-base
+
+ARG DOCKER_VER=29.2.1
+ARG GO_VER=1.24.13
 ARG VAULT_VER=1.14.8-1
 
 # install docker cli

@@ -124,9 +124,9 @@ func Env(org, userPw, exchUrl, cssUrl, agbotUrl string) {
 	msgPrinter.Println()
 	msgPrinter.Printf("HZN_ORG_ID: %s", org)
 	msgPrinter.Println()
-	if strings.Contains(userPw, "iamapikey:") {
-		userPw = "iamapikey:" + mask
-	} else if strings.ContainsAny(userPw, ":") {
+	if strings.Contains(userPw, "iamapikey:") || strings.Contains(userPw, "apikey:") {
+		userPw = "apikey:" + mask
+	} else if strings.Contains(userPw, ":") {
 		user := strings.Split(userPw, ":")
 		userPw = user[0] + ":" + mask
 	}

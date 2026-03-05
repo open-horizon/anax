@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 # Please set the following env variable before calling this script.
 # For example:
 # export USER=anax1
@@ -14,17 +19,17 @@
 # export PATTERN="sall"
 
 # create an HA group in the exchange with 2 nodes: an12345 and an54321
-function create_HA_group {
+create_HA_group() {
     export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
     E2EDEV_ADMIN_AUTH="e2edev@somecomp.com/e2edevadmin:e2edevadminpw"
     USERDEV_ADMIN_AUTH="userdev/userdevadmin:userdevadminpw"
 
-    if [ $DEVICE_ORG == "userdev" ]; then
+    if [ "$DEVICE_ORG" = "userdev" ]; then
         auth=${USERDEV_ADMIN_AUTH}
     else
         auth=${E2EDEV_ADMIN_AUTH}
     fi
-    read -d '' hagroup <<EOF
+    hagroup=$(cat <<EOF
 {
     "description": "HA group testing",
     "members": [
@@ -33,17 +38,17 @@ function create_HA_group {
     ]
 }
 EOF
-    echo "$hagroup" | hzn exchange hagroup add -f- group1 -o $DEVICE_ORG -u $auth
+)
+    echo "$hagroup" | hzn exchange hagroup add -f- group1 -o "$DEVICE_ORG" -u "$auth"
 
 }
 
-
-nohup ./start_anax_loop.sh 1 &>/dev/null &
+nohup ./gov/start_anax_loop.sh 1 &>/dev/null &
 
 sleep 5
 
 # Make sure org is null
-DST=$(curl -sSL $ANAX_API/node | jq -r '.')
+DST=$(curl -sSL "$ANAX_API"/node | jq -r '.')
 THEORG=$(echo "$DST" | jq -r '.organization')
 if [ "$THEORG" != "null" ]
 then
@@ -52,17 +57,14 @@ then
 fi
 
 # Setup anax itself through APIs.
-if [ "$HA" == "1" ]
+if [ "$HA" = "1" ]
 then
     # create an HA group
     create_HA_group
 
-    ./apireg.sh
-
-    if [ $? -ne 0 ]
+    if ! ./gov/apireg.sh
     then
         echo "HA registration failed"
-        TESTFAIL="1"
         exit 2
     else
         echo "Anax1 ready to run workloads."
@@ -75,23 +77,19 @@ then
         export ANAX_API="http://localhost:${HZN_AGENT_PORT}"
 
         # start anax2
-        nohup ./start_anax_loop.sh 2 &>/dev/null &
+        nohup ./gov/start_anax_loop.sh 2 &>/dev/null &
 
         sleep 5
 
-        ./apireg.sh
-        if [ $? -ne 0 ]
+        if ! ./gov/apireg.sh
         then
-            TESTFAIL="1"
             exit 2
         fi
     fi
 
 else
-    ./apireg.sh
-    if [ $? -ne 0 ]
+    if ! ./gov/apireg.sh
     then
-        TESTFAIL="1"
         exit 2
     fi
 fi

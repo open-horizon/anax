@@ -1,10 +1,15 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 echo -e "Pattern is set to $PATTERN"
 
-if [ "$PATTERN" == "spws" ] || [ "$PATTERN" == "sall" ] || [ "$PATTERN" == "" ]
+if [ "$PATTERN" == "spws" ] || [ "$PATTERN" == "sall" ] || [ "$PATTERN" = "" ]
 then
-  read -d '' nodeui <<EOF
+  nodeui=$(cat <<EOF
 [
     {
       "serviceOrgid": "e2edev@somecomp.com",
@@ -51,17 +56,17 @@ then
       ]
     }
 ]
-
 EOF
+)
   echo "Adding service configuration for weather with /node/userinput api..."
-  RES=$(echo "$nodeui" | curl -sS -X PATCH -w "%{http_code}" -H "Content-Type: application/json" --data @- "$ANAX_API/node/userinput")
-  if [ "$RES" == "" ]
+  RES=$(curl -sS -X PATCH -w "%{http_code}" -H "Content-Type: application/json" --data "$nodeui" "$ANAX_API/node/userinput")
+  if [ "$RES" = "" ]
   then
-    echo -e "$newhznpolicy \nresulted in empty response"
+    echo -e "$nodeui \nresulted in empty response"
     exit 2
   fi
 
-  ERR=$(echo $RES | jq -r '.' | tail -1)
+  ERR=$(echo "$RES" | jq -r '.' | tail -1)
   if [ "$ERR" != "201" ]
   then
     echo -e "$nodeui \nresulted in incorrect response: $RES"

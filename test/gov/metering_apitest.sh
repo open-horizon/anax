@@ -1,10 +1,15 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 # ==================================================================
 # Begin testing metering properties
 
 # missing perTimeUnit field
-read -d '' netspeedservice <<EOF
+cat > /tmp/netspeedservice.tmp <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -23,19 +28,20 @@ read -d '' netspeedservice <<EOF
   ]
 }
 EOF
+netspeedservice=$(cat /tmp/netspeedservice.tmp)
 
 echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
 echo "Registering netspeed service"
 
 RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "$ERR" != "missing key" ]
 then
   echo -e "$netspeedservice \nresulted in incorrect response: $RES"
@@ -45,7 +51,7 @@ else
 fi
 
 # missing token field
-read -d '' netspeedservice <<EOF
+cat > /tmp/netspeedservice.tmp <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -64,19 +70,20 @@ read -d '' netspeedservice <<EOF
   ]
 }
 EOF
+netspeedservice=$(cat /tmp/netspeedservice.tmp)
 
 echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
 echo "Registering netspeed service"
 
 RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "$ERR" != "missing key" ]
 then
   echo -e "$netspeedservice \nresulted in incorrect response: $RES"
@@ -86,7 +93,7 @@ else
 fi
 
 # missing tokens and perTimeUnit fields
-read -d '' netspeedservice <<EOF
+cat > /tmp/netspeedservice.tmp <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -105,19 +112,20 @@ read -d '' netspeedservice <<EOF
   ]
 }
 EOF
+netspeedservice=$(cat /tmp/netspeedservice.tmp)
 
 echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
 echo "Registering netspeed service"
 
 RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "$ERR" != "missing tokens and perTimeUnit keys" ]
 then
   echo -e "$netspeedservice \nresulted in incorrect response: $RES"
@@ -127,7 +135,7 @@ else
 fi
 
 # tokens must be non-zero
-read -d '' netspeedservice <<EOF
+cat > /tmp/netspeedservice.tmp <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -147,19 +155,20 @@ read -d '' netspeedservice <<EOF
   ]
 }
 EOF
+netspeedservice=$(cat /tmp/netspeedservice.tmp)
 
 echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
 echo "Registering netspeed service"
 
 RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "$ERR" != "must be non-zero" ]
 then
   echo -e "$netspeedservice \nresulted in incorrect response: $RES"
@@ -169,7 +178,7 @@ else
 fi
 
 # perTimeUnit must be non-blank
-read -d '' netspeedservice <<EOF
+cat > /tmp/netspeedservice.tmp <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -189,19 +198,20 @@ read -d '' netspeedservice <<EOF
   ]
 }
 EOF
+netspeedservice=$(cat /tmp/netspeedservice.tmp)
 
 echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
 echo "Registering netspeed service"
 
 RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "$ERR" != "must be non-empty" ]
 then
   echo -e "$netspeedservice \nresulted in incorrect response: $RES"
@@ -211,7 +221,7 @@ else
 fi
 
 # tokens must be a valid number
-read -d '' netspeedservice <<EOF
+cat > /tmp/netspeedservice.tmp <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -232,19 +242,20 @@ read -d '' netspeedservice <<EOF
   ]
 }
 EOF
+netspeedservice=$(cat /tmp/netspeedservice.tmp)
 
 echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
 echo "Registering netspeed service"
 
 RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "$ERR" != "expected integer" ]
 then
   echo -e "$netspeedservice \nresulted in incorrect response: $RES"
@@ -254,7 +265,7 @@ else
 fi
 
 # perTimeUnit must be a string
-read -d '' netspeedservice <<EOF
+cat > /tmp/netspeedservice.tmp <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -275,19 +286,20 @@ read -d '' netspeedservice <<EOF
   ]
 }
 EOF
+netspeedservice=$(cat /tmp/netspeedservice.tmp)
 
 echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
 echo "Registering netspeed service"
 
 RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "$ERR" != "expected string" ]
 then
   echo -e "$netspeedservice \nresulted in incorrect response: $RES"
@@ -297,7 +309,7 @@ else
 fi
 
 # notification interval must be a number
-read -d '' netspeedservice <<EOF
+cat > /tmp/netspeedservice.tmp <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -318,19 +330,20 @@ read -d '' netspeedservice <<EOF
   ]
 }
 EOF
+netspeedservice=$(cat /tmp/netspeedservice.tmp)
 
 echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
 echo "Registering netspeed service"
 
 RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "$ERR" != "expected integer" ]
 then
   echo -e "$netspeedservice \nresulted in incorrect response: $RES"
@@ -340,7 +353,7 @@ else
 fi
 
 # notificationInterval cannot be specified without tokens perTimeUnit
-read -d '' netspeedservice <<EOF
+cat > /tmp/netspeedservice.tmp <<EOF
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -361,19 +374,20 @@ read -d '' netspeedservice <<EOF
   ]
 }
 EOF
+netspeedservice=$(cat /tmp/netspeedservice.tmp)
 
 echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
 echo "Registering netspeed service"
 
 RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
-if [ "$RES" == "" ]
+if [ "$RES" = "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
   exit 2
 fi
 
-ERR=$(echo $RES | jq -r ".error")
+ERR=$(echo "$RES" | jq -r ".error")
 if [ "$ERR" != "cannot be non-zero without tokens and perTimeUnit" ]
 then
   echo -e "$netspeedservice \nresulted in incorrect response: $RES"

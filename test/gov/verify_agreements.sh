@@ -1,11 +1,42 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
+# debug() - Print a debug message to stderr when DEBUG=1 or RUNNER_DEBUG=1.
+# shellcheck disable=SC2329  # invoked indirectly via sourced scripts and function calls
+debug() {
+    if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+        echo "[DEBUG] [${BASH_SOURCE[0]##*/}:${BASH_LINENO[0]}] $*" >&2
+    fi
+}
+
+# curl_debug() - Run curl, log method/URL/HTTP-code/body to stderr, return body on stdout.
+# Usage: result=$(curl_debug METHOD URL [extra curl args...])
+curl_debug() {
+    local method="$1" url="$2"
+    shift 2
+    local out http_code body
+    out=$(curl -sS -w "\n%{http_code}" -X "${method}" "$@" "${url}")
+    http_code=$(echo "${out}" | tail -1)
+    body=$(echo "${out}" | head -n -1)
+    if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+        echo "[DEBUG] [${BASH_SOURCE[0]##*/}:${BASH_LINENO[0]}] ${method} ${url} -> HTTP ${http_code} body=${body:0:300}" >&2
+    fi
+    echo "${body}"
+}
+
 # include node status verification function
-source ./check_node_status.sh
+# shellcheck source=test/gov/check_node_status.sh
+# shellcheck disable=SC1091
+source ./gov/gov/check_node_status.sh
 
 PREFIX="Verifying agreements:"
 
 echo -e "${PREFIX} starting"
+debug "ANAX_API=${ANAX_API} PATTERN=${PATTERN} HZN_REG_TEST=${HZN_REG_TEST} REMOTE_HUB=${REMOTE_HUB} NOLOOP=${NOLOOP}"
 
 # This function returns a json array of agreements that have been formed, or an error code.
 # MONITOR_AGS holds the agreement list.
@@ -13,33 +44,36 @@ function verifyAgreements() {
   # Wait until there are agreements
   TARGET_NUM_AG=1
   if [ "${HZN_REG_TEST}" != "1" ]; then
-    if [ "${PATTERN}" == "sall" ]; then
+    if [ "${PATTERN}" = "sall" ]; then
       TARGET_NUM_AG=6
-    elif [ "${PATTERN}" == "" ]; then
+    elif [ "${PATTERN}" = "" ]; then
       TARGET_NUM_AG=5
     fi
   fi
 
-  if [ ${REMOTE_HUB} -eq 0 ]; then
+  if [ "${REMOTE_HUB}" -eq 0 ]; then
     TIMEOUT_MUL=1
   else
     TIMEOUT_MUL=3
   fi
 
+  debug "verifyAgreements: TARGET_NUM_AG=${TARGET_NUM_AG} TIMEOUT_MUL=${TIMEOUT_MUL} max_loops=$(( (48 + 12 * TARGET_NUM_AG) * TIMEOUT_MUL ))"
+
   # Look for agreements to appear.
   AG_LOOP_CNT=0
-  while [ $AG_LOOP_CNT -le $(expr $(expr 48 + 12 \* $TARGET_NUM_AG) \* $TIMEOUT_MUL) ]; do
+  while [ $AG_LOOP_CNT -le "$(( (48 + 12 * TARGET_NUM_AG) * TIMEOUT_MUL ))" ]; do
     echo -e "${PREFIX} waiting for ${TARGET_NUM_AG} agreement(s)"
 
-    AGS=$(curl -sSL $ANAX_API/agreement | jq -r '.agreements.active')
-    NUM_AGS=$(echo ${AGS} | jq -r '. | length')
-    if [ "${TARGET_NUM_AG}" == "${NUM_AGS}" ]; then
+    AGS=$(curl_debug GET "${ANAX_API}/agreement" -L | jq -r '.agreements.active')
+    NUM_AGS=$(echo "${AGS}" | jq -r '. | length')
+    debug "verifyAgreements: NUM_AGS=${NUM_AGS} (want ${TARGET_NUM_AG})"
+    if [ "${TARGET_NUM_AG}" = "${NUM_AGS}" ]; then
       # Make an array of agreement ids that we should be tracking
-      MONITOR_AGS=$(echo ${AGS} | jq -r '[.[].current_agreement_id]')
+      MONITOR_AGS=$(echo "${AGS}" | jq -r '[.[].current_agreement_id]')
       echo -e "${PREFIX} found ${TARGET_NUM_AG} agreement(s): ${MONITOR_AGS}"
       return 0
     fi
-    let AG_LOOP_CNT+=1
+    (( AG_LOOP_CNT+=1 ))
     sleep 5
   done
 
@@ -52,40 +86,49 @@ function verifyAgreements() {
 # $2 - the agreement id to check.
 #
 function agreementExists() {
-  STILL_EXIST=$(echo $1 | jq -r '.[] | select (.current_agreement_id == "'$2'")')
-  if [ "${STILL_EXIST}" == "" ]; then
+  debug "agreementExists: checking agreement id=$2"
+
+  STILL_EXIST=$(echo "$1" | jq -r --arg aid "$2" '.[] | select (.current_agreement_id == $aid)')
+  if [ "${STILL_EXIST}" = "" ]; then
     echo -e "${PREFIX} agreement $2 no longer exists"
-    AAGS=$(curl -sSL $ANAX_API/agreement | jq -r '.agreements.archived')
+    AAGS=$(curl_debug GET "${ANAX_API}/agreement" -L | jq -r '.agreements.archived')
+    debug "agreementExists: archived count=$(echo "${AAGS}" | jq -r '. | length')"
     echo -e "${PREFIX} agreement archive contains: ${AAGS}"
     exit 1
   fi
+
+  debug "agreementExists: agreement $2 still active"
 }
 
 # Wait until the agreement(s) get to a specific lifecycle state, and make sure the agreements dont change during this time.
 # $1 - the timestamped field name that should be non-zero
 #
 function agreementsReached() {
-  NUM_AGS=$(echo ${MONITOR_AGS} | jq -r '. | length')
+  debug "agreementsReached: waiting for field=$1 on ${NUM_AGS:-?} agreements"
+
+  NUM_AGS=$(echo "${MONITOR_AGS}" | jq -r '. | length')
+  debug "agreementsReached: NUM_AGS=${NUM_AGS} MONITOR_AGS=${MONITOR_AGS}"
   while :; do
     echo -e "${PREFIX} waiting for agreement(s) to have $1 set"
 
-    AGS=$(curl -sSL $ANAX_API/agreement | jq -r '.agreements.active')
+    AGS=$(curl_debug GET "${ANAX_API}/agreement" -L | jq -r '.agreements.active')
+    debug "agreementsReached: active count=$(echo "${AGS}" | jq -r '. | length')"
     NOT_YET=0
-    for ((ix = 0; ix < $NUM_AGS; ix++)); do
-      AG=$(echo ${MONITOR_AGS} | jq -r '.['${ix}']')
+    for ((ix = 0; ix < "$NUM_AGS"; ix++)); do
+      AG=$(echo "${MONITOR_AGS}" | jq -r '.['${ix}']')
       agreementExists "${AGS}" "${AG}"
 
-      STATE_TS=$(echo ${AGS} | jq -r '.[] | select (.current_agreement_id == "'${AG}'") | .'$1'')
-      # STATE_TS=$(echo ${THIS_AG} | jq -r '.$1')
+      STATE_TS=$(echo "${AGS}" | jq -r --arg ag "${AG}" --arg field "$1" '.[] | select (.current_agreement_id == $ag) | .[$field]')
 
-      if [ "${STATE_TS}" == "0" ]; then
+      debug "agreementsReached: agreement[${ix}]=${AG} field=$1 value=${STATE_TS}"
+      if [ "${STATE_TS}" = "0" ]; then
         NOT_YET=1
         break
       else
         echo -e "${PREFIX} agreement ${AG} executing"
       fi
     done
-    if [ "${NOT_YET}" == "1" ]; then
+    if [ "${NOT_YET}" = "1" ]; then
       sleep 10
     else
       return 0
@@ -95,31 +138,33 @@ function agreementsReached() {
 
 # Keep an eye on the agreements to make sure they dont go away. This function
 # assumes that MONITOR_AGS has been previously set.
-function monitorAgreements {
-    NUM_AGS=$(echo ${MONITOR_AGS} | jq -r '. | length')
+monitorAgreements() {
+    NUM_AGS=$(echo "${MONITOR_AGS}" | jq -r '. | length')
+    debug "monitorAgreements: monitoring ${NUM_AGS} agreements NOLOOP=${NOLOOP}"
     NOT_YET=0
-        while :
+    while :
+    do
+        AGS=$(curl_debug GET "${ANAX_API}/agreement" -L | jq -r '.agreements.active')
+        debug "monitorAgreements: active count=$(echo "${AGS}" | jq -r '. | length')"
+        for (( ix=0; ix<"$NUM_AGS"; ix++ ))
         do
-                AGS=$(curl -sSL $ANAX_API/agreement | jq -r '.agreements.active')
-                for (( ix=0; ix<$NUM_AGS; ix++ ))
-                do
-                        AG=$(echo ${MONITOR_AGS} | jq -r '.['${ix}']')
-                        agreementExists "${AGS}" "${AG}"
-                done
-                echo -e "${PREFIX} agreements still present"
-
-                if [ "${NOLOOP}" == "1" ]; then
-                        if [ "${NOT_YET}" == "1" ]; then
-                                return 0
-                        else
-                                NOT_YET=1
-                                echo -e "Sleeping for 30s giving agreements time to fail before checking again"
-                                sleep 30
-                        fi
-                else
-                        sleep 120
-                fi
+            AG=$(echo "${MONITOR_AGS}" | jq -r '.['${ix}']')
+            agreementExists "${AGS}" "${AG}"
         done
+        echo -e "${PREFIX} agreements still present"
+
+        if [ "${NOLOOP}" = "1" ]; then
+            if [ "${NOT_YET}" = "1" ]; then
+                return 0
+            else
+                NOT_YET=1
+                echo -e "Sleeping for 30s giving agreements time to fail before checking again"
+                sleep 30
+            fi
+        else
+            sleep 120
+        fi
+    done
 }
 
 # Do the location specific verification. This function has specific knowledge of the
@@ -127,8 +172,8 @@ function monitorAgreements {
 # $1 - the GET /service object for the location service
 #
 function handleLocation() {
-
-  REFURL=$(echo $1 | jq -r '.ref_url')
+  REFURL=$(echo "$1" | jq -r '.ref_url')
+  debug "handleLocation: REFURL=${REFURL} LOC_CPU_NETNAME=${LOC_CPU_NETNAME}"
 
   # Make sure we dont get called twice
   if [ "${LOC_CPU_NETNAME}" != "" ]; then
@@ -137,15 +182,17 @@ function handleLocation() {
   fi
 
   # Validate that it has 1 container and should have 3 networks.
-  CONT_NUM=$(echo $1 | jq -r '.containers | length')
+  CONT_NUM=$(echo "$1" | jq -r '.containers | length')
+  debug "handleLocation: CONT_NUM=${CONT_NUM}"
   if [ "${CONT_NUM}" != "1" ]; then
     echo -e "${PREFIX} ${REFURL} should have 1 container, but there are ${CONT_NUM}"
     exit 2
   fi
 
   # Grab the map of networks. There should be 3, each is a key in the map.
-  NETS=$(echo $1 | jq -r '.containers[0].NetworkSettings.Networks')
-  NUM_NETS=$(echo ${NETS} | jq -r '. | length')
+  NETS=$(echo "$1" | jq -r '.containers[0].NetworkSettings.Networks')
+  NUM_NETS=$(echo "${NETS}" | jq -r '. | length')
+  debug "handleLocation: NUM_NETS=${NUM_NETS} (expected 3)"
   if [ "${NUM_NETS}" != "3" ]; then
     echo -e "${PREFIX} ${REFURL} should have 3 networks, but there are ${NUM_NETS}"
     exit 2
@@ -154,24 +201,26 @@ function handleLocation() {
   # Grab the network name keys as a json array so we can iterate them. One of the networks should be
   # the same as a known agreement id. The other 2 are; the GPS container that is specific to the location
   # service and the cpu container which is just there to create a third level of dependency.
-  NET_KEYS=$(echo ${NETS} | jq -r '. | keys')
+  NET_KEYS=$(echo "${NETS}" | jq -r '. | keys')
+  debug "handleLocation: NET_KEYS=${NET_KEYS}"
 
   # The network topology is complex. The agreement service depends on an agreement-less service (locgps), which itself
   # has a dependency (cpu) that is the same dependency that the agreement service has.
-  if [ "$(echo ${NET_KEYS} | jq -r 'contains(["services-locgps"])')" == "false" ]; then
+  if [ "$(echo "${NET_KEYS}" | jq -r 'contains(["services-locgps"])')" = "false" ]; then
     echo -e "${PREFIX} the location service is not in the dependent network for locgps, location has: ${NET_KEYS}"
     exit 2
-  elif [ "$(echo ${NET_KEYS} | jq -r 'contains(["service-cpu"])')" == "false" ]; then
+  elif [ "$(echo "${NET_KEYS}" | jq -r 'contains(["service-cpu"])')" = "false" ]; then
     echo -e "${PREFIX} the location service is not in the dependent network for cpu, location has: ${NET_KEYS}"
     exit 2
   fi
 
   # Grab the network name of the cpu service so that we can check it against the network of the cpu
   # service to make sure they match.
-  for ((lix = 0; lix < $NUM_NETS; lix++)); do
-    NET_NAME=$(echo ${NET_KEYS} | jq -r '.['$lix']')
+  for ((lix = 0; lix < "$NUM_NETS"; lix++)); do
+    NET_NAME=$(echo "${NET_KEYS}" | jq -r '.['$lix']')
     if [[ ${NET_NAME} = *"services-cpu"* ]]; then
       LOC_CPU_NETNAME="${NET_NAME}"
+      debug "handleLocation: found LOC_CPU_NETNAME=${LOC_CPU_NETNAME}"
       break
     fi
   done
@@ -180,51 +229,57 @@ function handleLocation() {
   if [ "${CPU_NET_NAME}" != "" ] && [ "${CPU_NET_NAME}" != "${LOC_CPU_NETNAME}" ]; then
     echo -e "${PREFIX} location's cpu service network is different from the network of the CPU service itself"
     exit 2
-  elif [ "${CPU_NET_NAME}" != "" ] && [ "${CPU_NET_NAME}" == "${LOC_CPU_NETNAME}" ]; then
+  elif [ "${CPU_NET_NAME}" != "" ] && [ "${CPU_NET_NAME}" = "${LOC_CPU_NETNAME}" ]; then
     echo -e "${PREFIX} location's cpu service network is the same as the network of the CPU service itself"
   fi
+
+  debug "handleLocation: done REFURL=${REFURL} LOC_CPU_NETNAME=${LOC_CPU_NETNAME}"
 }
 
 # Do the cpu specific verification. This function has specific knowledge of the
 # way in which the cpu service (dependent service) should be running.
 # $1 - the GET /service object for the cpu service
 #
-function handleCPU {
+handleCPU() {
         NETS_EXPECTED=0
         # Define expected networks number, depending on svc version
-        VERS=$(echo $1 | jq -r '.version')
+        VERS=$(echo "$1" | jq -r '.version')
+        REFURL=$(echo "$1" | jq -r '.ref_url')
+        debug "handleCPU: REFURL=${REFURL} VERS=${VERS} PATTERN=${PATTERN}"
 
-        if [ "${VERS}" == "1.0" ] || [ "${VERS}" == "1.0.0" ] || [ "${VERS}" == "1.2.5" ]; then
+        if [ "${VERS}" == "1.0" ] || [ "${VERS}" == "1.0.0" ] || [ "${VERS}" = "1.2.5" ]; then
                 # Expected 2 networks - default e2edev/cpu ntw and ntw for parent's e2edev/netspeed
                 NETS_EXPECTED=2
-                if  [ "$PATTERN" == "sall" ] && [ "${VERS}" == "1.2.5" ]; then
+                if  [ "$PATTERN" == "sall" ] && [ "${VERS}" = "1.2.5" ]; then
                     NETS_EXPECTED=4
                 fi
-        elif [ "${VERS}" == "1.2.2" ]; then
+        elif [ "${VERS}" = "1.2.2" ]; then
                 # Expected 3 networks - default IBM/cpu ntw and ntw for parent's e2edev/netspeed and e2edev/location
                 NETS_EXPECTED=3
-                if  [ "$PATTERN" == "sall" ]; then
+                if  [ "$PATTERN" = "sall" ]; then
                     NETS_EXPECTED=4
-                elif  [ "$PATTERN" == "sloc" ]; then
+                elif  [ "$PATTERN" = "sloc" ]; then
                     NETS_EXPECTED=2
-                elif  [ "$PATTERN" == "sns" ]; then
+                elif  [ "$PATTERN" = "sns" ]; then
                     NETS_EXPECTED=1
                 fi
         fi
 
-        REFURL=$(echo $1 | jq -r '.ref_url')
+        debug "handleCPU: NETS_EXPECTED=${NETS_EXPECTED}"
 
         # Validate that it has 1 container.
-        CONT_NUM=$(echo $1 | jq -r '.containers | length')
+        CONT_NUM=$(echo "$1" | jq -r '.containers | length')
+        debug "handleCPU: CONT_NUM=${CONT_NUM}"
         if [ "${CONT_NUM}" != "1" ]; then
                 echo -e "${PREFIX} ${REFURL} (version ${VERS}) should have 1 container, but there are ${CONT_NUM}"
                 exit 2
         fi
 
         # Grab the map of networks. There should be $NETS_EXPECTED.
-        NETS=$(echo $1 | jq -r '.containers[0].NetworkSettings.Networks')
+        NETS=$(echo "$1" | jq -r '.containers[0].NetworkSettings.Networks')
 
-        NUM_NETS=$(echo ${NETS} | jq -r '. | length')
+        NUM_NETS=$(echo "${NETS}" | jq -r '. | length')
+        debug "handleCPU: NUM_NETS=${NUM_NETS} (expected ${NETS_EXPECTED})"
         if [ "${NUM_NETS}" != "${NETS_EXPECTED}" ]; then
             echo -e "${PREFIX} ${REFURL} (version ${VERS}) should have ${NETS_EXPECTED} networks, but there are ${NUM_NETS}"
             exit 2
@@ -232,7 +287,8 @@ function handleCPU {
 
         # Grab the network name for the IBM's location service
         # (there is another cpu service which is from e2edev@somecomp.com org. CPU_NET_NAME should be the one from IBM org.)
-        NET_NAME=$(echo ${NETS} | jq -r '. | keys' | jq -r '.[] | select(. | test("IBM.*location"))')
+        NET_NAME=$(echo "${NETS}" | jq -r '. | keys' | jq -r '.[] | select(. | test("IBM.*location"))')
+        debug "handleCPU: IBM location NET_NAME=${NET_NAME} CPU_NET_NAME=${CPU_NET_NAME}"
         if [ "${NET_NAME}" != "" ]; then
                 CPU_NET_NAME=$NET_NAME
         fi
@@ -241,28 +297,31 @@ function handleCPU {
         if [ "${LOC_CPU_NETNAME}" != "" ] && [ "${CPU_NET_NAME}" != "${LOC_CPU_NETNAME}" ]; then
                 echo -e "${PREFIX} location's cpu service network is different from the network of the CPU service itself"
                 exit 2
-        elif [ "${LOC_CPU_NETNAME}" != "" ] && [ "${CPU_NET_NAME}" == "${LOC_CPU_NETNAME}" ]; then
+        elif [ "${LOC_CPU_NETNAME}" != "" ] && [ "${CPU_NET_NAME}" = "${LOC_CPU_NETNAME}" ]; then
                 echo -e "${PREFIX} location's cpu service network is the same as the network of the CPU service itself"
         fi
+
+        debug "handleCPU: done REFURL=${REFURL} CPU_NET_NAME=${CPU_NET_NAME}"
 }
 
 # Verify the service instances that should be running
 function verifyServices() {
-  ALLSERV=$(curl -sSL $ANAX_API/service | jq -r '.instances.active')
-  NUMSERV=$(echo ${ALLSERV} | jq -r '. | length')
+  ALLSERV=$(curl_debug GET "${ANAX_API}/service" -L | jq -r '.instances.active')
+  NUMSERV=$(echo "${ALLSERV}" | jq -r '. | length')
 
   echo -e "There are ${NUMSERV} active services running"
+  debug "verifyServices: NUMSERV=${NUMSERV}"
 
-  for ((ix = 0; ix < $NUMSERV; ix++)); do
-    INST=$(echo ${ALLSERV} | jq -r '.['$ix']')
-    REFURL=$(echo ${INST} | jq -r '.ref_url')
-    REFORG=$(echo ${INST} | jq -r '.organization')
-    # echo -e "${PREFIX} working on service ${ix}, ${REFURL}: ${INST}"
+  for ((ix = 0; ix < "$NUMSERV"; ix++)); do
+    INST=$(echo "${ALLSERV}" | jq -r '.['$ix']')
+    REFURL=$(echo "${INST}" | jq -r '.ref_url')
+    REFORG=$(echo "${INST}" | jq -r '.organization')
     echo -e "${PREFIX} working on service ${ix}, ${REFORG}/${REFURL}"
+    debug "verifyServices: service[${ix}] org=${REFORG} url=${REFURL}"
 
-    if [ "${REFURL}" == "https://bluehorizon.network/services/location" ]; then
+    if [ "${REFURL}" = "https://bluehorizon.network/services/location" ]; then
       handleLocation "${INST}"
-    elif [ "${REFURL}" == "https://bluehorizon.network/service-cpu" ] && [ "${REFORG}" == "IBM" ] && [ "${HZN_REG_TEST}" != "1" ]; then
+    elif [ "${REFURL}" == "https://bluehorizon.network/service-cpu" ] && [ "${REFORG}" = "IBM" ] && [ "${HZN_REG_TEST}" != "1" ]; then
       handleCPU "${INST}"
     fi
   done
@@ -270,17 +329,20 @@ function verifyServices() {
 
 # Data verification
 function verifyData() {
-  ALLSERV=$(curl -sSL $ANAX_API/service | jq -r '.instances.active')
-  NUMSERV=$(echo ${ALLSERV} | jq -r '. | length')
+  ALLSERV=$(curl_debug GET "${ANAX_API}/service" -L | jq -r '.instances.active')
+  NUMSERV=$(echo "${ALLSERV}" | jq -r '. | length')
+  debug "verifyData: NUMSERV=${NUMSERV}"
 
-  for ((ix = 0; ix < $NUMSERV; ix++)); do
-    INST=$(echo ${ALLSERV} | jq -r '.['$ix']')
-    REFURL=$(echo ${INST} | jq -r '.ref_url')
+  for ((ix = 0; ix < "$NUMSERV"; ix++)); do
+    INST=$(echo "${ALLSERV}" | jq -r '.['$ix']')
+    REFURL=$(echo "${INST}" | jq -r '.ref_url')
+    debug "verifyData: service[${ix}] url=${REFURL}"
   done
 }
 
 # =====================================================================================================
 # Main body of the script. Wait until all agreements are started.
+
 verifyAgreements
 
 # Wait until all agreements are executing.
@@ -290,14 +352,13 @@ agreementsReached agreement_execution_start_time
 verifyServices
 
 # Verify exchange node status
-checkNodeStatus true
-if [ $? != 0 ]; then
+if ! checkNodeStatus true; then
   echo "Node status verification failed"
   exit 1
 fi
 
 # Do data verification
-if [ "${PATTERN}" == "sall" ]; then
+if [ "${PATTERN}" = "sall" ]; then
   verifyData
 fi
 

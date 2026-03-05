@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 # ----------------------------
 # ----- HELPER FUNCTIONS -----
 # ----------------------------
@@ -7,7 +12,7 @@
 # Print a command and its response on separate lines. The inputs are:
 # $1 - the command 
 # $2 - the response
-function print_command_and_response {
+print_command_and_response() {
   echo -e "\n$1"
   echo -e "$2"
 }
@@ -17,12 +22,12 @@ function print_command_and_response {
 # $2 - the response
 # $3 - expected result
 # $4 - error message
-function verify {
+verify() {
 
     print_command_and_response "$1" "$2" 
 
-    respContains=$(echo $2 | grep "$3")
-    if [ "${respContains}" == "" ]; then
+    respContains=$(echo "$2" | grep "$3")
+    if [ "${respContains}" = "" ]; then
         echo -e "\nERROR: $4"
         exit 1
     fi
@@ -33,13 +38,13 @@ function verify {
 # ----------------------------
 
 # check environment variables
-if [ "${NOVAULT}" == "1" ]
+if [ "${NOVAULT}" = "1" ]
 then
   echo -e "Skipping hzn secretsmanager tests"
   exit 0
 fi
 
-if [ -z ${AGBOT_SAPI_URL} ]; then
+if [ -z "${AGBOT_SAPI_URL}" ]; then
   echo -e "\n${PREFIX} Envvar AGBOT_SAPI_URL is empty. Skip test\n"
   exit 0
 fi
@@ -52,8 +57,6 @@ PREFIX="\nhzn secretsmanager CLI test: "
 echo -e "$PREFIX start test"
 
 # user authentication variables
-E2EDEV_ORG="e2edev@somecomp.com"
-E2EDEV_ADMIN_AUTH="e2edevadmin:e2edevadminpw"
 USERDEV_ORG="userdev"
 USERDEV_ADMIN_AUTH="userdevadmin:userdevadminpw"
 
@@ -226,42 +229,42 @@ CMD="hzn sm secret add --secretKey password -d password123 -o ${USERDEV_ORG} -u 
 RES=$($CMD)
 print_command_and_response "$CMD" "$RES"
 
-# error on `list` - secret owned by a different user 
+# error on $(list) - secret owned by a different user 
 echo -e "$PREFIX listing a secret owned by a different user"
 
 CMD="hzn sm secret list -o ${USERDEV_ORG} -u userdevuser2:userdevuser2pw user/userdevuser1/test-password"
 RES=$($CMD 2>&1)
 verify "$CMD" "$RES" "Permission denied" "shouldn't be able to list a secret owned by a different user"
 
-# error on `remove` - secret owned by a different user
+# error on $(remove) - secret owned by a different user
 echo -e "$PREFIX removing a secret owned by a different user"
 
 CMD="hzn sm secret remove -f -o ${USERDEV_ORG} -u userdevuser2:userdevuser2pw user/userdevuser1/test-password"  
 RES=$($CMD 2>&1)
 verify "$CMD" "$RES" "Permission denied" "shouldn't be able to remove a secret owned by a different user"
 
-# error on `remove` - secret doesn't exist at the org level
+# error on $(remove) - secret doesn't exist at the org level
 echo -e "$PREFIX removing a secret that doesn't exist at the org level"
 
 CMD="hzn sm secret remove -f -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} fake-password"
 RES=$($CMD 2>&1)
 verify "$CMD" "$RES" "nothing to remove" "shouldn't be able to remove a secret that doesn't exist"
 
-# error on `remove` - secret doesn't exist at the user level
+# error on $(remove) - secret doesn't exist at the user level
 echo -e "$PREFIX removing a secret that doesn't exist at the user level"
 
 CMD="hzn sm secret remove -f -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} user/userdevadmin/fake-password"
 RES=$($CMD 2>&1)
 verify "$CMD" "$RES" "nothing to remove" "shouldn't be able to remove a secret that doesn't exist"
 
-# error on `read` - secret doesn't exist
+# error on $(read) - secret doesn't exist
 echo -e "$PREFIX reading a secret that doesn't exist"
 
 CMD="hzn sm secret read -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} fake-password"
 RES=$($CMD 2>&1)
 verify "$CMD" "$RES" "No secret(s) found" "shouldn't be able to read a secret that doesn't exist"
 
-# error on `read` - user can list but can't read org level secrets 
+# error on $(read) - user can list but can't read org level secrets 
 echo -e "$PREFIX non-admin shouldn't read org level secrets"
 
 CMD="hzn sm secret list -o ${USERDEV_ORG} -u userdevuser1:userdevuser1pw test-password"
@@ -272,35 +275,35 @@ CMD="hzn sm secret read -o ${USERDEV_ORG} -u userdevuser1:userdevuser1pw test-pa
 RES=$($CMD 2>&1)
 verify "$CMD" "$RES" "Permission denied" "user shouldn't be able to read org-level secrets"
 
-# error on `read` - user can't read another user's secrets
+# error on $(read) - user can't read another user's secrets
 echo -e "$PREFIX user shouldn't read another user's secrets"
 
 CMD="hzn sm secret read -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} user/userdevuser1/test-password"
 RES=$($CMD 2>&1)
 verify "$CMD" "$RES" "Permission denied" "user shouldn't be able to read another user's secrets"
 
-# error on `add` - secret owned by a different user 
+# error on $(add) - secret owned by a different user 
 echo -e "$PREFIX adding a secret owned by a different user"
 
 CMD="hzn sm secret add --secretKey password -d password456 -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} user/userdevuser1/fake-password"
 RES=$($CMD 2>&1)
 verify "$CMD" "$RES" "Permission denied" "user shouldn't be able to add to another user's secrets"
 
-# error on `read` - bad request 
+# error on $(read) - bad request 
 echo -e "$PREFIX passing an incorrect secret name into add"
 
 CMD="hzn sm secret read -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} user"
 RES=$($CMD 2>&1)
 verify "$CMD" "$RES" "User must be specified" "shouldn't be able to create secret with incorrect name"
 
-# error on `read` - bad request 
+# error on $(read) - bad request 
 echo -e "$PREFIX passing an incorrect secret name into add"
 
 CMD="hzn sm secret read -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} user/userdevadmin"
 RES=$($CMD 2>&1)
 verify "$CMD" "$RES" "Incorrect secret name" "shouldn't be able to create secret with incorrect name"
 
-# error on `list` - incorrect credentials
+# error on $(list) - incorrect credentials
 echo -e "$PREFIX passing incorrect exchange credentials into list"
 
 CMD="hzn sm secret list -o ${USERDEV_ORG} -u userdevfake:userdevfakepw test-password"
@@ -343,6 +346,4 @@ RES=$($CMD)
 print_command_and_response "$CMD" "$RES"
 
 echo -e "$PREFIX complete test"
-
-
 

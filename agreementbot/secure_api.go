@@ -1016,8 +1016,8 @@ type SecretRequestInfo struct {
 	org    string                   // the organization of the user making the request
 	ec     exchange.ExchangeContext // holds credential information
 	exUser string                   // the real username of the user in the exchange
-	// if the user is authenticated with iamapikey or iamtoken, this will be different
-	// from ec.GetExchangeId() (which will be iamapikey/iamtoken)
+	// if the user is authenticated with an apikey, this will be different
+	// from ec.GetExchangeId() (which will be apikey)
 
 	// information about the resources being accessed
 	user            string // if applicable, the user whose resources are being accessed

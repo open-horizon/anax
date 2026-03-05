@@ -1,13 +1,16 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 EMAIL="foo@goo.com"
 
   echo "Calling node API"
 
-curl -sS -H "Content-Type: application/json" "$ANAX_API/node" | jq -er '. | .account.id' > /dev/null
-
-if [[ $? -eq 0 ]]; then
-  read -d '' updatehzntoken <<EOF
+if curl -sS -H "Content-Type: application/json" "$ANAX_API/node" | jq -er '. | .account.id' > /dev/null; then
+  cat > /tmp/updatehzntoken.tmp <<EOF
 {
   "account": {
     "id": "$USER"
@@ -15,6 +18,7 @@ if [[ $? -eq 0 ]]; then
   "token": "$TOKEN"
 }
 EOF
+  updatehzntoken=$(cat /tmp/updatehzntoken.tmp)
 
   echo -e "\n[D] hzntoken payload: $updatehzntoken"
 
@@ -24,7 +28,7 @@ EOF
 
 else
 
-  read -d '' newhzndevice <<EOF
+  cat > /tmp/newhzndevice.tmp <<EOF
 {
   "account": {
     "id": "$USER",
@@ -35,6 +39,7 @@ else
   "token": "$TOKEN"
 }
 EOF
+  newhzndevice=$(cat /tmp/newhzndevice.tmp)
 
   echo -e "\n[D] hzndevice payload: $newhzndevice"
 
@@ -43,7 +48,7 @@ EOF
   echo "$newhzndevice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/node"
 fi
 
-read -d '' gpstestservice <<EOF
+cat > /tmp/gpstestservice.tmp <<'EOF'
 {
   "sensor_url": "https://bluehorizon.network/documentation/gpstest-device-api",
   "sensor_name": "gpstest",
@@ -61,6 +66,7 @@ read -d '' gpstestservice <<EOF
   ]
 }
 EOF
+gpstestservice=$(cat /tmp/gpstestservice.tmp)
 
 echo -e "\n\n[D] gpstestservice payload: $gpstestservice"
 
@@ -68,7 +74,7 @@ echo "Registering gpstest service"
 
 echo "$gpstestservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/microservice/config"
 
-read -d '' location2service <<EOF
+cat > /tmp/location2service.tmp <<'EOF'
 {
   "sensor_url": "https://bluehorizon.network/documentation/location2-device-api",
   "sensor_name": "location2",
@@ -86,6 +92,7 @@ read -d '' location2service <<EOF
   ]
 }
 EOF
+location2service=$(cat /tmp/location2service.tmp)
 
 echo -e "\n\n[D] location2service payload: $location2service"
 

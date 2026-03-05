@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
 PREFIX="Service config state test:"
 
 E2EDEV_NETSPEED_AG_ID=""
@@ -8,14 +13,14 @@ E2EDEV_LOCATION_AG_ID=""
 EXCH_URL="${EXCH_APP_HOST}"
 USERDEV_ADMIN_AUTH="userdev/userdevadmin:userdevadminpw"
 
-if [ ${CERT_LOC} -eq "1" ]; then
-  CERT_VAR="--cacert /certs/css.crt"
+if [ "${CERT_LOC}" = "1" ]; then
+  CERT_VAR=(--cacert /certs/css.crt)
 else
-  CERT_VAR=""
+  CERT_VAR=(--silent)
 fi
 
 # check the result of http call
-function results {
+results() {
   if [ "$(echo "$1" | jq -r '.code')" != "ok" ]
   then
     echo -e "Error: $(echo "$1" | jq -r '.msg')"
@@ -24,7 +29,7 @@ function results {
 }
 
 # get the agreements ids for e2edev@somecomp.com/netspeed and e2edev@somecomp.com/location services.
-function getNetspeedLocationAgreements {
+getNetspeedLocationAgreements() {
 	E2EDEV_NETSPEED_AG_ID=$(hzn agreement list | jq '.[] | select(.workload_to_run.url == "https://bluehorizon.network/services/netspeed") | select(.workload_to_run.org == "e2edev@somecomp.com") | .current_agreement_id')
 	echo -e "${PREFIX} agreement for e2edev@somecomp.com/netspeed: $E2EDEV_NETSPEED_AG_ID"
 	E2EDEV_LOCATION_AG_ID=$(hzn agreement list | jq '.[] | select(.workload_to_run.url == "https://bluehorizon.network/services/location") | select(.workload_to_run.org == "e2edev@somecomp.com") | .current_agreement_id')
@@ -35,14 +40,14 @@ function getNetspeedLocationAgreements {
 # $1 - service org
 # $2 - service url
 # returns 0 for up and non-zero for down
-function checkContainer {
+checkContainer() {
     # get the instance id of the cpu service with quotes removed
-    service_inst=$(curl -s $ANAX_API/service | jq -r ".instances.active[] | select (.ref_url == \"${2}\") | select (.organization == \"${1}\")")
+    service_inst=$(curl -s "$ANAX_API/service" | jq -r ".instances.active[] | select (.ref_url == \"${2}\") | select (.organization == \"${1}\")")
     if [ -n "$service_inst" ]; then
     	inst_id=$(echo "$service_inst" | jq '.instance_id')
     	inst_id="${inst_id%\"}"
     	inst_id="${inst_id#\"}"
-    	out=$(docker ps | grep $inst_id)
+    	out=$(docker ps | grep "$inst_id")
     	return $?
     else
     	return 1
@@ -51,29 +56,29 @@ function checkContainer {
 
 # check if the containers for e2edev@somecomp.com/netspeed and e2edev@somecomp.com/location services
 # are up/down.
-function checkNetspeedLocationContainers {
+checkNetspeedLocationContainers() {
 	# remove the quotes
 	ns_ag="${2%\"}"
 	ns_ag="${ns_ag#\"}"
-	out=$(docker ps | grep $ns_ag)
+	out=$(docker ps | grep "$ns_ag")
 	ret=$?
-	if ([ "$1" == "up" ] && [ $ret -ne 0 ]) || ([ "$1" == "down" ] && [ $ret -eq 0 ]); then
+	if { [ "$1" == "up" ] && [ $ret -ne 0 ]; } || { [ "$1" = "down" ] && [ $ret -eq 0 ]; }; then
 		echo -e "${PREFIX} container for e2edev@somecomp.com/netspeed is not $1."
 		return 1
 	fi
 
 	loc_ag="${3%\"}"
 	loc_ag="${loc_ag#\"}"
-	out=$(docker ps | grep $loc_ag)
+	out=$(docker ps | grep "$loc_ag")
 	ret=$?
-	if ([ "$1" == "up" ] && [ $ret -ne 0 ]) || ([ "$1" == "down" ] && [ $ret -eq 0 ]); then
+	if { [ "$1" == "up" ] && [ $ret -ne 0 ]; } || { [ "$1" = "down" ] && [ $ret -eq 0 ]; }; then
 		echo -e "${PREFIX} container for e2edev@somecomp.com/location is not $1."
 		return 1
 	fi
 
 	checkContainer "e2edev@somecomp.com" "https://bluehorizon.network/services/locgps"
 	ret=$?
-	if [[ "$PATTERN" == "sall" ]]; then
+	if [[ "$PATTERN" = "sall" ]]; then
 		# in this pattern case, locgps is agreementless service, so it should stay up
 		# all the time.  
 		if [ $ret -ne 0 ]; then
@@ -81,7 +86,7 @@ function checkNetspeedLocationContainers {
 			return 1
 		fi
 	else
-		if ([ "$1" == "up" ] && [ $ret -ne 0 ]) || ([ "$1" == "down" ] && [ $ret -eq 0 ]); then
+		if { [ "$1" == "up" ] && [ $ret -ne 0 ]; } || { [ "$1" = "down" ] && [ $ret -eq 0 ]; }; then
 			echo -e "${PREFIX} container for e2edev@somecomp.com/locgps is missing."
 			return 1
 		fi
@@ -104,7 +109,7 @@ function checkNetspeedLocationContainers {
 }
 
 # main code starts here
-if ([ "${PATTERN}" != "" ] && [ "${PATTERN}" != "sall" ]); then
+if [ "${PATTERN}" != "" ] && [ "${PATTERN}" != "sall" ]; then
 	echo -e "${PREFIX} will not perform this test because the pattern is not sall and not a policy."
 	exit 0
 fi
@@ -119,11 +124,11 @@ fi
 
 # check the agreements exist
 getNetspeedLocationAgreements
-if [ "$E2EDEV_NETSPEED_AG_ID" == "" ]; then
+if [ "$E2EDEV_NETSPEED_AG_ID" = "" ]; then
   echo -e "${PREFIX} error: cannot find agreement for e2edev@somecomp.com/netspeed."
   exit 2
 fi
-if [ "$E2EDEV_LOCATION_AG_ID" == "" ]; then
+if [ "$E2EDEV_LOCATION_AG_ID" = "" ]; then
   echo -e "${PREFIX} error: cannot find agreement for e2edev@somecomp.com/location."
   exit 2
 fi
@@ -137,8 +142,7 @@ saved_loc_ag=$E2EDEV_LOCATION_AG_ID
 
 # check the containers exist
 echo -e "${PREFIX} checking containers..."
-checkNetspeedLocationContainers "up" "$saved_ns_ag" "$saved_loc_ag"
-if [ $? -ne 0 ]; then
+if ! checkNetspeedLocationContainers "up" "$saved_ns_ag" "$saved_loc_ag"; then
 	echo -e "${PREFIX} failed checking containers."
 	exit 2
 fi
@@ -153,21 +157,21 @@ if [[ $out != *"does not exist or is not a registered service in the exchange"* 
 fi
 
 # specify correct version
-out=$(hzn service configstate suspend e2edev@somecomp.com https://bluehorizon.network/services/netspeed 2.3.0 -f)
-if [ $? -ne 0 ]; then
+if ! out=$(hzn service configstate suspend e2edev@somecomp.com https://bluehorizon.network/services/netspeed 2.3.0 -f); then
 	echo -e "${PREFIX} error suspending e2edev@somecomp.com/netspeed: $out"
     exit 2
 fi
 
 echo -e "${PREFIX} suspending the e2edev@somecomp.com/location service..."
-read -d '' sconfig <<EOF
+cat > /tmp/sconfig.tmp <<'EOF'
 {
    "url":         "https://bluehorizon.network/services/location",
    "org":          "e2edev@somecomp.com",
    "configState": "suspended"
 }
 EOF
-out=$(echo "$sconfig" | curl -sLX POST $CERT_VAR -u $USERDEV_ADMIN_AUTH -H "Content-Type: application/json" -H "Accept: application/json" --data @- ${EXCH_URL}/orgs/userdev/nodes/an12345/services_configstate | jq -r '.')
+sconfig=$(cat /tmp/sconfig.tmp)
+out=$(echo "$sconfig" | curl -sLX POST "${CERT_VAR[@]}" -u "$USERDEV_ADMIN_AUTH" -H "Content-Type: application/json" -H "Accept: application/json" --data @- "${EXCH_URL}/orgs/userdev/nodes/an12345/services_configstate" | jq -r '.')
 results "$out"
 
 # make sure the service configstate for netspeed is suspended
@@ -183,7 +187,7 @@ fi
 loop_cnt=0
 ag_canceled=0
 test_good_togo=0
-if [ ${REMOTE_HUB} -eq 1 ]; then
+if [ "${REMOTE_HUB}" -eq 1 ]; then
   loop_max=40
 else
   loop_max=18
@@ -191,7 +195,7 @@ fi
 
 while [ $loop_cnt -le $loop_max ]
 do
-    let loop_cnt+=1
+    (( loop_cnt+=1 ))
 	echo -e "${PREFIX} wait for 10 seconds..."
     sleep 10
 
@@ -213,8 +217,7 @@ do
 
 	# make sure the containers are gone
 	echo -e "${PREFIX} making sure the containers removed..."
-	checkNetspeedLocationContainers "down" "$saved_ns_ag" "$saved_loc_ag"
-	if [ $? -ne 0 ]; then
+	if ! checkNetspeedLocationContainers "down" "$saved_ns_ag" "$saved_loc_ag"; then
 		continue
 	else
 		test_good_togo=1
@@ -241,20 +244,20 @@ sleep 10
 
 # resume the services
 echo -e "${PREFIX} resuming e2edev@somecomp.com/netspeed service..."
-out=$(hzn service configstate resume e2edev@somecomp.com https://bluehorizon.network/services/netspeed)
-if [ $? -ne 0 ]; then
+if ! out=$(hzn service configstate resume e2edev@somecomp.com https://bluehorizon.network/services/netspeed); then
 	echo -e "${PREFIX} error resuming e2edev@somecomp.com/netspeed: $out"
     exit 2
 fi
 echo -e "${PREFIX} resuming e2edev@somecomp.com/location service..."
-read -d '' sconfig <<EOF
+cat > /tmp/sconfig.tmp <<'EOF'
 {
    "url":         "https://bluehorizon.network/services/location",
    "org":          "e2edev@somecomp.com",
    "configState": "active"
 }
 EOF
-out=$(echo "$sconfig" | curl -sLX POST $CERT_VAR -u $USERDEV_ADMIN_AUTH -H "Content-Type: application/json" -H "Accept: application/json" --data @- ${EXCH_URL}/orgs/userdev/nodes/an12345/services_configstate | jq -r '.')
+sconfig=$(cat /tmp/sconfig.tmp)
+out=$(echo "$sconfig" | curl -sLX POST "${CERT_VAR[@]}" -u "$USERDEV_ADMIN_AUTH" -H "Content-Type: application/json" -H "Accept: application/json" --data @- "${EXCH_URL}/orgs/userdev/nodes/an12345/services_configstate" | jq -r '.')
 results "$out"
 
 # make sure the new configstate is set for netspeed
@@ -272,18 +275,18 @@ loop_cnt=0
 ag_formed=0
 while [ $loop_cnt -le $loop_max ]
 do
-    let loop_cnt+=1
+    (( loop_cnt+=1 ))
 	echo -e "${PREFIX} wait for 10 seconds..."
     sleep 10
 
     if [ $ag_formed -ne 1 ]; then
 		echo -e "${PREFIX} making sure the agreements are formed..."
 		getNetspeedLocationAgreements
-		if [ "$E2EDEV_NETSPEED_AG_ID" == "" ]; then
+		if [ "$E2EDEV_NETSPEED_AG_ID" = "" ]; then
 			echo -e "${PREFIX} cannot find agreement for e2edev@somecomp.com/netspeed."
   			continue
 		fi
-		if [ "$E2EDEV_LOCATION_AG_ID" == "" ]; then
+		if [ "$E2EDEV_LOCATION_AG_ID" = "" ]; then
 			echo -e "${PREFIX} cannot find agreement for e2edev@somecomp.com/location."
   			continue
 		fi
@@ -292,8 +295,7 @@ do
 	ag_formed=1
 
 	echo -e "${PREFIX} making sure the containers are up and running..."
-	checkNetspeedLocationContainers "up" "$E2EDEV_NETSPEED_AG_ID" "$E2EDEV_LOCATION_AG_ID"
-	if [ $? -ne 0 ]; then
+	if ! checkNetspeedLocationContainers "up" "$E2EDEV_NETSPEED_AG_ID" "$E2EDEV_LOCATION_AG_ID"; then
 		continue
 	else
 		echo -e "${PREFIX} test successful! Done. "

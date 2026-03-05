@@ -21,7 +21,7 @@ func Test_enrichFromEnvvars_success(t *testing.T) {
 		AgreementBot: AGConfig{
 			ExchangeURL: "zoo",
 			Vault: VaultConfig{
-				VaultURL: "http://vault/v1",
+				VaultURL: "http://bao/v1",
 			},
 		},
 	}
@@ -58,7 +58,7 @@ func Test_enrichFromEnvvars_success(t *testing.T) {
 
 	exVal := "fooozzzzz"
 	exCSSURL := "edge.cssurl"
-	exVaultURL := "https://vault/v1"
+	exVaultURL := "https://bao/v1"
 	newVarValues := []string{exVal, exCSSURL, exVaultURL}
 
 	for i, v := range testVars {

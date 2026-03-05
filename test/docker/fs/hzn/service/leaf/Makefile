@@ -4,20 +4,37 @@ DOCKER_TAG = 1.0
 
 DOCKER_HUB_ID = localhost:443
 
+HZN_DEV_HOST_IP ?=127.0.0.1
+
 default: all
 
 all: build run check
 
-build: clean
-	docker build -t $(DOCKER_HUB_ID)/$(DOCKER_NAME):$(DOCKER_TAG) .
+build:
+	@if ! docker image inspect $(DOCKER_HUB_ID)/$(DOCKER_NAME):$(DOCKER_TAG) > /dev/null 2>&1; then \
+		docker build -t $(DOCKER_HUB_ID)/$(DOCKER_NAME):$(DOCKER_TAG) .; \
+	else \
+		echo "Image $(DOCKER_HUB_ID)/$(DOCKER_NAME):$(DOCKER_TAG) already exists, skipping build"; \
+	fi
 
-run: stop
-	docker run -d --name $(DOCKER_NAME) --publish=8347:8347 --volume `pwd`:/outside $(DOCKER_HUB_ID)/$(DOCKER_NAME):$(DOCKER_TAG)
+run:
+	@if docker ps -a --filter name=^$(DOCKER_NAME)$$ --format '{{.Names}}' | grep -q '^$(DOCKER_NAME)$$'; then \
+		if docker ps --filter name=^$(DOCKER_NAME)$$ --format '{{.Names}}' | grep -q '^$(DOCKER_NAME)$$'; then \
+			echo "Container $(DOCKER_NAME) already running, skipping"; \
+		else \
+			echo "Container $(DOCKER_NAME) exists but not running, restarting"; \
+			docker start $(DOCKER_NAME); \
+		fi \
+	else \
+		docker run -d --name $(DOCKER_NAME) --network=hzn_horizonnet --publish=8347:8347 --volume `pwd`:/outside $(DOCKER_HUB_ID)/$(DOCKER_NAME):$(DOCKER_TAG); \
+	fi
 
+#contId=$(shell docker ps -aq | head -1)
+#leafip=$(docker inspect --format "{{range .NetworkSettings.Networks }}{{ .Gateway }}{{ end }}" "$${contId}")
 check:
-	contId=$(shell docker ps -q | head -1) && \
-	leafip=$$(docker inspect --format "{{ .NetworkSettings.Gateway }}" $$contId) && \
-			curl -sSL http://$$leafip:8347/v1/cpu | jq .
+	docker ps -a --filter name=$(DOCKER_NAME)
+	docker logs $(DOCKER_NAME)
+	curl -sSL "http://${HZN_DEV_HOST_IP}:8347/v1/cpu" | jq .
 
 stop:
 	-docker rm -f $(DOCKER_NAME) 2> /dev/null || :

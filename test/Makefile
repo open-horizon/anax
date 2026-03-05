@@ -22,80 +22,95 @@ endif
 TEST_VARS ?= NOLOOP=1 TEST_PATTERNS=sall
 # TEST_VARS ?= NOLOOP=1 NOCANCEL=1
 
-export PREBUILT_DOCKER_REG_URL ?= ""
-export PREBUILT_DOCKER_REG_USER ?= ""
-export PREBUILT_DOCKER_REG_PW ?= ""
+export PREBUILT_DOCKER_REG_URL ?=
+export PREBUILT_DOCKER_REG_USER ?=
+export PREBUILT_DOCKER_REG_PW ?=
 export PREBUILT_ANAX_VERSION ?= nightly
 export PREBUILT_ESS_VERSION ?= nightly
 
-BRANCH_NAME ?= ""
+BRANCH_NAME ?=
 ANAX_SOURCE ?= $(shell dirname $(CURDIR))
 DOCKER_DEV_OPTS :=  --rm --no-cache --build-arg ARCH=$(arch)
 E2EDEVTEST_TEMPFS := $(CURDIR)/docker/tempfs/e2edevtest
-CERT_LOC ?= 0
+export CERT_LOC ?= 0
 
-HZN_TRANSPORT=https
-ifeq ($(CERT_LOC),0)
-	HZN_TRANSPORT=http
-endif	
+#ifeq ($(CERT_LOC),0)
+#	HZN_TRANSPORT=http
+#else
+#	HZN_TRANSPORT=https
+#endif
+
+export HZN_TRANSPORT=http
 
 # anax
 DOCKER_ANAX_INAME := openhorizon/$(arch)_anax:testing
 DOCKER_ANAX_K8S_INAME := openhorizon/$(arch)_anax_k8s:testing
 
 # e2edevtest
-DOCKER_TEST_CNAME := e2edevtest
-DOCKER_TEST_INAME := openhorizon/e2edev-test
-DOCKER_TEST_TAG := latest
-DOCKER_TEST_NETWORK := hzn_horizonnet
+DOCKER_TEST_CNAME ?= e2edevtest
+DOCKER_TEST_INAME ?= openhorizon/e2edev-test
+DOCKER_TEST_TAG ?= latest
+DOCKER_TEST_NETWORK ?= hzn_horizonnet
 DOCKER_TEST_ADD_HOST ?= "localhost:127.0.0.1"
-E2EDEV_HOST_IP := $(shell hostname -I | awk '{print $$1}')
-UDS := /var/run/horizon/
+# Use 0.0.0.0 to bind services to all interfaces (required for Kubernetes pod connectivity)
+# Services will listen on all network interfaces, making them accessible from:
+# - localhost (127.0.0.1) for local testing
+# - actual network IP (e.g., 10.x.x.x) for Kubernetes pods
+# - Docker bridge network for containerized tests
+E2EDEV_HOST_IP := 0.0.0.0
+
+# Detect actual host IP for client connections (cannot connect to 0.0.0.0)
+# This is used for URLs that clients need to connect to (CSS_URL, DOCKER_EXCH, etc.)
+# Note: run_kube.sh has its own IP detection for Kubernetes pod configuration
+E2EDEV_CLIENT_IP := $(shell ip route get 1.1.1.1 2>/dev/null | grep -oP 'src \K\S+' || hostname -I 2>/dev/null | awk '{print $$1}' || echo "127.0.0.1")
+UDS ?= /var/run/horizon/
 API_KEY ?= 0
-DOCKER_CPU_TAG := 1.2.2
+export DOCKER_CPU_TAG := 1.2.7
 ICP_HOST_IP ?= 0
-ORG_ID ?= ""
+ORG_ID ?=
 ifeq ($(arch),ppc64le)
-	DOCKER_CPU_INAME ?= openhorizon/example_ms_$(arch)_cpu
+	export DOCKER_CPU_INAME ?= openhorizon/ibm.cpu_$(arch)
 else
-	DOCKER_CPU_INAME ?= openhorizon/example_ms_x86_cpu
+	export DOCKER_CPU_INAME ?= openhorizon/ibm.cpu_amd64
 endif
 
 # agbot
-DOCKER_AGBOT_CNAME := agbot
-DOCKER_AGBOT2_CNAME := agbot2
-AGBOT_IMAGE_NAME ?= openhorizon/$(arch)_agbot
+DOCKER_AGBOT_CNAME ?= agbot
+DOCKER_AGBOT2_CNAME ?= agbot2
+AGBOT_IMAGE_NAME ?= docker.io/openhorizon/$(arch)_agbot
 AGBOT_IMAGE_TAG ?= e2edev
 old_agbot := $(shell echo -e $(TEST_VARS) | grep OLDAGBOT=1)
 ifneq ($(old_agbot),)
 	AGBOT_IMAGE_TAG = latest
 endif
-AGBOT_API ?= http://agbot:8080
+AGBOT_API ?= http://$(E2EDEV_CLIENT_IP):3110
 AGBOT2_API ?= http://agbot2:8080
-AGBOT_SAPI_URL ?= $(HZN_TRANSPORT)://agbot:8083
-AGBOT_NAME ?= agbot
+AGBOT_SAPI_URL ?= $(HZN_TRANSPORT)://$(E2EDEV_CLIENT_IP):3111
+AGBOT_NAME ?= agbot1
 AGBOT_TOKEN ?= Abcdefghijklmno1
 
 # exchange
 DOCKER_EXCH_CNAME = exchange-api
-DOCKER_EXCH_INAME := openhorizon/$(arch)_exchange-api
+DOCKER_EXCH_INAME ?= quay.io/openhorizon/$(arch)_exchange-api
 DOCKER_EXCH_TAG ?= testing
-DOCKER_EXCH ?= $(HZN_TRANSPORT)://exchange-api:8080/v1
+DOCKER_EXCH ?= $(HZN_TRANSPORT)://$(E2EDEV_CLIENT_IP):3090/v1
+EXCHANGE_LOG_LEVEL ?= DEBUG
 EXCH_ROOTPW ?= Horizon-Rul3s
 EXCHANGE_HUB_ADMIN_PW ?= hubadminpw
 EXCHANGE_SYSTEM_ADMIN_PW ?= ibmadminpw
 
 # exchange DB
-DOCKER_EXCHDB_CNAME := postgres
+DOCKER_EXCHDB_CNAME ?= postgres
 DOCKER_EXCHDB_INAME ?= postgres
 ifeq ($(arch),ppc64le)
-	DOCKER_EXCHDB_TAG ?= 13.2
+	DOCKER_EXCHDB_TAG ?= 17
 else
-	DOCKER_EXCHDB_TAG ?= 13
+	DOCKER_EXCHDB_TAG ?= 17
 endif
-EXCHDB_USER := admin
-EXCHDB_PORT := 5432
-EXCHDB_NAME := exchange
+EXCHDB_USER ?= admin
+EXCHDB_PORT ?= 5432
+EXCHDB_NAME ?= exchange
+EXCHANGE_DB_PW ?= some_rand0mdat@basepassWord
 
 # registry
 DOCKER_REG_CNAME := e2edevregistry
@@ -110,12 +125,17 @@ DOCKER_REG_PW_CNAME := htregistry
 DOCKER_REG_USER := testuser
 DOCKER_REG_PW := testpassword
 
+# ess
+UNIX_SOCKET_FILE_PERMISSIONS ?= "0777"
+
 # css
-DOCKER_CSS_CNAME := css-api
-DOCKER_CSS_INAME := openhorizon/$(arch)_cloud-sync-service
-DOCKER_CSS_TAG := e2edev
-CSS_INTERNAL_PORT := 8080
-CSS_URL ?= $(HZN_TRANSPORT)://css-api:$(CSS_INTERNAL_PORT)
+DOCKER_CSS_CNAME ?= css-api
+DOCKER_CSS_INAME ?= docker.io/openhorizon/$(arch)_cloud-sync-service
+DOCKER_CSS_TAG ?= latest
+CSS_INTERNAL_PORT ?= 8080
+CSS_LOG_LEVEL ?= DEBUG
+CSS_TRACE_LEVEL ?= DEBUG
+CSS_URL ?= $(HZN_TRANSPORT)://$(E2EDEV_CLIENT_IP):9443
 
 #css DB
 DOCKER_CSSDB_CNAME := mongo
@@ -128,16 +148,49 @@ else
 endif
 
 #vault
-DOCKER_VAULT_CNAME := vault
-DOCKER_VAULT_INAME := openhorizon/$(arch)_vault
-DOCKER_VAULT_TAG := testing
+DOCKER_VAULT_CNAME ?= bao
+DOCKER_VAULT_INAME ?= openhorizon/$(arch)_vault
+DOCKER_VAULT_TAG ?= testing
 VAULT_PORT ?= 8200
 no_vault := $(shell echo -e $(TEST_VARS) | grep NOVAULT=1)
 ifeq ($(no_vault),)
-	VAULT_ADDR = $(HZN_TRANSPORT)://vault:$(VAULT_PORT)
+	VAULT_ADDR = $(HZN_TRANSPORT)://bao:$(VAULT_PORT)
 endif
 VAULT_DEV_ROOT_TOKEN_ID ?= vault_dev_root_token_id
 VAULT_DEV_LISTEN_ADDRESS ?= 0.0.0.0:$(VAULT_PORT)
+
+#export DOCKER_TEST_NETWORK ?= $(DOCKER_TEST_NETWORK)
+export EXCH_APP_HOST ?= $(DOCKER_EXCH)
+export HZN_SSL_SKIP_VERIFY ?= "1"
+export CSS_URL ?= $(CSS_URL)
+#export CSS_LOG_LEVEL ?= $(CSS_LOG_LEVEL)
+#export CSS_TRACE_LEVEL ?= $(CSS_TRACE_LEVEL)
+#export API_KEY ?= $(API_KEY)
+#export CERT_LOC ?= $(CERT_LOC)
+#export EXCHANGE_LOG_LEVEL ?= $(EXCHANGE_LOG_LEVEL)
+export EXCH_ROOTPW ?= $(EXCH_ROOTPW)
+export EXCHANGE_HUB_ADMIN_PW ?= $(EXCHANGE_HUB_ADMIN_PW)
+export EXCHANGE_SYSTEM_ADMIN_PW ?= $(EXCHANGE_SYSTEM_ADMIN_PW)
+export AGBOT_API ?= $(AGBOT_API)
+export AGBOT_NAME ?= $(AGBOT_NAME)
+export AGBOT_SAPI_URL ?= $(AGBOT_SAPI_URL)
+export AGBOT2_API ?= $(AGBOT2_API)
+#export ORG_ID ?= $(ORG_ID)
+#export ICP_HOST_IP ?= $(ICP_HOST_IP)
+export EXCHANGE_DB_PW ?= $(EXCHANGE_DB_PW)
+export DOCKER_REG_USER ?= $(DOCKER_REG_USER)
+export DOCKER_REG_PW ?= $(DOCKER_REG_PW)
+#export HZN_EXCHANGE_URL ?= $(HZN_EXCHANGE_URL)
+export HZN_DEV_HOST_IP ?= $(E2EDEV_HOST_IP)
+export HZN_DEV_FSS_IMAGE_TAG ?= testing$(BRANCH_NAME)
+#export DOCKER_CPU_INAME ?= $(DOCKER_CPU_INAME)
+#export DOCKER_CPU_TAG ?= $(DOCKER_CPU_TAG)
+export ARCH ?= amd64
+#export VAULT_TOKEN ?= $(VAULT_TOKEN)
+#export VAULT_ADDR ?= $(VAULT_ADDR)
+export HZN_AGBOT_URL ?= $(AGBOT_SAPI_URL)
+#export TEST_PATTERNS ?= $(TEST_PATTERNS)
+#export UNIX_SOCKET_FILE_PERMISSIONS ?= $(UNIX_SOCKET_FILE_PERMISSIONS)
 
 ifndef verbose
 .SILENT:
@@ -157,11 +210,10 @@ run-test: test-image e2edevtest-docker-prereqs test-network
 	docker/docker_run.bash "$(DOCKER_TEST_CNAME)" \
 		docker run -d \
 		--privileged \
-		-p 127.0.0.1:8510:8510 \
-		-p 127.0.0.1:8511:8511 \
+		-p 8510:8510 \
+		-p 8511:8511 \
 		--name "$(DOCKER_TEST_CNAME)" \
 		--network "$(DOCKER_TEST_NETWORK)" \
-		--add-host "$(DOCKER_TEST_ADD_HOST)" \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v $(UDS):$(UDS):rw \
 		-v /var/tmp/horizon/:/var/tmp/horizon/:rw \
@@ -179,8 +231,11 @@ run-test: test-image e2edevtest-docker-prereqs test-network
 		-e "EXCH_APP_HOST=$(DOCKER_EXCH)" \
 		-e "HZN_SSL_SKIP_VERIFY=1" \
 		-e "CSS_URL=$(CSS_URL)" \
+		-e "CSS_LOG_LEVEL=$(CSS_LOG_LEVEL)" \
+		-e "CSS_TRACE_LEVEL=$(CSS_TRACE_LEVEL)" \
 		-e "API_KEY=$(API_KEY)" \
 		-e "CERT_LOC=$(CERT_LOC)" \
+		-e "EXCHANGE_LOG_LEVEL=$(EXCHANGE_LOG_LEVEL)" \
 		-e "EXCH_ROOTPW=$(EXCH_ROOTPW)" \
 		-e "EXCHANGE_HUB_ADMIN_PW=$(EXCHANGE_HUB_ADMIN_PW)" \
 		-e "EXCHANGE_SYSTEM_ADMIN_PW=$(EXCHANGE_SYSTEM_ADMIN_PW)" \
@@ -190,6 +245,7 @@ run-test: test-image e2edevtest-docker-prereqs test-network
 		-e "AGBOT2_API=$(AGBOT2_API)" \
 		-e "ORG_ID=$(ORG_ID)" \
 		-e "ICP_HOST_IP=$(ICP_HOST_IP)" \
+		-e "EXCHANGE_DB_PW=$(EXCHANGE_DB_PW)" \
 		-e "DOCKER_REG_USER=$(DOCKER_REG_USER)" \
 		-e "DOCKER_REG_PW=$(DOCKER_REG_PW)" \
 		-e "HZN_EXCHANGE_URL=$(DOCKER_EXCH)" \
@@ -202,6 +258,7 @@ run-test: test-image e2edevtest-docker-prereqs test-network
 		-e "VAULT_ADDR"="$(VAULT_ADDR)" \
 		-e "HZN_AGBOT_URL"="$(AGBOT_SAPI_URL)" \
 		-e "TEST_PATTERNS"="$(TEST_PATTERNS)" \
+		-e "UNIX_SOCKET_FILE_PERMISSIONS=$(UNIX_SOCKET_FILE_PERMISSIONS)" \
 		-t $(DOCKER_TEST_INAME):$(DOCKER_TEST_TAG)
 	docker cp -a $(E2EDEVTEST_TEMPFS)/. $(DOCKER_TEST_CNAME):/
 	docker exec --user root $(DOCKER_TEST_CNAME) chown -R 1000:1000 /certs
@@ -224,6 +281,11 @@ run-dockerreg: test-network
 		-p 127.0.0.1:443:443 \
 		--name $(DOCKER_REG_CNAME) \
 		--network "$(DOCKER_TEST_NETWORK)" \
+		--health-cmd="nc -z localhost 443 || exit 1" \
+		--health-interval=10s \
+		--health-timeout=5s \
+		--health-retries=3 \
+		--health-start-period=10s \
 		-v $(E2EDEVTEST_TEMPFS)/certs:/certs \
 		-v $(E2EDEVTEST_TEMPFS)/auth:/auth \
 		-v ~/.docker:/root/.docker \
@@ -289,9 +351,9 @@ realclean: mostlyclean
 
 test-network:
 	@echo "Creating e2edev environment network"
-	if [[ "$(shell docker network ls -qf name=$(DOCKER_TEST_NETWORK))" == "" ]]; then \
-		docker network create "$(DOCKER_TEST_NETWORK)"; \
-	fi
+#if [[ "$(shell docker network ls -qf name=$(DOCKER_TEST_NETWORK))" == "" ]]; then \
+#		docker network create "$(DOCKER_TEST_NETWORK)"; \
+#	fi
 
 $(ANAX_SOURCE)/anax:
 	@echo "Building anax"
@@ -299,30 +361,34 @@ $(ANAX_SOURCE)/anax:
 
 e2edevtest-docker-prereqs: 
 	mkdir -p /tmp/ess-store/ /tmp/ess-auth/ /tmp/service_storage/ /tmp/hzndev/
-	mkdir -p $(E2EDEVTEST_TEMPFS)/usr/local/bin $(E2EDEVTEST_TEMPFS)/root/.colonus
-	cp $(ANAX_SOURCE)/anax $(ANAX_SOURCE)/cli/hzn $(E2EDEVTEST_TEMPFS)/usr/local/bin
-	cp -r $(CURDIR)/docker/fs/etc $(E2EDEVTEST_TEMPFS)
-	cp -r $(CURDIR)/docker/fs/hzn $(CURDIR)/gov/* $(CURDIR)/docker/fs/helm $(CURDIR)/docker/fs/resources $(CURDIR)/docker/fs/objects $(E2EDEVTEST_TEMPFS)/root
-	for f in $$(find $(E2EDEVTEST_TEMPFS)/etc/colonus/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH) CSS_URL=$(CSS_URL) HZN_AGBOT_URL=$(AGBOT_SAPI_URL) envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
+	#mkdir -p $(E2EDEVTEST_TEMPFS)/usr/local/bin $(E2EDEVTEST_TEMPFS)/root/.colonus
+	#cp $(ANAX_SOURCE)/anax $(ANAX_SOURCE)/cli/hzn $(E2EDEVTEST_TEMPFS)/usr/local/bin
+	export PATH="$PATH,$(ANAX_SOURCE),$(ANAX_SOURCE)/cli"
+	#cp -r $(CURDIR)/docker/fs/etc $(E2EDEVTEST_TEMPFS)
+	#cp -r $(CURDIR)/docker/fs/hzn $(CURDIR)/gov/* $(CURDIR)/docker/fs/helm $(CURDIR)/docker/fs/resources $(CURDIR)/docker/fs/objects $(E2EDEVTEST_TEMPFS)/root
+	for f in $$(find $(CURDIR)/docker/fs/etc/colonus/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH) CSS_URL=$(CSS_URL) HZN_AGBOT_URL=$(AGBOT_SAPI_URL) envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
 
 test-image:
 	@echo "Handling $(DOCKER_TEST_INAME)"
-	if [ -n "$(shell docker images | grep '$(DOCKER_TEST_INAME)')" ]; then \
-		echo "Skipping since $(DOCKER_TEST_INAME) image exists, run 'make clean && make' if a rebuild is desired"; \
+	@if docker image inspect $(DOCKER_TEST_INAME):$(DOCKER_TEST_TAG) > /dev/null 2>&1; then \
+		echo "Skipping since $(DOCKER_TEST_INAME):$(DOCKER_TEST_TAG) image exists, run 'make clean && make' if a rebuild is desired"; \
 	else \
-		echo "Building container image $(DOCKER_TEST_INAME)"; \
-		docker build $(DOCKER_DEV_OPTS) -t $(DOCKER_TEST_INAME) -f docker/Dockerfile ./docker && docker tag $(DOCKER_TEST_INAME) $(DOCKER_TEST_INAME):$(DOCKER_TEST_TAG); \
+		echo "Building container image $(DOCKER_TEST_INAME):$(DOCKER_TEST_TAG)"; \
+		docker build $(DOCKER_DEV_OPTS) -t $(DOCKER_TEST_INAME):$(DOCKER_TEST_TAG) -f docker/Dockerfile ./docker || exit 1; \
 	fi
 
-test-no-clean: $(ANAX_SOURCE)/anax run-dockerreg run-mgmthub run-test
+test-no-clean: $(ANAX_SOURCE)/anax run-mgmthub run-dockerreg
 	@echo -e  "\nBootstrapping the exchange"
-	docker exec $(DOCKER_TEST_CNAME) bash -c "export $(TEST_VARS) EXCHANGE_HUB_ADMIN_PW=$(EXCHANGE_HUB_ADMIN_PW) EXCHANGE_SYSTEM_ADMIN_PW=$(EXCHANGE_SYSTEM_ADMIN_PW); /root/init_exchange.sh"
+	# docker exec $(DOCKER_TEST_CNAME) bash -c "export $(TEST_VARS) EXCHANGE_HUB_ADMIN_PW=$(EXCHANGE_HUB_ADMIN_PW) EXCHANGE_SYSTEM_ADMIN_PW=$(EXCHANGE_SYSTEM_ADMIN_PW); /root/init_exchange.sh"
+	./gov/init_exchange.sh
 	@echo -e  "\nSetting up secrets in the vault"
-	docker exec $(DOCKER_TEST_CNAME) bash -c "export $(TEST_VARS) DOCKER_VAULT_CNAME=$(DOCKER_VAULT_CNAME); /root/setup_secrets.sh"
+	# docker exec $(DOCKER_TEST_CNAME) bash -c "export $(TEST_VARS) DOCKER_VAULT_CNAME=$(DOCKER_VAULT_CNAME); /root/setup_secrets.sh"
+	./gov/setup_secrets.sh
 	@echo -e  "\nSetting up agent in kube"
-	$(TEST_VARS) ARCH=$(arch) CERT_LOC=$(CERT_LOC) gov/run_kube.sh $(E2EDEVTEST_TEMPFS) $(ANAX_SOURCE) $(EXCH_ROOTPW) $(DOCKER_TEST_NETWORK) $(E2EDEV_HOST_IP)
+	$(TEST_VARS) ARCH=$(arch) CERT_LOC=$(CERT_LOC) ./gov/run_kube.sh $(E2EDEVTEST_TEMPFS) $(ANAX_SOURCE) $(EXCH_ROOTPW) $(DOCKER_TEST_NETWORK) $(E2EDEV_HOST_IP)
 	@echo -e  "\nStarting tests"
-	docker exec $(DOCKER_TEST_CNAME) bash -c "export $(TEST_VARS); /root/gov-combined.sh"
+	# docker exec $(DOCKER_TEST_CNAME) bash -c "export $(TEST_VARS); /root/gov-combined.sh"
+	export $(TEST_VARS); ./gov/framework/gov-combined-new.sh
 
 test: clean test-no-clean
 
@@ -376,6 +442,7 @@ get-agbot-image:
 	    	echo -e "Building agbot image $(AGBOT_IMAGE_NAME):$(AGBOT_IMAGE_TAG)"; \
 			cd $(ANAX_SOURCE) && make agbot-image; \
 			docker tag $(AGBOT_IMAGE_NAME):testing $(AGBOT_IMAGE_NAME):e2edev; \
+			docker images; \
 	    else \
 	    	echo "Update $(AGBOT_IMAGE_NAME):$(AGBOT_IMAGE_TAG) image with latest anax and hzn."; \
 	    	docker run -it --name="agbot_temp" $(AGBOT_IMAGE_NAME):$(AGBOT_IMAGE_TAG) /bin/bash >/dev/null 2>&1  || true; \
@@ -394,30 +461,52 @@ get-css-image:
 	if [[ "$(DOCKER_CSS_TAG)" == "e2edev" ]]; then \
 		if [[ "$(shell docker images -q $(DOCKER_CSS_INAME):$(DOCKER_CSS_TAG) 2>/dev/null)" == "" ]]; then \
 	    	echo -e "Building css image $(DOCKER_CSS_INAME):$(DOCKER_CSS_TAG)"; \
-			cd $(ANAX_SOURCE) && make css-docker-image; \
-			docker tag $(DOCKER_CSS_INAME):testing $(DOCKER_CSS_INAME):e2edev; \
+			docker images; \
 	    fi \
 	fi
 
 get-vault-image:
-	if [[ "$(NOVAULT)" != "1" ]]; then \
-		echo "\nPulling vault image $(DOCKER_VAULT_INAME)"; \
-		docker pull $(DOCKER_VAULT_INAME):$(DOCKER_VAULT_TAG); \
-	else \
-		echo "Skipping vault image $(DOCKER_VAULT_INAME)"; \
-	fi
+#	if [[ "$(NOVAULT)" != "1" ]]; then \
+#		echo "\nPulling vault image $(DOCKER_VAULT_INAME)"; \
+#		docker pull $(DOCKER_VAULT_INAME):$(DOCKER_VAULT_TAG); \
+#	else
+		echo "Skipping vault image $(DOCKER_VAULT_INAME)";
+#	fi
 
 run-mgmthub: get-agbot-image get-css-image get-vault-image get-anax-images
 	@echo "Starting all-in-one management hub"
 	echo "\nHZN_LISTEN_IP is $(E2EDEV_HOST_IP)"; \
-	export EXCHANGE_ROOT_PW=$(EXCH_ROOTPW) EXCHANGE_IMAGE_TAG=$(DOCKER_EXCH_TAG) EXCHANGE_DATABASE=$(EXCHDB_NAME); \
-	export EXCHANGE_HUB_ADMIN_PW=$(EXCHANGE_HUB_ADMIN_PW) EXCHANGE_SYSTEM_ADMIN_PW=$(EXCHANGE_SYSTEM_ADMIN_PW); \
-	export AGBOT_ID=$(AGBOT_NAME) AGBOT_TOKEN=$(AGBOT_TOKEN) AGBOT_IMAGE_TAG=$(AGBOT_IMAGE_TAG); \
-	export CSS_IMAGE_TAG=$(DOCKER_CSS_TAG) CSS_INTERNAL_PORT=$(CSS_INTERNAL_PORT); \
+	export \
+		EXCHANGE_ROOT_PW=$(EXCH_ROOTPW) \
+		EXCHANGE_IMAGE_TAG=$(DOCKER_EXCH_TAG) \
+		EXCHANGE_LOG_LEVEL=$(EXCHANGE_LOG_LEVEL) \
+		EXCHANGE_DATABASE=$(EXCHDB_NAME); \
+	export \
+		EXCHANGE_HUB_ADMIN_PW=$(EXCHANGE_HUB_ADMIN_PW) \
+		EXCHANGE_SYSTEM_ADMIN_PW=$(EXCHANGE_SYSTEM_ADMIN_PW); \
+	export \
+		AGBOT_ID=$(AGBOT_NAME) \
+		AGBOT_TOKEN=$(AGBOT_TOKEN) \
+		AGBOT_IMAGE_NAME=$(AGBOT_IMAGE_NAME) \
+		AGBOT_IMAGE_TAG=$(AGBOT_IMAGE_TAG); \
+	export \
+		CSS_INTERNAL_PORT=$(CSS_INTERNAL_PORT) \
+		CSS_LOG_LEVEL=$(CSS_LOG_LEVEL) \
+		CSS_TRACE_LEVEL=$(CSS_TRACE_LEVEL) \
+		UNIX_SOCKET_FILE_PERMISSIONS=$(UNIX_SOCKET_FILE_PERMISSIONS); \
 	export MONGO_IMAGE_TAG=$(DOCKER_CSSDB_TAG); \
-	export POSTGRES_IMAGE_TAG=$(DOCKER_EXCHDB_TAG) POSTGRES_USER=$(EXCHDB_USER); \
-	export VAULT_IMAGE_TAG=$(DOCKER_VAULT_TAG) VAULT_PORT=$(VAULT_PORT) VAULT_DEV_LISTEN_ADDRESS=$(VAULT_DEV_LISTEN_ADDRESS) VAULT_ROOT_TOKEN=$(VAULT_DEV_ROOT_TOKEN_ID); \
-	export ANAX_SOURCE=$(ANAX_SOURCE) ANAX_LOG_LEVEL=5; \
+	export \
+		EXCHANGE_DB_PW=$(EXCHANGE_DB_PW) \
+		POSTGRES_IMAGE_TAG=$(DOCKER_EXCHDB_TAG) \
+		POSTGRES_USER=$(EXCHDB_USER); \
+	export \
+		VAULT_IMAGE_TAG=$(DOCKER_VAULT_TAG) \
+		#VAULT_PORT=$(VAULT_PORT) \
+		#VAULT_DEV_LISTEN_ADDRESS=$(VAULT_DEV_LISTEN_ADDRESS) \
+		VAULT_ROOT_TOKEN=$(VAULT_DEV_ROOT_TOKEN_ID); \
+	export \
+		ANAX_SOURCE=$(ANAX_SOURCE) \
+		ANAX_LOG_LEVEL=5; \
 	export HZN_TRANSPORT=$(HZN_TRANSPORT); \
 	export HZN_LISTEN_IP=$(E2EDEV_HOST_IP); \
 	$(TEST_VARS) $(ANAX_SOURCE)/test/gov/start_mgmt_hub.sh

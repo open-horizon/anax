@@ -23,16 +23,14 @@ getCpuFromProc() {
         else
                 rcpuu=${cpuu}
         fi
-        echo $rcpuu
+        echo "$rcpuu"
 }
 
-# Get the currect CPU consumption, then construct the HTTP response message
+# Get the current CPU consumption, then construct the HTTP response message
 CPU=$(getCpuFromProc)
-if [ "$CPU"=="00" ]; then CPU=0; fi
+if [ "$CPU" = "00" ]; then CPU=0; fi
 HEADERS="Content-Type: text/html; charset=ISO-8859-1"
 BODY="{\"cpu\":${CPU}}"
-HTTP="HTTP/1.1 200 OK\r\n${HEADERS}\r\n\r\n${BODY}\r\n"
 
 # Emit the HTTP response
-echo -en $HTTP
-
+printf "HTTP/1.1 200 OK\r\n%s\r\n\r\n%s\r\n" "${HEADERS}" "${BODY}"

@@ -1,10 +1,19 @@
 #!/bin/bash
 
+# Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
+if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
+    set -x
+fi
+
+# Base directory for test resources (test/ directory, one level up from this script).
+E2EDEV_ROOT="$(pwd)"
+
 TEST_DIFF_ORG=${TEST_DIFF_ORG:-1}
 
-export ARCH=${ARCH}
+export ARCH=${ARCH:-amd64}
+export CSS_URL=${CSS_URL:-http://127.0.0.1:9443}
 
-function set_exports {
+set_exports() {
   if [ "$NOANAX" != "1" ]
   then
     export USER=anax1
@@ -17,7 +26,7 @@ function set_exports {
     export HZN_AGENT_PORT=8510
     export ANAX_API="http://localhost:${HZN_AGENT_PORT}"
     export EXCH="${EXCH_APP_HOST}"
-    if [ ${CERT_LOC} -eq "1" ]; then
+    if [ "${CERT_LOC}" = "1" ]; then
       export HZN_MGMT_HUB_CERT_PATH="/certs/css.crt"
     fi
 
@@ -31,13 +40,13 @@ function set_exports {
   fi
 }
 
-function run_delete_loops {
+run_delete_loops() {
   # Start the deletion loop tests if they have not been disabled.
   echo -e "No loop setting is $NOLOOP"
 
   # get the admin auth for verify_agreements.sh
    local admin_auth="e2edevadmin:e2edevadminpw"
-   if [ "$DEVICE_ORG" == "userdev" ]; then
+   if [ "$DEVICE_ORG" = "userdev" ]; then
      admin_auth="userdevadmin:userdevadminpw"
    fi
 
@@ -47,61 +56,53 @@ function run_delete_loops {
     sleep 240
 
     echo "Starting device delete agreement script"
-    ./del_loop.sh &
+    ./gov/del_loop.sh &
 
     # Give the device script time to get started and get into it's 10 min cycle. Wait 5 mins
     # and then start the agbot delete cycle, so that it is interleaved with the device cycle.
     sleep 300
-    ./agbot_del_loop.sh &
+    ./gov/agbot_del_loop.sh &
   else
     echo -e "Deletion loop tests set to only run once."
 
-    if [ "${PATTERN}" == "sall" ] || [ "${PATTERN}" == "sloc" ] || [ "${PATTERN}" == "sns" ] || [ "${PATTERN}" == "sgps" ] || [ "${PATTERN}" == "spws" ] || [ "${PATTERN}" == "susehello" ] || [ "${PATTERN}" == "shelm" ]; then
+    if [ "${PATTERN}" == "sall" ] || [ "${PATTERN}" == "sloc" ] || [ "${PATTERN}" == "sns" ] || [ "${PATTERN}" == "sgps" ] || [ "${PATTERN}" == "spws" ] || [ "${PATTERN}" == "susehello" ] || [ "${PATTERN}" = "shelm" ]; then
       echo -e "Starting service pattern verification scripts"
-      if [ "$NOLOOP" == "1" ]; then
-        ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh
-        if [ $? -ne 0 ]; then echo "Verify agreement failure."; exit 1; fi
+      if [ "$NOLOOP" = "1" ]; then
+        if ! ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./gov/verify_agreements.sh; then echo "Verify agreement failure."; exit 1; fi
          echo -e "No cancellation setting is $NOCANCEL"
         if [ "$NOCANCEL" != "1" ]; then
-          ./del_loop.sh
-          if [ $? -ne 0 ]; then echo "Agreement deletion failure."; exit 1; fi
+          if ! ./gov/del_loop.sh; then echo "Agreement deletion failure."; exit 1; fi
           echo -e "Sleeping for 30s between device and agbot agreement deletion"
           sleep 30
-          ./agbot_del_loop.sh
-          if [ $? -ne 0 ]; then echo "Agbot agreement deletion failure."; exit 1; fi
-          ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh
-          if [ $? -ne 0 ]; then echo "Agreement restart failure."; exit 1; fi
+          if ! ./gov/agbot_del_loop.sh; then echo "Agbot agreement deletion failure."; exit 1; fi
+          if ! ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./gov/verify_agreements.sh; then echo "Agreement restart failure."; exit 1; fi
         else
           echo -e "Cancellation tests are disabled"
         fi
       else
-        ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh &
+        ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./gov/verify_agreements.sh &
       fi
     else
       echo -e "Verifying policy based workload deployment"
       echo -e "No cancellation setting is $NOCANCEL"
       if [ "$NOCANCEL" != "1" ]; then
-        if [ "$NONS" == "1" ] || [ "$NOPWS" == "1" ] || [ "$NOLOC" == "1" ] || [ "$NOGPS" == "1" ] || [ "$NOHELLO" == "1" ] || [ "$NOK8S" == "1" ]; then
+        if [ "$NONS" == "1" ] || [ "$NOPWS" == "1" ] || [ "$NOLOC" == "1" ] || [ "$NOGPS" == "1" ] || [ "$NOHELLO" == "1" ] || [ "$NOK8S" = "1" ]; then
           echo "Skipping agreement verification"
           sleep 30
         else
-          ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh
-          if [ $? -ne 0 ]; then echo "Verify agreement failure."; exit 1; fi
+          if ! ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./gov/verify_agreements.sh; then echo "Verify agreement failure."; exit 1; fi
         fi
-        ./del_loop.sh
-        if [ $? -ne 0 ]; then echo "Agreement deletion failure."; exit 1; fi
+        if ! ./gov/del_loop.sh; then echo "Agreement deletion failure."; exit 1; fi
         echo -e "Sleeping for 30s between device and agbot agreement deletion"
         sleep 30
-        ./agbot_del_loop.sh
-        if [ $? -ne 0 ]; then echo "Agbot agreement deletion failure."; exit 1; fi
+        if ! ./gov/agbot_del_loop.sh; then echo "Agbot agreement deletion failure."; exit 1; fi
       else
         echo -e "Cancellation tests are disabled"
       fi
-      if [ "$NONS" == "1" ] || [ "$NOPWS" == "1" ] || [ "$NOLOC" == "1" ] || [ "$NOGPS" == "1" ] || [ "$NOHELLO" == "1" ] || [ "$NOK8S" == "1" ]; then
+      if [ "$NONS" == "1" ] || [ "$NOPWS" == "1" ] || [ "$NOLOC" == "1" ] || [ "$NOGPS" == "1" ] || [ "$NOHELLO" == "1" ] || [ "$NOK8S" = "1" ]; then
         echo "Skipping agreement verification"
       else
-        ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh
-        if [ $? -ne 0 ]; then echo "Verify agreement failure."; exit 1; fi
+        if ! ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./gov/verify_agreements.sh; then echo "Verify agreement failure."; exit 1; fi
       fi
     fi
   fi
@@ -110,11 +111,15 @@ function run_delete_loops {
 EXCH_URL="${EXCH_APP_HOST}"
 
 # the horizon var base for storing the keys. It is the default value for HZN_VAR_BASE.
-mkdir -p /var/horizon
-mkdir -p /var/horizon/.colonus
+# Create horizon directories (only if writable, skip in environments without permissions)
+if [ -w /var ] || mkdir -p /var/horizon 2>/dev/null; then
+    mkdir -p /var/horizon/.colonus 2>/dev/null || echo "INFO: Skipping /var/horizon creation (not writable)"
+else
+    echo "INFO: /var/horizon not writable, tests will use alternative paths if needed"
+fi
 
 # check if the hub is all-in-1 management hub or not
-if [[ ${EXCH_APP_HOST} == *"://exchange-api:"* ]]; then
+if [[ ${EXCH_APP_HOST} = *"://127.0.0.1:"* ]]; then
   export REMOTE_HUB=0
 else
   export REMOTE_HUB=1
@@ -125,46 +130,45 @@ echo -e "REMOTE_HUB is set to ${REMOTE_HUB}."
 if [ "$ICP_HOST_IP" != "0" ]
 then
   echo "Updating hosts file."
-  HOST_NAME_ICP=`echo $EXCH_URL | awk -F/ '{print $3}' | sed 's/:.*//g'`
-  HOST_NAME=`echo $EXCH_URL | awk -F/ '{print $3}' | sed 's/:.*//g' | sed 's/\.icp*//g'`
+  HOST_NAME_ICP=$(echo "$EXCH_URL" | awk -F/ '{print $3}' | sed 's/:.*//g')
+  HOST_NAME=$(echo "$EXCH_URL" | awk -F/ '{print $3}' | sed 's/:.*//g' | sed 's/\.icp*//g')
   echo "$ICP_HOST_IP $HOST_NAME_ICP $HOST_NAME"
   echo "$ICP_HOST_IP $HOST_NAME_ICP $HOST_NAME" >> /etc/hosts
 fi
 
-cd /root
+cd /root || { echo "Error: gov-combined.sh - ln 134 - Failure to change directories."; exit 1; }
 
 # Build an old anax if we need it
-if [ "$OLDANAX" == "1" ]; then
-  ./build_old_anax.sh
-  if [ $? -ne 0 ]; then
-    exit -1
+if [ "$OLDANAX" = "1" ]; then
+  if ! ./gov/build_old_anax.sh; then
+    exit 255
   fi
 fi
 
 #--cacert /certs/css.crt
-if [ ${CERT_LOC} -eq "1" ]; then
+if [ "${CERT_LOC}" -eq 1 ]; then
   CERT_VAR="--cacert /certs/css.crt"
 else
-  CERT_VAR=""
+  CERT_VAR=(--silent)
 fi
 
 # Start the API Key tests if it has been set
 #if [ ${API_KEY} != "0" ]; then
 #  echo -e "Starting API Key test."
-#  ./api_key.sh
+#  ./gov/api_key.sh
 #  if [ $? -ne 0 ]
 #  then
 #    echo -e "API Key test failure."
-#    exit -1
+#    exit 255
 #  fi
 #fi
 
 # test the CSS API
-./sync_service_test.sh
-if [ $? -ne 0 ]
+
+if ! ./gov/sync_service_test.sh
 then
   echo -e "Model management sync service test failure."
-  exit -1
+  exit 255
 fi
 
 # Setup to use the anax registration APIs
@@ -180,7 +184,7 @@ then
   export EXCH="${EXCH_APP_HOST}"
   export TOKEN="Abcdefghijklmno1"
 
-  if [ ${CERT_LOC} -eq "1" ]; then
+  if [ "${CERT_LOC}" -eq 1 ]; then
     export HZN_MGMT_HUB_CERT_PATH="/certs/css.crt"
   fi
 
@@ -192,7 +196,7 @@ then
 
   # Start Anax
   echo "Starting Anax1 for tests."
-  if [ ${CERT_LOC} -eq "1" ]; then
+  if [ "${CERT_LOC}" -eq 1 ]; then
     /usr/local/bin/anax -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined.config >/tmp/anax.log 2>&1 &
   else
     /usr/local/bin/anax -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined-no-cert.config >/tmp/anax.log 2>&1 &
@@ -202,8 +206,7 @@ then
 
   TESTFAIL="0"
   echo "Running API tests"
-  ./apitest.sh
-  if [ $? -ne 0 ]
+  if ! ./gov/apitest.sh
   then
     echo "API Test failure."
     TESTFAIL="1"
@@ -212,26 +215,25 @@ then
     echo "API tests completed SUCCESSFULLY."
 
     echo "Killing anax and cleaning up."
-    kill $(pidof anax)
-    rm -fr /root/.colonus/*.db
-    rm -fr /root/.colonus/policy.d/*
+    kill "$(pidof anax)"
+    rm -fr "${HOME}"/.colonus/*.db
+    rm -fr "${HOME}"/.colonus/policy.d/*
   fi
 fi
 
 echo -e "No agbot setting is $NOAGBOT"
-HZN_AGBOT_API=${AGBOT_API}
 if [ "$NOAGBOT" != "1" ] && [ "$TESTFAIL" != "1" ]
 then
   if [ ${REMOTE_HUB} -eq 0 ]; then
     # Check that the agbot is still alive
-    if ! curl -sSL ${AGBOT_API}/agreement > /dev/null; then
+    if ! curl -sSL "${AGBOT_API}"/agreement > /dev/null; then
       echo "Agreement Bot 1 verification failure."
       TESTFAIL="1"
       exit 1
     fi
 
-    if [ "$MULTIAGBOT" == "1" ]; then
-      if ! curl -sSL ${AGBOT2_API}/agreement > /dev/null; then
+    if [ "$MULTIAGBOT" = "1" ]; then
+      if ! curl -sSL "${AGBOT2_API}"/agreement > /dev/null; then
         echo "Agreement Bot 2 verification failure."
         TESTFAIL="1"
         exit 1
@@ -243,10 +245,9 @@ else
 fi
 
 # Setup real ARCH value in all policies, patterns & service definition files for tests
-for in_file in /root/input_files/compcheck/*.json
+for in_file in "${E2EDEV_ROOT}"/gov/input_files/compcheck/*.json
 do
-  sed -i -e "s#__ARCH__#${ARCH}#g" $in_file
-  if [ $? -ne 0 ]
+  if ! sed -i -e "s#__ARCH__#${ARCH}#g" "$in_file"
   then
     echo "Providing real architecture value failure."
     TESTFAIL="1"
@@ -257,21 +258,20 @@ done
 echo "TEST_PATTERNS=${TEST_PATTERNS}"
 
 # Services can be run via patterns or from policy files
-if [[ "${TEST_PATTERNS}" == "" ]] && [ "$TESTFAIL" != "1" ]
+if [[ "${TEST_PATTERNS}" = "" ]] && [ "$TESTFAIL" != "1" ]
 then
   echo -e "Making agreements based on policy files."
 
   set_exports
   export PATTERN=""
 
-  ./start_node.sh
-  if [ $? -ne 0 ]
+  if ! ./gov/start_node.sh
   then
     echo "Node start failure."
     TESTFAIL="1"
   else
-    run_delete_loops
-    if [ $? -ne 0 ]
+
+    if ! run_delete_loops
     then
       echo "Delete loop failure."
       TESTFAIL="1"
@@ -279,8 +279,8 @@ then
   fi
 
   if [ "$NOSVC_CONFIGSTATE" != "1" ]; then
-    ./service_configstate_test.sh
-    if [ $? -ne 0 ]
+
+    if ! ./gov/service_configstate_test.sh
     then
       echo "Service configstate test failure."
       TESTFAIL="1"
@@ -289,10 +289,10 @@ then
 
 elif [ "$TESTFAIL" != "1" ]; then
   # make agreements based on patterns
-  last_pattern=$(echo $TEST_PATTERNS |sed -e 's/^.*,//')
+  last_pattern="${TEST_PATTERNS##*,}"
   echo -e "Last pattern is $last_pattern"
 
-  for pat in $(echo $TEST_PATTERNS | tr "," " "); do
+  for pat in $(echo "$TEST_PATTERNS" | tr "," " "); do
     export PATTERN=$pat
     echo -e "***************************"
     echo -e "Start testing pattern $PATTERN..."
@@ -301,7 +301,7 @@ elif [ "$TESTFAIL" != "1" ]; then
     # the main agent is sall, the pattern for the multi-agent will be sns. 
     # Otherwide they will have the same pattern. 
     ma_pattern=$PATTERN
-    if [ "${PATTERN}" == "sall" ]; then
+    if [ "${PATTERN}" = "sall" ]; then
       ma_pattern="sns"
     fi
 
@@ -309,11 +309,10 @@ elif [ "$TESTFAIL" != "1" ]; then
     # socat - TCP4-LISTEN:80,crlf &
 
     # start pattern test
-    set_exports $pat
+    set_exports "$pat"
 
     # start main agent
-    ./start_node.sh
-    if [ $? -ne 0 ]
+    if ! ./gov/start_node.sh
     then
       echo "Node start failure."
       TESTFAIL="1"
@@ -321,19 +320,18 @@ elif [ "$TESTFAIL" != "1" ]; then
     fi
 
     # start multiple agents
-    source ./multiple_agents.sh
+    # shellcheck disable=SC1091
+    source ./gov/multiple_agents.sh
     if [ -n "$MULTIAGENTS" ] && [ "$MULTIAGENTS" != "0" ]; then
       echo "Starting multiple agents with pattern ${ma_pattern} ..."
-      PATTERN=${ma_pattern} startMultiAgents
-      if [ $? -ne 0 ]; then
+      if ! PATTERN=${ma_pattern} startMultiAgents; then
         echo "Multiple agent startup failure."
         TESTFAIL="1"
         break
       fi
     fi
 
-    run_delete_loops
-    if [ $? -ne 0 ]
+    if ! run_delete_loops
     then
       echo "Delete loop failure."
       TESTFAIL="1"
@@ -342,8 +340,7 @@ elif [ "$TESTFAIL" != "1" ]; then
 
     if [ -n "$MULTIAGENTS" ] && [ "$MULTIAGENTS" != "0" ]; then
       echo "Checking multiple agents..."
-      PATTERN=${ma_pattern} verifyMultiAgentsAgreements
-      if [ $? -ne 0 ]; then
+      if ! PATTERN=${ma_pattern} verifyMultiAgentsAgreements; then
         echo "Multiple agent agreement varification failure."
         TESTFAIL="1"
         break
@@ -351,8 +348,7 @@ elif [ "$TESTFAIL" != "1" ]; then
     fi
 
     if [ "$NORETRY" != "1" ]; then
-      ./service_retry_test.sh
-      if [ $? -ne 0 ]
+      if ! ./gov/service_retry_test.sh
       then
         echo "Service retry failure."
         TESTFAIL="1"
@@ -361,8 +357,7 @@ elif [ "$TESTFAIL" != "1" ]; then
     fi
 
     if [ "$NOSVC_CONFIGSTATE" != "1" ]; then
-      ./service_configstate_test.sh
-      if [ $? -ne 0 ]
+      if ! ./gov/service_configstate_test.sh
       then
         echo "Service configstate test failure."
         TESTFAIL="1"
@@ -376,14 +371,13 @@ elif [ "$TESTFAIL" != "1" ]; then
     if [ "$pat" != "$last_pattern" ]; then
       # Save off the existing log file, in case the next test fails and we need to look back to see how this
       # instance of anax actually ended.
-      mv /tmp/anax.log /tmp/anax_$pat.log
+      mv /tmp/anax.log "/tmp/anax_$pat.log"
 
       echo -e "Unregister the node. Anax will be shutdown."
-      ./unregister.sh
-      if [ $? -eq 0 ]; then
-        sleep 10
-      else
+      if ! ./gov/unregister.sh; then
         exit 1
+      else
+        sleep 10
       fi
     fi
     echo -e "***************************"
@@ -392,24 +386,21 @@ elif [ "$TESTFAIL" != "1" ]; then
 fi
 
 if [ "$NOCOMPCHECK" != "1" ] && [ "$TESTFAIL" != "1" ]; then
-  if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" == "" ]; then
-    ./agbot_apitest.sh
-    if [ $? -ne 0 ]
+  if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" = "" ]; then
+    if ! ./gov/agbot_apitest.sh
     then
       echo "Policy compatibility test using Agbot API failure."
       exit 1
     fi
 
-    ./hzn_compcheck.sh
-    if [ $? -ne 0 ]
+    if ! ./gov/hzn_compcheck.sh
     then
       echo "Policy compatibility test using hzn command failure."
       exit 1
     fi
 
-    if [ "$NOVAULT" != "1" ]; then 
-      ./hzn_secretsmanager.sh 
-      if [ $? -ne 0 ]
+    if [ "$NOVAULT" != "1" ]; then
+      if ! ./gov/hzn_secretsmanager.sh
       then
         echo "hzn secretsmanager command test failure."
         exit 1
@@ -420,7 +411,7 @@ if [ "$NOCOMPCHECK" != "1" ] && [ "$TESTFAIL" != "1" ]; then
 fi
 
 # if [ "$NOAGENTAUTO" != "1" ] && [ "$TESTFAIL" != "1" ]; then
-#   ./hzn_nmp.sh
+#   ./gov/hzn_nmp.sh
 #   if [ $? -ne 0 ]; then
 #     echo "Agent Auto Upgrade test using hzn command failure."
 #     exit 1
@@ -428,58 +419,51 @@ fi
 # fi
 
 if [ "$NOSURFERR" != "1" ] && [ "$TESTFAIL" != "1" ] && [ ${REMOTE_HUB} -eq 0 ]; then
-  if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" == "" ] && [ "$NOLOOP" == "1" ] && [ "$NONS" == "" ] && [ "$NOGPS" == "" ] && [ "$NOPWS" == "" ] && [ "$NOLOC" == "" ] && [ "$NOHELLO" == "" ] && [ "$NOK8S" == "" ]; then
-    ./verify_surfaced_error.sh
-    if [ $? -ne 0 ]; then echo "Verify surfaced error failure."; exit 1; fi
+  if { [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" == "" ]; } && [ "$NOLOOP" == "1" ] && [ "$NONS" == "" ] && [ "$NOGPS" == "" ] && [ "$NOPWS" == "" ] && [ "$NOLOC" == "" ] && [ "$NOHELLO" == "" ] && [ "$NOK8S" = "" ]; then
+    if ! ./gov/verify_surfaced_error.sh; then echo "Verify surfaced error failure."; exit 1; fi
   fi
 fi
 
 if [ "$NOSURFERR" != "1" ] && [ "$TESTFAIL" != "1" ] && [ ${REMOTE_HUB} -eq 0 ]; then
-  if [ "$TEST_PATTERNS" == "" ] && [ "$NOLOOP" == "1" ] && [ "$NONS" == "" ] && [ "$NOGPS" == "" ] && [ "$NOPWS" == "" ] && [ "$NOLOC" == "" ] && [ "$NOHELLO" == "" ] && [ "$NOK8S" == "" ]; then
-    ./policy_change.sh
-    if [ $? -ne 0 ]; then echo "Policy change test failure."; exit 1; fi
+  if [ "$TEST_PATTERNS" == "" ] && [ "$NOLOOP" == "1" ] && [ "$NONS" == "" ] && [ "$NOGPS" == "" ] && [ "$NOPWS" == "" ] && [ "$NOLOC" == "" ] && [ "$NOHELLO" == "" ] && [ "$NOK8S" = "" ]; then
+    if ! ./gov/policy_change.sh; then echo "Policy change test failure."; exit 1; fi
   fi
 fi
 
 if [ "$NOUPGRADE" != "1" ] && [ "$TESTFAIL" != "1" ] && [ ${REMOTE_HUB} -eq 0 ]; then
-  if [ "$TEST_PATTERNS" == "sall" ]; then
-    ./service_upgrading_downgrading_test.sh
-    if [ $? -ne 0 ]; then echo "Service upgrading/downgrading test failure."; exit 1; fi
+  if [ "$TEST_PATTERNS" = "sall" ]; then
+    if ! ./gov/service_upgrading_downgrading_test.sh; then echo "Service upgrading/downgrading test failure."; exit 1; fi
   fi
 fi
 
-if [ "$NOVAULT" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "$NOLOOP" == "1" ] && [ "$NONS" == "" ] && [ "$NOGPS" == "" ] && [ "$NOPWS" == "" ] && [ "$NOLOC" == "" ] && [ "$NOHELLO" == "" ] && [ "$NOK8S" == "" ]; then
-  if [ "$TEST_PATTERNS" == "" ]; then 
-    ./service_secrets_test.sh
-    if [ $? -ne 0 ]; then echo "Service secret test failure."; exit 1; fi
+if [ "$NOVAULT" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "$NOLOOP" == "1" ] && [ "$NONS" == "" ] && [ "$NOGPS" == "" ] && [ "$NOPWS" == "" ] && [ "$NOLOC" == "" ] && [ "$NOHELLO" == "" ] && [ "$NOK8S" = "" ]; then
+  if [ "$TEST_PATTERNS" = "" ]; then
+    if ! ./gov/service_secrets_test.sh; then echo "Service secret test failure."; exit 1; fi
   fi
 fi
 
 if [ "$NOHZNREG" != "1" ] && [ "$TESTFAIL" != "1" ]; then
-  if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" == "" ]; then
+  if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" = "" ]; then
     echo "Sleeping 15 seconds..."
     sleep 15
 
-    ./hzn_reg.sh
-    if [ $? -ne 0 ]; then
+    if ! ./gov/hzn_reg.sh; then
       echo "Failed registering and unregistering tests with hzn commands."
       exit 1
     fi
   fi
 fi
 
-if [ "$TEST_PATTERNS" == "sall" ] && [ "$NOHZNLOG" != "1" ] && [ "$NOHZNREG" != "1" ] && [ "$TESTFAIL" != "1" ]; then
-  ./service_log_test.sh
-  if [ $? -ne 0 ]; then
+if [ "$TEST_PATTERNS" = "sall" ] && [ "$NOHZNLOG" != "1" ] && [ "$NOHZNREG" != "1" ] && [ "$TESTFAIL" != "1" ]; then
+  if ! ./gov/service_log_test.sh; then
     echo "Failed hzn service log tests."
     exit 1
   fi
 fi
 
 if [ "$NOPATTERNCHANGE" != "1" ] && [ "$TESTFAIL" != "1" ]; then
-  if [ "$TEST_PATTERNS" == "sall" ]; then
-    ./pattern_change.sh
-    if [ $? -ne 0 ]; then
+  if [ "$TEST_PATTERNS" = "sall" ]; then
+    if ! ./gov/pattern_change.sh; then
       echo "Failed node pattern change tests."
       exit 1
     fi
@@ -488,21 +472,20 @@ fi
 
 # Start the node unconfigure tests if they have been enabled.
 echo -e "Node unconfig setting is $UNCONFIG"
-if [ "$UNCONFIG" == "1" ] && [ "$NOAGBOT" != "1" ] && [ "$TESTFAIL" != "1" ]
+if [ "$UNCONFIG" = "1" ] && [ "$NOAGBOT" != "1" ] && [ "$TESTFAIL" != "1" ]
 then
   echo "Starting unconfig loop tests. Giving time for 1st agreements to complete."
   sleep 120
 
   echo "Starting device unconfigure script"
-  ./unconfig_loop.sh &
+  ./gov/unconfig_loop.sh &
 else
   echo -e "Unconfig loop tests are disabled."
 fi
 
 # HA test
-if [ "$HA" == "1" ]; then
-  ./ha_test.sh
-  if [ $? -ne 0 ]; then
+if [ "$HA" = "1" ]; then
+  if ! ./gov/ha_test.sh; then
     echo "HA tests failure."
     exit 1
   fi
@@ -512,65 +495,65 @@ fi
 if [ ${REMOTE_HUB} -eq 1 ]; then
   echo "Clean up remote environment"
   echo "Delete e2edev@somecomp.com..."
-  DL8ORG=$(curl -X DELETE $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"label":"E2EDev","description":"E2EDevTest","orgType":"IBM"}' "${EXCH_URL}/orgs/e2edev@somecomp.com" | jq -r '.msg')
+  DL8ORG=$(curl -X DELETE "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"label":"E2EDev","description":"E2EDevTest","orgType":"IBM"}' "${EXCH_URL}/orgs/e2edev@somecomp.com" | jq -r '.msg')
   echo "$DL8ORG"
 
   echo "Delete userdev organization..."
-  DL8UORG=$(curl -X DELETE $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"label":"UserDev","description":"UserDevTest"}' "${EXCH_URL}/orgs/userdev" | jq -r '.msg')
+  DL8UORG=$(curl -X DELETE "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"label":"UserDev","description":"UserDevTest"}' "${EXCH_URL}/orgs/userdev" | jq -r '.msg')
   echo "$DL8UORG"
 
   echo "Delete Customer1 organization..."
-  DL8C1ORG=$(curl -X DELETE $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"label":"Customer1","description":"The Customer1 org"}' "${EXCH_URL}/orgs/Customer1" | jq -r '.msg')
+  DL8C1ORG=$(curl -X DELETE "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"label":"Customer1","description":"The Customer1 org"}' "${EXCH_URL}/orgs/Customer1" | jq -r '.msg')
   echo "$DL8C1ORG"
 
   echo "Delete Customer2 organization..."
-  DL8C2ORG=$(curl -X DELETE $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"label":"Customer2","description":"The Customer2 org"}' "${EXCH_URL}/orgs/Customer2" | jq -r '.msg')
+  DL8C2ORG=$(curl -X DELETE "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"label":"Customer2","description":"The Customer2 org"}' "${EXCH_URL}/orgs/Customer2" | jq -r '.msg')
   echo "$DL8C2ORG"
 
   # Delete an IBM admin user in the exchange
   echo "Delete an admin user for IBM org..."
-  DL8IBM=$(curl -X DELETE $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"password":"ibmadminpw","email":"ibmadmin%40ibm.com","admin":true}' "${EXCH_URL}/orgs/IBM/users/ibmadmin" | jq -r '.msg')
+  DL8IBM=$(curl -X DELETE "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"password":"ibmadminpw","email":"ibmadmin%40ibm.com","admin":true}' "${EXCH_URL}/orgs/IBM/users/ibmadmin" | jq -r '.msg')
   echo "$DL8IBM"
 
   # Delete agreement bot user in the exchange
   echo "Delete Agbot user..."
-  DL8AGBOT=$(curl -X DELETE $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"password":"agbot1pw","email":"me%40gmail.com","admin":false}' "${EXCH_URL}/orgs/IBM/users/agbot1" | jq -r '.msg')
+  DL8AGBOT=$(curl -X DELETE "${CERT_VAR[@]}" --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"password":"agbot1pw","email":"me%40gmail.com","admin":false}' "${EXCH_URL}/orgs/IBM/users/agbot1" | jq -r '.msg')
   echo "$DL8AGBOT"
 
   echo "Delete network_1.5.0 ..."
-  DLHELM100=$(curl -X DELETE $CERT_VAR  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/bluehorizon.network-services-network_1.5.0_${ARCH}")
+  DLHELM100=$(curl -X DELETE "${CERT_VAR[@]}"  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/bluehorizon.network-services-network_1.5.0_${ARCH}")
   echo "$DL150"
 
   echo "Delete network2_1.5.0 ..."
-  DLHELM100=$(curl -X DELETE $CERT_VAR  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/bluehorizon.network-services-network2_1.5.0_${ARCH}")
+  DLHELM100=$(curl -X DELETE "${CERT_VAR[@]}"  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/bluehorizon.network-services-network2_1.5.0_${ARCH}")
   echo "$DL2150"
 
   echo "Delete helm-service_1.0.0 ..."
-  DLHELM100=$(curl -X DELETE $CERT_VAR  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/my.company.com-services-helm-service_1.0.0_${ARCH}")
+  DLHELM100=$(curl -X DELETE "${CERT_VAR[@]}"  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/my.company.com-services-helm-service_1.0.0_${ARCH}")
   echo "$DLHELM100"
 
   echo "Delete Userdev Org Definition ..."
-  DL8USERDEVDEF=$(curl -X DELETE $CERT_VAR  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/${AGBOT_NAME}/businesspols/userdev_*_userdev")
+  DL8USERDEVDEF=$(curl -X DELETE "${CERT_VAR[@]}"  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/${AGBOT_NAME}/businesspols/userdev_*_userdev")
   echo "$DL8USERDEVDEF"
 
   echo "Delete E2E Org Definition ..."
-  DL8E2EDEF=$(curl -X DELETE $CERT_VAR  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/${AGBOT_NAME}/businesspols/e2edev@somecomp.com_*_e2edev@somecomp.com")
+  DL8E2EDEF=$(curl -X DELETE "${CERT_VAR[@]}"  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/${AGBOT_NAME}/businesspols/e2edev@somecomp.com_*_e2edev@somecomp.com")
   echo "$DL8E2EDEF"
 
   echo "Delete Pattern Definition E2E ..."
-  DL8PATTERNDEFE2E=$(curl -X DELETE $CERT_VAR  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/${AGBOT_NAME}/patterns/e2edev@somecomp.com_*_e2edev@somecomp.com")
+  DL8PATTERNDEFE2E=$(curl -X DELETE "${CERT_VAR[@]}"  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/${AGBOT_NAME}/patterns/e2edev@somecomp.com_*_e2edev@somecomp.com")
   echo "$DL8PATTERNDEFE2E"
 
   echo "Delete Pattern Definition UserDev ..."
-  DL8PATTERNDUSERDEV=$(curl -X DELETE $CERT_VAR  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/${AGBOT_NAME}/patterns/e2edev@somecomp.com_*_userdev")
+  DL8PATTERNDUSERDEV=$(curl -X DELETE "${CERT_VAR[@]}"  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/${AGBOT_NAME}/patterns/e2edev@somecomp.com_*_userdev")
   echo "$DL8PATTERNDUSERDEV"
 
   echo "Delete Pattern Definition SNS ..."
-  DL8PATTERNSNS=$(curl -X DELETE $CERT_VAR  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/${AGBOT_NAME}/patterns/e2edev@somecomp.com_sns_e2edev@somecomp.com")
+  DL8PATTERNSNS=$(curl -X DELETE "${CERT_VAR[@]}"  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/${AGBOT_NAME}/patterns/e2edev@somecomp.com_sns_e2edev@somecomp.com")
   echo "$DL8PATTERNSNS"
 fi
 
-if [ "$NOLOOP" == "1" ]; then
+if [ "$NOLOOP" = "1" ]; then
   if [ "$TESTFAIL" != "1" ]; then
     echo "All tests SUCCESSFUL"
   else
