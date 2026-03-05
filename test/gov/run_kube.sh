@@ -367,11 +367,12 @@ kubecmd="$cprefix microk8s.kubectl"
 if [ "${TEST_PATTERNS}" != "" ]; then
 	# pattern case
 	# pattern name: e2edev@somecomp.com/sk8s-with-cluster-ns
-	if ! $cprefix microk8s.kubectl exec "${POD}" -it -n ${AGENT_NAME_SPACE} -- env ARCH="${ARCH}" /usr/bin/hzn register -f /home/agentuser/node_ui_k8s_svc1.json -p e2edev@somecomp.com/sk8s-with-cluster-ns -u "root/root:${EXCH_ROOTPW}"; then
-		echo -e "${PREFIX} cluster agent should return error when register a patter that has non-empty cluster namespace"
+	# This registration is EXPECTED to fail (pattern has non-empty cluster namespace)
+	if $cprefix microk8s.kubectl exec "${POD}" -it -n ${AGENT_NAME_SPACE} -- env ARCH="${ARCH}" /usr/bin/hzn register -f /home/agentuser/node_ui_k8s_svc1.json -p e2edev@somecomp.com/sk8s-with-cluster-ns -u "root/root:${EXCH_ROOTPW}"; then
+		echo -e "${PREFIX} ERROR: cluster agent should have returned error when registering pattern with non-empty cluster namespace, but it succeeded"
   		exit 2
 	else
-		echo -e "${PREFIX} cluster agent get expected error when register sk8s-with-cluster-ns, which has non-empty cluster namespace"
+		echo -e "${PREFIX} cluster agent got expected error when registering sk8s-with-cluster-ns (pattern has non-empty cluster namespace)"
 	fi
 
 

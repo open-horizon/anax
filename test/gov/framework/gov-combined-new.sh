@@ -43,6 +43,16 @@ export PASS=${PASS:-"anax1pw"}
 export TOKEN=${TOKEN:-"Abcdefghijklmno1"}
 export EXCH="${EXCH_APP_HOST}"
 
+# Detect client IP for service connections (CSS, Exchange, etc.)
+# E2EDEV_CLIENT_IP should be set by Makefile, but provide fallback
+if [ -z "${E2EDEV_CLIENT_IP:-}" ]; then
+    E2EDEV_CLIENT_IP=$(ip route get 1.1.1.1 2>/dev/null | grep -oP 'src \K\S+' || hostname -I 2>/dev/null | awk '{print $1}' || echo "127.0.0.1")
+    export E2EDEV_CLIENT_IP
+fi
+
+# CSS URL uses client IP for connections
+export CSS_URL=${CSS_URL:-http://${E2EDEV_CLIENT_IP}:9443}
+
 # Set common exports
 function set_exports {
     if [ "$NOANAX" != "1" ]; then
@@ -318,22 +328,35 @@ fi
 # Test 6: Compatibility check tests
 if [ "$NOCOMPCHECK" != "1" ] && [ "$TESTFAIL" != "1" ]; then
     if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" == "" ]; then
+        # Agbot compcheck doesn't require local Anax
         run_test "agbot_compcheck" "./agbot_apitest.sh"
-        run_test "hzn_compcheck" "./hzn_compcheck.sh"
         
-        if [ "$NOVAULT" != "1" ]; then
+        # hzn_compcheck requires nodes to be registered in Exchange (from pattern/policy tests)
+        # Skip if pattern/policy tests were skipped
+        if [ "$ANAX_AVAILABLE" -eq 1 ]; then
+            run_test "hzn_compcheck" "./hzn_compcheck.sh"
+        else
+            log_message WARN "Skipping hzn_compcheck test - requires nodes registered by pattern/policy tests"
+        fi
+        
+        # hzn_secretsmanager requires local Anax
+        if [ "$NOVAULT" != "1" ] && [ "$ANAX_AVAILABLE" -eq 1 ]; then
             run_test "hzn_secretsmanager" "./hzn_secretsmanager.sh"
+        elif [ "$NOVAULT" != "1" ] && [ "$ANAX_AVAILABLE" -eq 0 ]; then
+            log_message WARN "Skipping hzn_secretsmanager test - Anax not available on localhost"
         fi
     fi
 fi
 
 # Test 7: Surface error verification
-if [ "$NOSURFERR" != "1" ] && [ "$TESTFAIL" != "1" ] && [ ${REMOTE_HUB} -eq 0 ]; then
+if [ "$NOSURFERR" != "1" ] && [ "$TESTFAIL" != "1" ] && [ ${REMOTE_HUB} -eq 0 ] && [ "$ANAX_AVAILABLE" -eq 1 ]; then
     if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" == "" ]; then
         if [ "$NOLOOP" == "1" ]; then
             run_test "verify_surfaced_error" "./verify_surfaced_error.sh"
         fi
     fi
+elif [ "$NOSURFERR" != "1" ] && [ ${REMOTE_HUB} -eq 0 ] && [ "$ANAX_AVAILABLE" -eq 0 ]; then
+    log_message WARN "Skipping surface error verification test - Anax not available on localhost"
 fi
 
 # Test 8: Policy change test
@@ -351,30 +374,38 @@ if [ "$NOUPGRADE" != "1" ] && [ "$TESTFAIL" != "1" ] && [ ${REMOTE_HUB} -eq 0 ];
 fi
 
 # Test 10: Service secrets test
-if [ "$NOVAULT" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "$NOLOOP" == "1" ]; then
+if [ "$NOVAULT" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "$NOLOOP" == "1" ] && [ "$ANAX_AVAILABLE" -eq 1 ]; then
     if [ "$TEST_PATTERNS" == "" ]; then
         run_test "service_secrets" "./service_secrets_test.sh"
     fi
+elif [ "$NOVAULT" != "1" ] && [ "$NOLOOP" == "1" ] && [ "$ANAX_AVAILABLE" -eq 0 ]; then
+    log_message WARN "Skipping service_secrets test - Anax not available on localhost"
 fi
 
 # Test 11: HZN registration tests
-if [ "$NOHZNREG" != "1" ] && [ "$TESTFAIL" != "1" ]; then
+if [ "$NOHZNREG" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "$ANAX_AVAILABLE" -eq 1 ]; then
     if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" == "" ]; then
         sleep 15
         run_test "hzn_registration" "./hzn_reg.sh"
     fi
+elif [ "$NOHZNREG" != "1" ] && [ "$ANAX_AVAILABLE" -eq 0 ]; then
+    log_message WARN "Skipping hzn_registration test - Anax not available on localhost"
 fi
 
 # Test 12: Service log test
-if [ "$TEST_PATTERNS" == "sall" ] && [ "$NOHZNLOG" != "1" ] && [ "$NOHZNREG" != "1" ] && [ "$TESTFAIL" != "1" ]; then
+if [ "$TEST_PATTERNS" == "sall" ] && [ "$NOHZNLOG" != "1" ] && [ "$NOHZNREG" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "$ANAX_AVAILABLE" -eq 1 ]; then
     run_test "service_log" "./service_log_test.sh"
+elif [ "$TEST_PATTERNS" == "sall" ] && [ "$NOHZNLOG" != "1" ] && [ "$ANAX_AVAILABLE" -eq 0 ]; then
+    log_message WARN "Skipping service_log test - Anax not available on localhost"
 fi
 
 # Test 13: Pattern change test
-if [ "$NOPATTERNCHANGE" != "1" ] && [ "$TESTFAIL" != "1" ]; then
+if [ "$NOPATTERNCHANGE" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "$ANAX_AVAILABLE" -eq 1 ]; then
     if [ "$TEST_PATTERNS" == "sall" ]; then
         run_test "pattern_change" "./pattern_change.sh"
     fi
+elif [ "$NOPATTERNCHANGE" != "1" ] && [ "$ANAX_AVAILABLE" -eq 0 ]; then
+    log_message WARN "Skipping pattern_change test - Anax not available on localhost"
 fi
 
 # Test 14: HA test

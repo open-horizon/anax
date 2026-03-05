@@ -783,3 +783,74 @@ jobs:
           else
             echo "MicroK8s not available (may not be part of this test run)"
           fi
+
+      - name: Test Failure Catch - Display Test Summary
+        continue-on-error: true
+        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
+        run: |
+          echo "=== Test Summary ==="
+          if [ -f /tmp/e2etest_results_*/test_summary.txt ]; then
+            cat /tmp/e2etest_results_*/test_summary.txt
+          else
+            echo "Test summary file not found"
+          fi
+
+      - name: Test Failure Catch - Display Failure Reports
+        continue-on-error: true
+        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
+        run: |
+          echo "=== Test Failure Reports ==="
+          failure_files=$(find /tmp/e2etest_results_* -name "failure_*.txt" 2>/dev/null || true)
+          
+          if [ -z "$failure_files" ]; then
+            echo "No failure report files found"
+          else
+            echo "Found failure reports:"
+            echo "$failure_files"
+            echo ""
+            for file in $failure_files; do
+              echo ""
+              echo "=========================================="
+              echo "File: $(basename "$file")"
+              echo "=========================================="
+              cat "$file" 2>&1 || echo "Failed to read $file"
+              echo ""
+            done
+          fi
+
+      - name: Test Failure Catch - Display Test Logs
+        continue-on-error: true
+        if: ${{ failure() && steps.test-runner.conclusion == 'failure' }}
+        run: |
+          echo "=== Test Logs ==="
+          log_files=$(find /tmp/e2etest_results_* -name "*.log" 2>/dev/null || true)
+          
+          if [ -z "$log_files" ]; then
+            echo "No test log files found"
+          else
+            echo "Found test logs:"
+            echo "$log_files"
+            echo ""
+            for file in $log_files; do
+              echo ""
+              echo "=========================================="
+              echo "File: $(basename "$file")"
+              echo "=========================================="
+              # Display last 500 lines of each log to avoid overwhelming output
+              echo "Displaying last 500 lines of log..."
+              tail -n 500 "$file" 2>&1 || echo "Failed to read $file"
+              echo ""
+            done
+          fi
+
+      - name: Upload Test Results as Artifacts
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.tests }}
+          path: |
+            /tmp/e2etest_results_*/*.log
+            /tmp/e2etest_results_*/*.txt
+          retention-days: 7
+          if-no-files-found: warn
