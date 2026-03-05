@@ -162,6 +162,98 @@ The hzn CLI was failing with 401 errors because:
 Fixed by adding missing env vars and using EXCH_USER local variable."
 ```
 
+### Change Impact Analysis
+
+**Always Check the Logical Call Stack for Side Effects**
+
+When making changes to code, configuration, or infrastructure, agents must trace the logical call stack to identify all affected components and potential side effects.
+
+**Why This Matters:**
+- A change in one location often has ripple effects throughout the system
+- Configuration changes can affect multiple consumers
+- Missing related changes leads to incomplete fixes and new bugs
+- Understanding the full impact prevents partial solutions
+
+**Analysis Process:**
+
+1. **Identify All Consumers**: Find all code/configs that reference or depend on what you're changing
+   - Use `search_files` to find all references
+   - Check configuration templates that might use the value
+   - Look for environment variables that propagate the setting
+   - Consider both direct and indirect dependencies
+
+2. **Trace the Data Flow**: Follow how values flow through the system
+   - Where is the value set initially?
+   - How is it transformed or passed along?
+   - What components consume it?
+   - Are there multiple paths to the same destination?
+
+3. **Check for Patterns**: Look for similar code that might need the same fix
+   - If fixing one config template, check all related templates
+   - If fixing one test script, check similar test scripts
+   - If fixing one API endpoint, check related endpoints
+
+4. **Verify Assumptions**: Question your understanding of the system
+   - Does this value mean what I think it means?
+   - Are there edge cases I haven't considered?
+   - What happens in different deployment scenarios?
+
+**Real-World Example from This Codebase:**
+
+When fixing the `/root/.colonus` permission issue:
+- **Initial Discovery**: Found hardcoded path in `anax-combined-no-cert.config.tmpl`
+- **Call Stack Analysis**: 
+  - Searched for all `/root/` references in test directory
+  - Found 6 different config templates using the same path
+  - Found orchestrator script that generates configs from templates
+  - Identified that `ANAX_DB_PATH` needed to be set before template expansion
+- **Complete Fix**: Updated all 6 templates + orchestrator script
+- **Result**: Comprehensive solution instead of partial fix
+
+**Common Pitfalls to Avoid:**
+
+1. **Fixing Only the Immediate Problem**: 
+   - Bad: Fix one config file where error occurred
+   - Good: Find and fix all config files with the same issue
+
+2. **Not Checking Template Consumers**:
+   - Bad: Update a template but not the code that uses it
+   - Good: Update template AND ensure variables are exported
+
+3. **Ignoring Similar Patterns**:
+   - Bad: Fix `anax-combined.config.tmpl` but miss `anax-combined2.config.tmpl`
+   - Good: Search for pattern and fix all instances
+
+4. **Assuming Single Use**:
+   - Bad: Assume a config is only used in one scenario
+   - Good: Check all test modes and deployment scenarios
+
+**Tools for Impact Analysis:**
+
+```bash
+# Find all references to a value
+search_files with regex pattern
+
+# Check git history for related changes
+git log --all --grep="keyword"
+
+# Find files that import/use a module
+grep -r "import.*module" .
+
+# Check for similar patterns
+find . -name "*.tmpl" -o -name "*.config"
+```
+
+**When to Escalate:**
+
+If impact analysis reveals:
+- Changes affecting critical production paths
+- Modifications to security-sensitive code
+- Breaking changes to public APIs
+- Complex interdependencies you don't fully understand
+
+Then: Document findings and ask for human review before proceeding.
+
 ### Code Organization
 
 - **Main entry point**: `main.go` - initializes workers and event system
