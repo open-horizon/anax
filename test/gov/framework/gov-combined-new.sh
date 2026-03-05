@@ -5,7 +5,13 @@
 
 # Get script directory and change to parent gov directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+FRAMEWORK_DIR="$SCRIPT_DIR"
 GOV_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+# Debug: Log directory paths
+echo "DEBUG: SCRIPT_DIR=${SCRIPT_DIR}"
+echo "DEBUG: FRAMEWORK_DIR=${FRAMEWORK_DIR}"
+echo "DEBUG: GOV_DIR=${GOV_DIR}"
 
 # Change to gov directory so test scripts can be found
 cd "${GOV_DIR}" || {
