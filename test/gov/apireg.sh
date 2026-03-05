@@ -45,7 +45,7 @@ if [[ "$PATTERN" != "" ]]; then
     pat="e2edev@somecomp.com/$PATTERN"
 fi
 
-read -dr '' newhzndevice <<EOF
+cat > /tmp/newhzndevice.tmp <<'EOF'
 {
   "id": "$DEVICE_ID",
   "token": "$TOKEN",
@@ -54,6 +54,7 @@ read -dr '' newhzndevice <<EOF
   "pattern": "$pat"
 }
 EOF
+newhzndevice=$(cat /tmp/newhzndevice.tmp)
 
 while :
 do
@@ -124,7 +125,7 @@ else
     constraint3="NOAGENTAUTO==false"
 fi
 
-read -dr '' newhznpolicy <<EOF
+cat > /tmp/newhznpolicy.tmp <<'EOF'
 {
   "deployment": {
     "properties": [
@@ -156,6 +157,7 @@ read -dr '' newhznpolicy <<EOF
   }
 }
 EOF
+newhznpolicy=$(cat /tmp/newhznpolicy.tmp)
 
 echo "Adding policy to the node using node/policy API"
 debug "apireg: PUT ${ANAX_API}/node/policy constraint2=${constraint2} constraint3=${constraint3}"

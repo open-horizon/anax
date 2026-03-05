@@ -77,7 +77,7 @@ else
 fi
 
 # empty service URL
-read -dr '' snsconfig <<EOF
+cat > /tmp/snsconfig.tmp <<'EOF'
 {
   "url": "",
   "version": "2.2.0",
@@ -99,6 +99,7 @@ read -dr '' snsconfig <<EOF
   ]
 }
 EOF
+snsconfig=$(cat /tmp/snsconfig.tmp)
 
 echo -e "\n\n[D] service config payload: $snsconfig"
 
@@ -121,7 +122,7 @@ else
 fi
 
 # invalid version string
-read -dr '' snsconfig <<EOF
+cat > /tmp/snsconfig.tmp <<'EOF'
 {
   "url": "https://bluehorizon.network/services/netspeed",
   "versionRange": "a",
@@ -143,6 +144,7 @@ read -dr '' snsconfig <<EOF
   ]
 }
 EOF
+snsconfig=$(cat /tmp/snsconfig.tmp)
 
 echo -e "\n\n[D] netspeed service config payload: $snsconfig"
 
@@ -165,7 +167,7 @@ else
 fi
 
 # invalid attributes section
-read -dr '' snsconfig <<EOF
+cat > /tmp/snsconfig.tmp <<'EOF'
 {
   "url": "https://bluehorizon.network/services/netspeed",
   "versionRange": "1.2.3",
@@ -173,6 +175,7 @@ read -dr '' snsconfig <<EOF
   "attributes": {}
 }
 EOF
+snsconfig=$(cat /tmp/snsconfig.tmp)
 
 echo -e "\n\n[D] netspeed service config payload: $snsconfig"
 
@@ -195,7 +198,7 @@ else
 fi
 
 # unknown service
-read -dr '' snsconfig <<EOF
+cat > /tmp/snsconfig.tmp <<'EOF'
 {
   "url": "https://bluehorizon.network/services/testServiceX",
   "versionRange": "1.2.3",
@@ -203,6 +206,7 @@ read -dr '' snsconfig <<EOF
   "attributes": []
 }
 EOF
+snsconfig=$(cat /tmp/snsconfig.tmp)
 
 echo -e "\n\n[D] testServiceX service config payload: $snsconfig"
 
@@ -237,7 +241,7 @@ fi
 
 echo -e "\nSetting up test service for context tests"
 
-read -dr '' service <<EOF
+cat > /tmp/service.tmp <<'EOF'
 {
   "label":"test",
   "description":"test service",
@@ -279,6 +283,7 @@ read -dr '' service <<EOF
   "deploymentSignature":""
 }
 EOF
+service=$(cat /tmp/service.tmp)
 
 WLRES=$(echo "$service" | curl -sS -X POST "${CERT_VAR[@]}" -H "Content-Type: application/json" -H "Accept: application/json" -u "e2edev@somecomp.com/e2edevadmin:e2edevadminpw" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services")
 echo -e "Registered testwl: $WLRES"
@@ -292,7 +297,7 @@ else
 fi
 
 # wrong variable type (number) in the variables section
-read -dr '' snsconfig <<EOF
+cat > /tmp/snsconfig.tmp <<'EOF'
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",
@@ -310,6 +315,7 @@ read -dr '' snsconfig <<EOF
   ]
 }
 EOF
+snsconfig=$(cat /tmp/snsconfig.tmp)
 
 echo -e "\n\n[D] testservice service config payload: $snsconfig"
 
@@ -332,7 +338,7 @@ else
 fi
 
 # wrong variable type (array of string) in the variables section
-read -dr '' snsconfig <<EOF
+cat > /tmp/snsconfig.tmp <<'EOF'
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",
@@ -350,6 +356,7 @@ read -dr '' snsconfig <<EOF
   ]
 }
 EOF
+snsconfig=$(cat /tmp/snsconfig.tmp)
 
 echo -e "\n\n[D] testservice service config payload: $snsconfig"
 
@@ -372,7 +379,7 @@ else
 fi
 
 # wrong variable type object in the variables section
-read -dr '' snsconfig <<EOF
+cat > /tmp/snsconfig.tmp <<'EOF'
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",
@@ -390,6 +397,7 @@ read -dr '' snsconfig <<EOF
   ]
 }
 EOF
+snsconfig=$(cat /tmp/snsconfig.tmp)
 
 echo -e "\n\n[D] testservice service config payload: $snsconfig"
 
@@ -412,7 +420,7 @@ else
 fi
 
 # wrong variable type (string) in the variables section for an int
-read -dr '' snsconfig <<EOF
+cat > /tmp/snsconfig.tmp <<'EOF'
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",
@@ -430,6 +438,7 @@ read -dr '' snsconfig <<EOF
   ]
 }
 EOF
+snsconfig=$(cat /tmp/snsconfig.tmp)
 
 echo -e "\n\n[D] testservice service config payload: $snsconfig"
 
@@ -452,7 +461,7 @@ else
 fi
 
 # wrong variable type (string) in the variables section for a float
-read -dr '' snsconfig <<EOF
+cat > /tmp/snsconfig.tmp <<'EOF'
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",
@@ -470,6 +479,7 @@ read -dr '' snsconfig <<EOF
   ]
 }
 EOF
+snsconfig=$(cat /tmp/snsconfig.tmp)
 
 echo -e "\n\n[D] testservice service config payload: $snsconfig"
 
@@ -492,7 +502,7 @@ else
 fi
 
 # wrong variable type (string) in the variables section for list of strings
-read -dr '' snsconfig <<EOF
+cat > /tmp/snsconfig.tmp <<'EOF'
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",
@@ -510,6 +520,7 @@ read -dr '' snsconfig <<EOF
   ]
 }
 EOF
+snsconfig=$(cat /tmp/snsconfig.tmp)
 
 echo -e "\n\n[D] testservice service config payload: $snsconfig"
 
@@ -532,7 +543,7 @@ else
 fi
 
 # wrong variable type (float) in the variables section for a int
-read -dr '' snsconfig <<EOF
+cat > /tmp/snsconfig.tmp <<'EOF'
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",
@@ -550,6 +561,7 @@ read -dr '' snsconfig <<EOF
   ]
 }
 EOF
+snsconfig=$(cat /tmp/snsconfig.tmp)
 
 echo -e "\n\n[D] testservice service config payload: $snsconfig"
 
@@ -572,7 +584,7 @@ else
 fi
 
 # wrong variable type (int) in the variables section for a list of strings
-read -dr '' snsconfig <<EOF
+cat > /tmp/snsconfig.tmp <<'EOF'
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",
@@ -590,6 +602,7 @@ read -dr '' snsconfig <<EOF
   ]
 }
 EOF
+snsconfig=$(cat /tmp/snsconfig.tmp)
 
 echo -e "\n\n[D] testservice service config payload: $snsconfig"
 
@@ -612,7 +625,7 @@ else
 fi
 
 # wrong variable type (array numbers) in the variables section for a list of strings
-read -dr '' snsconfig <<EOF
+cat > /tmp/snsconfig.tmp <<'EOF'
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",
@@ -630,6 +643,7 @@ read -dr '' snsconfig <<EOF
   ]
 }
 EOF
+snsconfig=$(cat /tmp/snsconfig.tmp)
 
 echo -e "\n\n[D] testservice service config payload: $snsconfig"
 
@@ -657,7 +671,7 @@ fi
 if [ "$PATTERN" != "" ]
 then
   # missing variable in the variables section
-  read -dr '' snsconfig <<EOF
+  cat > /tmp/snsconfig.tmp <<'EOF'
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",
@@ -673,6 +687,7 @@ then
   ]
 }
 EOF
+  snsconfig=$(cat /tmp/snsconfig.tmp)
 
   echo -e "\n\n[D] testservice service config payload: $snsconfig"
 
@@ -695,7 +710,7 @@ EOF
   fi
 
   # another missing variable in the variables section
-  read -dr '' snsconfig <<EOF
+  cat > /tmp/snsconfig.tmp <<'EOF'
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",
@@ -713,6 +728,7 @@ EOF
   ]
 }
 EOF
+  snsconfig=$(cat /tmp/snsconfig.tmp)
 
   echo -e "\n\n[D] testservice service config payload: $snsconfig"
 
@@ -738,7 +754,7 @@ fi
 # Configure the testservice service variables, at an older version level just to be sure
 # that the runtime will still pick them up for the newer version that is installed in the exchange.
 # The configstate tests that come after these service tests depend on the following to work correctly.
-read -dr '' snsconfig <<EOF
+cat > /tmp/snsconfig.tmp <<'EOF'
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "0.5.0",
@@ -760,6 +776,7 @@ read -dr '' snsconfig <<EOF
   ]
 }
 EOF
+snsconfig=$(cat /tmp/snsconfig.tmp)
 
 echo -e "\n\n[D] testservice service config payload: $snsconfig"
 

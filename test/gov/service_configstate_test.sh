@@ -163,13 +163,14 @@ if ! out=$(hzn service configstate suspend e2edev@somecomp.com https://bluehoriz
 fi
 
 echo -e "${PREFIX} suspending the e2edev@somecomp.com/location service..."
-read -dr '' sconfig <<EOF
+cat > /tmp/sconfig.tmp <<'EOF'
 {
    "url":         "https://bluehorizon.network/services/location",
    "org":          "e2edev@somecomp.com",
    "configState": "suspended"
 }
 EOF
+sconfig=$(cat /tmp/sconfig.tmp)
 out=$(echo "$sconfig" | curl -sLX POST "${CERT_VAR[@]}" -u "$USERDEV_ADMIN_AUTH" -H "Content-Type: application/json" -H "Accept: application/json" --data @- "${EXCH_URL}/orgs/userdev/nodes/an12345/services_configstate" | jq -r '.')
 results "$out"
 
@@ -248,13 +249,14 @@ if ! out=$(hzn service configstate resume e2edev@somecomp.com https://bluehorizo
     exit 2
 fi
 echo -e "${PREFIX} resuming e2edev@somecomp.com/location service..."
-read -dr '' sconfig <<EOF
+cat > /tmp/sconfig.tmp <<'EOF'
 {
    "url":         "https://bluehorizon.network/services/location",
    "org":          "e2edev@somecomp.com",
    "configState": "active"
 }
 EOF
+sconfig=$(cat /tmp/sconfig.tmp)
 out=$(echo "$sconfig" | curl -sLX POST "${CERT_VAR[@]}" -u "$USERDEV_ADMIN_AUTH" -H "Content-Type: application/json" -H "Accept: application/json" --data @- "${EXCH_URL}/orgs/userdev/nodes/an12345/services_configstate" | jq -r '.')
 results "$out"
 

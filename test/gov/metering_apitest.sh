@@ -9,7 +9,7 @@ fi
 # Begin testing metering properties
 
 # missing perTimeUnit field
-read -dr '' netspeedservice <<EOF
+cat > /tmp/netspeedservice.tmp <<'EOF'
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -28,6 +28,7 @@ read -dr '' netspeedservice <<EOF
   ]
 }
 EOF
+netspeedservice=$(cat /tmp/netspeedservice.tmp)
 
 echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
@@ -50,7 +51,7 @@ else
 fi
 
 # missing token field
-read -dr '' netspeedservice <<EOF
+cat > /tmp/netspeedservice.tmp <<'EOF'
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -69,6 +70,7 @@ read -dr '' netspeedservice <<EOF
   ]
 }
 EOF
+netspeedservice=$(cat /tmp/netspeedservice.tmp)
 
 echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
@@ -91,7 +93,7 @@ else
 fi
 
 # missing tokens and perTimeUnit fields
-read -dr '' netspeedservice <<EOF
+cat > /tmp/netspeedservice.tmp <<'EOF'
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -110,6 +112,7 @@ read -dr '' netspeedservice <<EOF
   ]
 }
 EOF
+netspeedservice=$(cat /tmp/netspeedservice.tmp)
 
 echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
@@ -132,7 +135,7 @@ else
 fi
 
 # tokens must be non-zero
-read -dr '' netspeedservice <<EOF
+cat > /tmp/netspeedservice.tmp <<'EOF'
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -152,6 +155,7 @@ read -dr '' netspeedservice <<EOF
   ]
 }
 EOF
+netspeedservice=$(cat /tmp/netspeedservice.tmp)
 
 echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
@@ -174,7 +178,7 @@ else
 fi
 
 # perTimeUnit must be non-blank
-read -dr '' netspeedservice <<EOF
+cat > /tmp/netspeedservice.tmp <<'EOF'
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -194,6 +198,7 @@ read -dr '' netspeedservice <<EOF
   ]
 }
 EOF
+netspeedservice=$(cat /tmp/netspeedservice.tmp)
 
 echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
@@ -216,7 +221,7 @@ else
 fi
 
 # tokens must be a valid number
-read -dr '' netspeedservice <<EOF
+cat > /tmp/netspeedservice.tmp <<'EOF'
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -237,6 +242,7 @@ read -dr '' netspeedservice <<EOF
   ]
 }
 EOF
+netspeedservice=$(cat /tmp/netspeedservice.tmp)
 
 echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
@@ -259,7 +265,7 @@ else
 fi
 
 # perTimeUnit must be a string
-read -dr '' netspeedservice <<EOF
+cat > /tmp/netspeedservice.tmp <<'EOF'
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -280,6 +286,7 @@ read -dr '' netspeedservice <<EOF
   ]
 }
 EOF
+netspeedservice=$(cat /tmp/netspeedservice.tmp)
 
 echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
@@ -302,7 +309,7 @@ else
 fi
 
 # notification interval must be a number
-read -dr '' netspeedservice <<EOF
+cat > /tmp/netspeedservice.tmp <<'EOF'
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -323,6 +330,7 @@ read -dr '' netspeedservice <<EOF
   ]
 }
 EOF
+netspeedservice=$(cat /tmp/netspeedservice.tmp)
 
 echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
@@ -345,7 +353,7 @@ else
 fi
 
 # notificationInterval cannot be specified without tokens perTimeUnit
-read -dr '' netspeedservice <<EOF
+cat > /tmp/netspeedservice.tmp <<'EOF'
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -366,6 +374,7 @@ read -dr '' netspeedservice <<EOF
   ]
 }
 EOF
+netspeedservice=$(cat /tmp/netspeedservice.tmp)
 
 echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 

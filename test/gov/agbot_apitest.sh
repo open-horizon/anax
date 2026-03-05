@@ -150,83 +150,91 @@ do
   results "$RES" "400" "No input found"
 
   echo -e "\n${PREFIX} test /${api}. Input: node id and business policy id."
-  read -dr '' comp_input<<EOF
+  cat > /tmp/comp_input.tmp <<'EOF'
   {
     "node_id": "userdev/an12345",
     "business_policy_id": "userdev/bp_gpstest"
   }
 EOF
+  comp_input=$(cat /tmp/comp_input.tmp)
   run_and_check "$api" "$comp_input" "200" ""
   check_comp_results "true" ""
 
   echo -e "\n${PREFIX} test /${api}. Input: wrong node id"
-  read -dr '' comp_input <<EOF
+  cat > /tmp/comp_input.tmp <<'EOF'
   {
     "node_id": "userdev/an12345xxx",
     "business_policy_id": "userdev/bp_gpstest"
   }
 EOF
+  comp_input=$(cat /tmp/comp_input.tmp)
   run_and_check "$api" "$comp_input" "500" "Error getting node"
 
   echo -e "\n${PREFIX} test /${api}. Input: wrong business policy id"
-  read -dr '' comp_input <<EOF
+  cat > /tmp/comp_input.tmp <<'EOF'
   {
     "node_id": "userdev/an12345",
     "business_policy_id": "userdev/bp_gpstestxxx"
   }
 EOF
+  comp_input=$(cat /tmp/comp_input.tmp)
   run_and_check "$api" "$comp_input" "400" "No deployment policy found"
 
   echo -e "\n${PREFIX} test /${api}. Input: wrong org id"
-  read -dr '' comp_input <<EOF
+  cat > /tmp/comp_input.tmp <<'EOF'
   {
     "node_id": "userdevxxx/an12345",
     "business_policy_id": "userdev/bp_gpstest"
   }
 EOF
+  comp_input=$(cat /tmp/comp_input.tmp)
   run_and_check "$api" "$comp_input" "500" "device userdevxxx/an12345 not in GET response map"
 
   echo -e "\n${PREFIX} test /${api}. Input: no node org specifiled"
-  read -dr '' comp_input <<EOF
+  cat > /tmp/comp_input.tmp <<'EOF'
   {
     "node_id": "an12345",
     "business_policy_id": "userdev/bp_gpstest"
   }
 EOF
+  comp_input=$(cat /tmp/comp_input.tmp)
   run_and_check "$api" "$comp_input" "400" "Organization is not specified"
 
   echo -e "\n${PREFIX} test /${api}. Input: no business policy org specifiled"
-  read -dr '' comp_input <<EOF
+  cat > /tmp/comp_input.tmp <<'EOF'
   {
    "node_id": "userdev/an12345",
     "business_policy_id": "bp_gpstest"
   }
 EOF
+  comp_input=$(cat /tmp/comp_input.tmp)
   run_and_check "$api" "$comp_input" "400" "Organization is not specified "
 done
 
 echo -e "\n${PREFIX} test /deploycheck/policycompatible. Input: node policy and business policy"
-read -dr '' comp_input <<EOF
+cat > /tmp/comp_input.tmp <<'EOF'
 {
   "node_policy":      $node_policy,
   "business_policy":  $bp_location
 }
 EOF
+comp_input=$(cat /tmp/comp_input.tmp)
 run_and_check "deploycheck/policycompatible" "$comp_input" "200" ""
 check_comp_results "true" ""
 
 echo -e "\n${PREFIX} test /deploycheck/policycompatible. Input: node policy, business policy and service policy"
-read -dr '' comp_input <<EOF
+cat > /tmp/comp_input.tmp <<'EOF'
 {
   "node_policy":      $node_policy,
   "business_policy":  $bp_location,
   "service_policy":   $service_policy
 }
 EOF
+comp_input=$(cat /tmp/comp_input.tmp)
 run_and_check "deploycheck/policycompatible" "$comp_input" "200" ""
 
 echo -e "\n${PREFIX} test /deploycheck/policycompatible. Input: node policy, business policy and service policy. not compatible"
-read -dr '' service_policy_bad <<EOF
+cat > /tmp/service_policy_bad.tmp <<'EOF'
 {
   "properties": [
     {
@@ -243,19 +251,21 @@ read -dr '' service_policy_bad <<EOF
   ]
 }
 EOF
+service_policy_bad=$(cat /tmp/service_policy_bad.tmp)
 
-read -dr '' comp_input <<EOF
+cat > /tmp/comp_input.tmp <<'EOF'
 {
   "node_policy":      $node_policy,
   "business_policy":  $bp_location,
   "service_policy":   $service_policy_bad
 }
 EOF
+comp_input=$(cat /tmp/comp_input.tmp)
 run_and_check "deploycheck/policycompatible" "$comp_input" "200" ""
 check_comp_results "false" "Compatibility Error"
 
 echo -e "\n${PREFIX} test /deploycheck/policycompatible. Input: Mixed. node id, business policy. not compatible"
-read -dr '' comp_input <<EOF
+cat > /tmp/comp_input.tmp <<'EOF'
 {
   "node_id": "userdev/an12345",
   "business_policy": {
@@ -298,21 +308,23 @@ read -dr '' comp_input <<EOF
 }
 
 EOF
+comp_input=$(cat /tmp/comp_input.tmp)
 run_and_check "deploycheck/policycompatible" "$comp_input" "200" ""
 check_comp_results "false" "Compatibility Error"
 
 echo -e "\n${PREFIX} test /deploycheck/userinputcompatible. Input: node userinput, business policy. compatible"
-read -dr '' comp_input <<EOF
+cat > /tmp/comp_input.tmp <<'EOF'
 {
   "node_user_input":  $node_ui,
   "business_policy":  $bp_location
 }
 EOF
+comp_input=$(cat /tmp/comp_input.tmp)
 run_and_check "deploycheck/userinputcompatible" "$comp_input" "200" ""
 check_comp_results "true" "Compatible"
 
 echo -e "\n${PREFIX} test /deploycheck/userinputcompatible. Input: node userinput, business policy. not compatible"
-read -dr '' node_ui_bad <<EOF
+cat > /tmp/node_ui_bad.tmp <<'EOF'
 [
   {
     "serviceOrgid": "e2edev@somecomp.com",
@@ -340,41 +352,45 @@ read -dr '' node_ui_bad <<EOF
   }
 ]
 EOF
-read -dr '' comp_input <<EOF
+node_ui_bad=$(cat /tmp/node_ui_bad.tmp)
+cat > /tmp/comp_input.tmp <<'EOF'
 {
   "node_user_input":  $node_ui_bad,
   "business_policy":  $bp_location
 }
 EOF
+comp_input=$(cat /tmp/comp_input.tmp)
 run_and_check "deploycheck/userinputcompatible" "$comp_input" "200" ""
 check_comp_results "false" "User Input Incompatible"
 check_comp_results "false" "A required user input value is missing for variable HZN_LAT"
 
 echo -e "\n${PREFIX} test /deploycheck/deploycompatible. Input: node policy, node userinput, business policy. compatible"
-read -dr '' comp_input <<EOF
+cat > /tmp/comp_input.tmp <<'EOF'
 {
   "node_policy":      $node_policy,
   "node_user_input":  $node_ui,
   "business_policy":  $bp_location
 }
 EOF
+comp_input=$(cat /tmp/comp_input.tmp)
 run_and_check "deploycheck/deploycompatible" "$comp_input" "200" ""
 check_comp_results "true" "Compatible"
 
 echo -e "\n${PREFIX} test /deploycheck/deploycompatible. Input: node policy, node userinput, business policy. not compatible"
-read -dr '' comp_input <<EOF
+cat > /tmp/comp_input.tmp <<'EOF'
 {
   "node_policy":      $node_policy,
   "node_user_input":  $node_ui_bad,
   "business_policy":  $bp_location
 }
 EOF
+comp_input=$(cat /tmp/comp_input.tmp)
 run_and_check "deploycheck/deploycompatible" "$comp_input" "200" ""
 check_comp_results "false" "User Input Incompatible"
 
 # old node policy format
 echo -e "\n${PREFIX} test /deploycheck/deploycompatible. Input: node policy, node userinput, business policy. Result: version 2.0.6 policy not compatible, version 2.0.7 user input not compatible."
-read -dr '' node_pol1 <<EOF
+cat > /tmp/node_pol1.tmp <<'EOF'
 {
   "properties": [
     {
@@ -393,20 +409,22 @@ read -dr '' node_pol1 <<EOF
   ]
 }
 EOF
-read -dr '' comp_input <<EOF
+node_pol1=$(cat /tmp/node_pol1.tmp)
+cat > /tmp/comp_input.tmp <<'EOF'
 {
   "node_policy":      $node_pol1,
   "node_user_input":  $node_ui_bad,
   "business_policy":  $bp_location
 }
 EOF
+comp_input=$(cat /tmp/comp_input.tmp)
 run_and_check "deploycheck/deploycompatible" "$comp_input" "200" ""
 check_comp_results "false" "Policy Incompatible"
 check_comp_results "false" "User Input Incompatible"
 
 # new node policy format
 echo -e "\n${PREFIX} test /deploycheck/deploycompatible. Input: node policy, node userinput, business policy. Result: version 2.0.6 policy not compatible, version 2.0.7 user input not compatible."
-read -dr '' node_pol1 <<EOF
+cat > /tmp/node_pol1.tmp <<'EOF'
 {
   "deployment": {
     "properties": [
@@ -427,70 +445,77 @@ read -dr '' node_pol1 <<EOF
   }
 }
 EOF
-read -dr '' comp_input <<EOF
+node_pol1=$(cat /tmp/node_pol1.tmp)
+cat > /tmp/comp_input.tmp <<'EOF'
 {
   "node_policy":      $node_pol1,
   "node_user_input":  $node_ui_bad,
   "business_policy":  $bp_location
 }
 EOF
+comp_input=$(cat /tmp/comp_input.tmp)
 run_and_check "deploycheck/deploycompatible" "$comp_input" "200" ""
 check_comp_results "false" "Policy Incompatible"
 check_comp_results "false" "User Input Incompatible"
 
 echo -e "\n${PREFIX} test /deploycompatible. Input: patten id, node user input. Result: compatible."
-read -dr '' comp_input <<EOF
+cat > /tmp/comp_input.tmp <<'EOF'
 {
   "node_user_input":  $node_ui,
   "pattern_id":       "e2edev@somecomp.com/sloc"
 }
 EOF
+comp_input=$(cat /tmp/comp_input.tmp)
 run_and_check "deploycheck/deploycompatible" "$comp_input" "200" ""
 check_comp_results "true" "Compatible"
 
 echo -e "\n${PREFIX} test /deploycheck/deploycompatible. Input: patten id, node user input. Result: not compatible."
-read -dr '' comp_input <<EOF
+cat > /tmp/comp_input.tmp <<'EOF'
 {
   "node_user_input":  $node_ui_bad,
   "pattern_id":       "e2edev@somecomp.com/sloc"
 }
 EOF
+comp_input=$(cat /tmp/comp_input.tmp)
 run_and_check "deploycheck/deploycompatible" "$comp_input" "200" ""
 check_comp_results "false" "User Input Incompatible"
 
 echo -e "\n${PREFIX} test /deploycheck/deploycompatible. Input: node id, pattern id. Result: compatible."
-read -dr '' comp_input <<EOF
+cat > /tmp/comp_input.tmp <<'EOF'
 {
   "node_id":          "userdev/an12345",
   "pattern_id":       "e2edev@somecomp.com/sall"
 }
 EOF
+comp_input=$(cat /tmp/comp_input.tmp)
 run_and_check "deploycheck/deploycompatible" "$comp_input" "200" ""
 check_comp_results "true" "Compatible"
 
 echo -e "\n${PREFIX} test /deploycheck/deploycompatible. Input: patten, node user input. Result: compatible."
-read -dr '' comp_input <<EOF
+cat > /tmp/comp_input.tmp <<'EOF'
 {
   "node_user_input":  $node_ui,
   "pattern":          $pattern_sloc
 }
 EOF
+comp_input=$(cat /tmp/comp_input.tmp)
 run_and_check "deploycheck/deploycompatible" "$comp_input" "200" ""
 check_comp_results "true" "Compatible"
 
 echo -e "\n${PREFIX} test /deploycheck/deploycompatible. Input: patten, node user input, service. Result: compatible."
-read -dr '' comp_input <<EOF
+cat > /tmp/comp_input.tmp <<'EOF'
 {
   "node_user_input":  $node_ui,
   "pattern":          $pattern_sloc,
   "service":          [$service_location, $service_locgps]
 }
 EOF
+comp_input=$(cat /tmp/comp_input.tmp)
 run_and_check "deploycheck/deploycompatible" "$comp_input" "200" ""
 check_comp_results "true" "Compatible"
 
 echo -e "\n${PREFIX} test /deploycheck/deploycompatible. Input: patten, node user input, service, node arch. Result: not compatible."
-read -dr '' comp_input <<EOF
+cat > /tmp/comp_input.tmp <<'EOF'
 {
   "node_user_input":  $node_ui,
   "pattern":          $pattern_sloc,
@@ -498,6 +523,7 @@ read -dr '' comp_input <<EOF
   "node_arch":        "${ARCH}"
  }
 EOF
+comp_input=$(cat /tmp/comp_input.tmp)
 run_and_check "deploycheck/deploycompatible" "$comp_input" "200" ""
 check_comp_results "false" "User Input Incompatible"
 
@@ -508,27 +534,29 @@ fi
 
 # test secret binding in deploymen check
 echo -e "\n${PREFIX} test /deploycheck/secretbindingcompatible. Input: patten with secret binding, service with secret. Result: compatible."
-read -dr '' comp_input <<EOF
+cat > /tmp/comp_input.tmp <<'EOF'
 {
   "pattern":          $pattern_sloc,
   "service":          [$service_location, $service_locgps]
 }
 EOF
+comp_input=$(cat /tmp/comp_input.tmp)
 run_and_check "deploycheck/secretbindingcompatible" "$comp_input" "200" ""
 check_comp_results "true" "Compatible"
 
 echo -e "\n${PREFIX} test /deploycheck/secretbindingcompatible. business policy with secret, service with secret. compatible"
-read -dr '' comp_input <<EOF
+cat > /tmp/comp_input.tmp <<'EOF'
 {
   "business_policy":  $bp_location,
   "service":          [$service_location]
 }
 EOF
+comp_input=$(cat /tmp/comp_input.tmp)
 run_and_check "deploycheck/secretbindingcompatible" "$comp_input" "200" ""
 check_comp_results "true" "Compatible"
 
 echo -e "\n${PREFIX} test /deploycheck/deploycompatible. Input: node policy, node userinput, business policy with secret, service with secret. Incompatible"
-read -dr '' comp_input <<EOF
+cat > /tmp/comp_input.tmp <<'EOF'
 {
   "node_policy":      $node_policy,
   "node_user_input":  $node_ui,
@@ -536,6 +564,7 @@ read -dr '' comp_input <<EOF
   "service":          [$service_location_secret_extra]
 }
 EOF
+comp_input=$(cat /tmp/comp_input.tmp)
 run_and_check "deploycheck/deploycompatible" "$comp_input" "200" ""
 check_comp_results "false" "Secret Binding Incompatible" "No secret binding found for"
 
@@ -547,12 +576,13 @@ echo -e "${PREFIX} Start testing for vault secrets API"
 TEST_VAULT_SECRET_ORG="userdev"
 TEST_VAULT_SECRET_NAME="secret"
 
-read -dr '' create_secret <<EOF
+cat > /tmp/create_secret.tmp <<'EOF'
 {
   \"key\":\"test\",
   \"value\":\"value\"
 }
 EOF
+create_secret=$(cat /tmp/create_secret.tmp)
 
 LIST_ORG_SECRET="org/${TEST_VAULT_SECRET_ORG}/secrets/${TEST_VAULT_SECRET_NAME}"
 LIST_ORG_SECRETS="org/${TEST_VAULT_SECRET_ORG}/secrets"

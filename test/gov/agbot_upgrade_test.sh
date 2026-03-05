@@ -6,11 +6,12 @@ if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
 fi
 
 # test 1 ================================================
-read -dr '' upgradetest <<EOF
+cat > /tmp/upgradetest.tmp <<'EOF'
 {
   "agreementId": "1234567890"
 }
 EOF
+upgradetest=$(cat /tmp/upgradetest.tmp)
 
 echo -e "\n\n[D] test payload: $upgradetest"
 
@@ -27,8 +28,9 @@ else
 fi
 
 # test 2 ================================================
-read -dr '' upgradetest <<EOF
+cat > /tmp/upgradetest.tmp <<'EOF'
 EOF
+upgradetest=$(cat /tmp/upgradetest.tmp)
 
 echo -e "\n\n[D] test payload: $upgradetest"
 
@@ -45,8 +47,9 @@ else
 fi
 
 # test 3 ================================================
-read -dr '' upgradetest <<EOF
+cat > /tmp/upgradetest.tmp <<'EOF'
 EOF
+upgradetest=$(cat /tmp/upgradetest.tmp)
 
 echo -e "\n\n[D] test payload: $upgradetest"
 
@@ -63,9 +66,10 @@ else
 fi
 
 # test 4 ================================================
-read -dr '' upgradetest <<EOF
+cat > /tmp/upgradetest.tmp <<'EOF'
 {}
 EOF
+upgradetest=$(cat /tmp/upgradetest.tmp)
 
 echo -e "\n\n[D] test payload: $upgradetest"
 
@@ -82,11 +86,12 @@ else
 fi
 
 # test 5 ================================================
-read -dr '' upgradetest <<EOF
+cat > /tmp/upgradetest.tmp <<'EOF'
 {
     "fred": 4
 }
 EOF
+upgradetest=$(cat /tmp/upgradetest.tmp)
 
 echo -e "\n\n[D] test payload: $upgradetest"
 
@@ -103,11 +108,12 @@ else
 fi
 
 # test 6 ================================================
-read -dr '' upgradetest <<EOF
+cat > /tmp/upgradetest.tmp <<'EOF'
 {
     "agreementId": "1234567890"
 }
 EOF
+upgradetest=$(cat /tmp/upgradetest.tmp)
 
 echo -e "\n\n[D] test payload: $upgradetest"
 
@@ -124,11 +130,12 @@ else
 fi
 
 # test 7 ================================================
-read -dr '' upgradetest <<EOF
+cat > /tmp/upgradetest.tmp <<'EOF'
 {
     "device": "abcdef"
 }
 EOF
+upgradetest=$(cat /tmp/upgradetest.tmp)
 
 echo -e "\n\n[D] test payload: $upgradetest"
 
@@ -145,11 +152,12 @@ else
 fi
 
 # test 8 ================================================
-read -dr '' upgradetest <<EOF
+cat > /tmp/upgradetest.tmp <<'EOF'
 {
     "device": "abcdef"
 }
 EOF
+upgradetest=$(cat /tmp/upgradetest.tmp)
 
 echo -e "\n\n[D] test payload: $upgradetest"
 
@@ -178,11 +186,12 @@ do
     sleep 10
 done
 
-read -dr '' upgradetest <<EOF
+cat > /tmp/upgradetest.tmp <<'EOF'
 {
     "agreementId": "$AGID"
 }
 EOF
+upgradetest=$(cat /tmp/upgradetest.tmp)
 
 echo -e "\n\n[D] test payload: $upgradetest"
 
@@ -199,11 +208,12 @@ else
 fi
 
 # test 10 ================================================
-read -dr '' upgradetest <<EOF
+cat > /tmp/upgradetest.tmp <<'EOF'
 {
     "agreementId": "$AGID"
 }
 EOF
+upgradetest=$(cat /tmp/upgradetest.tmp)
 
 echo -e "\n\n[D] test payload: $upgradetest"
 
@@ -220,12 +230,13 @@ else
 fi
 
 # test 11 ================================================
-read -dr '' upgradetest <<EOF
+cat > /tmp/upgradetest.tmp <<'EOF'
 {
     "agreementId": "$AGID",
     "device": "abcdef"
 }
 EOF
+upgradetest=$(cat /tmp/upgradetest.tmp)
 
 echo -e "\n\n[D] test payload: $upgradetest"
 

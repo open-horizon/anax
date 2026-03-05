@@ -116,7 +116,7 @@ hzn exchange user list
 echo "Start testing hzn mms object publish"
 
 #setup metadata files
-read -dr '' resmeta <<EOF
+cat > /tmp/meta.json <<'EOF'
 {
   "objectID": "test1",
   "objectType": "test",
@@ -125,9 +125,8 @@ read -dr '' resmeta <<EOF
   "description": "a small file"
 }
 EOF
-echo "$resmeta" > /tmp/meta.json
 
-read -dr '' resmeta <<EOF
+cat > /tmp/meta-medium.json <<'EOF'
 {
   "objectID": "test-medium1",
   "objectType": "test",
@@ -136,9 +135,8 @@ read -dr '' resmeta <<EOF
   "description": "a medium file"
 }
 EOF
-echo "$resmeta" > /tmp/meta-medium.json
 
-read -dr '' resmeta <<EOF
+cat > /tmp/meta-large.json <<'EOF'
 {
   "objectID": "test-large1",
   "objectType": "test",
@@ -147,9 +145,8 @@ read -dr '' resmeta <<EOF
   "description": "a large file"
 }
 EOF
-echo "$resmeta" > /tmp/meta-large.json
 
-read -dr '' resmeta <<EOF
+cat > /tmp/meta-stream-upload.json <<'EOF'
 {
   "objectID": "test-with-streaming-upload",
   "objectType": "test",
@@ -158,8 +155,6 @@ read -dr '' resmeta <<EOF
   "description": "streaming upload a large file"
 }
 EOF
-echo "$resmeta" > /tmp/meta-stream-upload.json
-
 #Setup files to use in uploads
 dd if=/dev/zero of=/tmp/data.txt count=128 bs=1048576
 dd if=/dev/zero of=/tmp/data-small.txt count=32 bs=1048576
@@ -168,6 +163,7 @@ dd if=/dev/zero of=/tmp/data-large.txt count=512 bs=1048576
 RESOURCE_ORG1=e2edev@somecomp.com
 
 export HZN_FSS_CSSURL=${CSS_URL}
+export HZN_ORG_ID=${DEVICE_ORG}
 
 # Test medium object publish
 echo "Testing 128MB object publish"
@@ -430,7 +426,7 @@ fi
 echo "Start testing hzn mms object list"
 
 # Adding objects
-read -dr '' resmeta <<EOF
+cat > /tmp/resmeta.tmp <<'EOF'
 {
   "objectID": "test2",
   "objectType": "test",
@@ -441,6 +437,7 @@ read -dr '' resmeta <<EOF
   "expiration": "2029-10-02T15:00:00Z"
 }
 EOF
+resmeta=$(cat /tmp/resmeta.tmp)
 
 echo "$resmeta" > /tmp/meta.json
 
@@ -452,7 +449,7 @@ then
   exit 255
 fi
 
-read -dr '' resmeta <<EOF
+cat > /tmp/resmeta.tmp <<'EOF'
 {
   "objectID": "test3",
   "objectType": "test",
@@ -464,6 +461,7 @@ read -dr '' resmeta <<EOF
   "expiration": "2032-10-02T15:00:00Z"
 }
 EOF
+resmeta=$(cat /tmp/resmeta.tmp)
 
 echo "$resmeta" > /tmp/meta.json
 
@@ -476,7 +474,7 @@ then
 fi
 
 # adding an object with data for MMS access testing
-read -dr '' resmeta <<EOF
+cat > /tmp/resmeta.tmp <<'EOF'
 {
   "objectID": "test_user_access",
   "objectType": "test",
@@ -487,6 +485,7 @@ read -dr '' resmeta <<EOF
   "expiration": "2032-10-02T15:00:00Z"
 }
 EOF
+resmeta=$(cat /tmp/resmeta.tmp)
 
 echo "$resmeta" > /tmp/meta.json
 
@@ -859,7 +858,7 @@ testUserHaveAccessToALLObjects() {
 
     # publish
     # have access to update object in user's org
-    read -dr '' resmeta <<EOF
+    cat > /tmp/resmeta.tmp <<'EOF'
     {
       "objectID": "${8}",
       "objectType": "${7}",
@@ -870,6 +869,7 @@ testUserHaveAccessToALLObjects() {
       "expiration": "2032-10-02T15:00:00Z"
     }
 EOF
+    resmeta=$(cat /tmp/resmeta.tmp)
 
     echo "$resmeta" > /tmp/meta.json
     hzn mms object publish -m /tmp/meta.json -f /tmp/data.txt >/dev/null
@@ -911,7 +911,7 @@ testUserNotHaveAccessToPrivateObjects() {
 
      # don't have access to update private object
     echo "user ${2} is publishing object: ${5} ${6}"
-    read -dr '' resmeta <<EOF
+    cat > /tmp/resmeta.tmp <<'EOF'
     {
       "objectID": "${6}",
       "objectType": "${5}",
@@ -920,6 +920,7 @@ testUserNotHaveAccessToPrivateObjects() {
       "description": "test acl - test update by user"
     }
 EOF
+    resmeta=$(cat /tmp/resmeta.tmp)
 
     echo "$resmeta" > /tmp/meta.json
     resp=$(hzn mms object publish -m /tmp/meta.json -f /tmp/data.txt 2>&1)
@@ -957,7 +958,7 @@ verifyUserAccessForPublicObject() {
 
     echo "Verify user $1/$2 doesn't have WRITE access to public object in $4 org"
     # user can't update object metadata or object data
-read -dr '' resmeta <<EOF
+cat > /tmp/resmeta.tmp <<'EOF'
 {
   "data": [],
   "meta": {
@@ -971,6 +972,7 @@ read -dr '' resmeta <<EOF
   }
 }
 EOF
+resmeta=$(cat /tmp/resmeta.tmp)
 
     ADDM=$(echo "$resmeta" | curl -o /dev/null -sLX PUT -w "%{http_code}" "${CERT_VAR[@]}" -u "${1}/${2}:${3}" "${CSS_URL}/api/v1/objects/${4}/${5}/${6}" --data @-)
     echo "PUT_OBJ_CODE: $ADDM"
@@ -1008,7 +1010,7 @@ verifyAdminUserCanCreatePublicObject() {
     export HZN_ORG_ID=${1}
 
     # hub admin can create public object in anyorg
-read -dr '' resmeta <<EOF
+cat > /tmp/resmeta.tmp <<'EOF'
 {
   "objectID": "public_obj",
   "objectType": "public",
@@ -1020,6 +1022,7 @@ read -dr '' resmeta <<EOF
   "public": true
 }
 EOF
+resmeta=$(cat /tmp/resmeta.tmp)
 
     echo "$resmeta" > /tmp/meta.json
     hzn mms object publish -o "${4}" -m /tmp/meta.json -f /tmp/data.txt >/dev/null

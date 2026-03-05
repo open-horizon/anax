@@ -16,13 +16,14 @@ ORG="e2edev@somecomp.com"
 echo "Testing node API"
 
 # shellcheck disable=SC2153  # DEVICE_NAME is set externally as an environment variable
-read -dr '' newhzndevice <<EOF
+cat > /tmp/newhzndevice.tmp <<'EOF'
 {
   "id": "$DEVICE_ID",
   "name": "$DEVICE_NAME",
   "token": "$TOKEN"
 }
 EOF
+newhzndevice=$(cat /tmp/newhzndevice.tmp)
 
 echo "Testing for missing organization in node API"
 RES=$(echo "$newhzndevice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/node")
@@ -43,7 +44,7 @@ else
 fi
 
 # undefined org
-read -dr '' newhzndevice <<EOF
+cat > /tmp/newhzndevice.tmp <<'EOF'
 {
   "id": "$DEVICE_ID",
   "name": "$DEVICE_NAME",
@@ -51,6 +52,7 @@ read -dr '' newhzndevice <<EOF
   "organization": "fred"
 }
 EOF
+newhzndevice=$(cat /tmp/newhzndevice.tmp)
 
 echo "Testing for undefined organization in node API"
 RES=$(echo "$newhzndevice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/node")
@@ -71,7 +73,7 @@ else
 fi
 
 # undefined pattern
-read -dr '' newhzndevice <<EOF
+cat > /tmp/newhzndevice.tmp <<'EOF'
 {
   "id": "$DEVICE_ID",
   "name": "$DEVICE_NAME",
@@ -80,6 +82,7 @@ read -dr '' newhzndevice <<EOF
   "pattern": "fred"
 }
 EOF
+newhzndevice=$(cat /tmp/newhzndevice.tmp)
 
 echo "Testing for undefined pattern in node API"
 RES=$(echo "$newhzndevice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/node")
@@ -105,11 +108,12 @@ fi
 # node not registered yet
 echo "Testing Configstate API"
 
-read -dr '' newhzndevice <<EOF
+cat > /tmp/newhzndevice.tmp <<'EOF'
 {
   "state": "configuring"
 }
 EOF
+newhzndevice=$(cat /tmp/newhzndevice.tmp)
 
 echo "Testing for not registered device in configstate API"
 RES=$(echo "$newhzndevice" | curl -sS -X PUT -H "Content-Type: application/json" --data @- "$ANAX_API/node/configstate")
@@ -172,12 +176,13 @@ else
 fi
 
 # Incorrect input (not demarshallable) on POST
-read -dr '' newhznpolicy <<EOF
+cat > /tmp/newhznpolicy.tmp <<'EOF'
 {
   "properties": [{name":"prop1"}],
   "constraints": ""
 }
 EOF
+newhznpolicy=$(cat /tmp/newhznpolicy.tmp)
 
 echo "Testing for not demarshallable input on node/policy API"
 RES=$(echo "$newhznpolicy" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/node/policy")
@@ -198,12 +203,13 @@ else
 fi
 
 # Incorrect input (wrong field types) on PUT
-read -dr '' newhznpolicy <<EOF
+cat > /tmp/newhznpolicy.tmp <<'EOF'
 {
   "properties": 11,
   "constraints": 0
 }
 EOF
+newhznpolicy=$(cat /tmp/newhznpolicy.tmp)
 
 echo "Testing for incorrect input field types on node/policy API"
 RES=$(echo "$newhznpolicy" | curl -sS -X PUT -H "Content-Type: application/json" --data @- "$ANAX_API/node/policy")
@@ -248,7 +254,7 @@ fi
 echo "Calling node API"
 
 if curl -sS -H "Content-Type: application/json" "$ANAX_API/node" | jq -er '. | .account.id' > /dev/null; then
-  read -dr '' updatehzntoken <<EOF
+  cat > /tmp/updatehzntoken.tmp <<'EOF'
 {
   "token": "$TOKEN",
   "id": "$DEVICE_ID",
@@ -256,6 +262,7 @@ if curl -sS -H "Content-Type: application/json" "$ANAX_API/node" | jq -er '. | .
   "pattern": "$PATTERN"
 }
 EOF
+  updatehzntoken=$(cat /tmp/updatehzntoken.tmp)
 
   echo -e "\n[D] hzntoken payload: $updatehzntoken"
 
@@ -265,7 +272,7 @@ EOF
 
 else
 
-  read -dr '' newhzndevice <<EOF
+  cat > /tmp/newhzndevice.tmp <<'EOF'
 {
   "id": "$DEVICE_ID",
   "name": "$DEVICE_NAME",
@@ -274,6 +281,7 @@ else
   "pattern": "$PATTERN"
 }
 EOF
+  newhzndevice=$(cat /tmp/newhzndevice.tmp)
 
   echo -e "\n[D] hzndevice payload: $newhzndevice"
 

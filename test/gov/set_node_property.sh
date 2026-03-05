@@ -18,7 +18,7 @@ PROP=$(echo "$ATTRS" | jq -r '.attributes[] | select (.type == "PropertyAttribut
 if [ "$PROP" = "" ]; then
 
     # Then set a node level property
-    read -dr '' propattribute <<EOF
+    cat > /tmp/propattribute.tmp <<'EOF'
 {
   "type": "PropertyAttributes",
   "label": "A property",
@@ -29,6 +29,7 @@ if [ "$PROP" = "" ]; then
   }
 }
 EOF
+    propattribute=$(cat /tmp/propattribute.tmp)
 
     echo -e "\n\n[D] property payload: $propattribute"
 
@@ -49,7 +50,7 @@ else
 
     NEW_MAPPINGS=$(echo "$PROP" | jq --arg key "$PROP_NAME" --arg val "$PROP_VALUE" '.mappings + {($key): $val}')
 
-    read -dr '' propattribute <<EOF
+    cat > /tmp/propattribute.tmp <<'EOF'
 {
   "type": "PropertyAttributes",
   "label": "A property",
@@ -58,6 +59,7 @@ else
   "mappings": $NEW_MAPPINGS
 }
 EOF
+    propattribute=$(cat /tmp/propattribute.tmp)
 
     echo -e "\n\n[D] property payload: $propattribute"
 

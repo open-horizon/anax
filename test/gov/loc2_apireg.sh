@@ -15,7 +15,7 @@ if [ "$PATTERN" = "" ]
 then
 
 # and then configure by service API to opt into the node side services.
-read -dr '' slocservice <<EOF
+cat > /tmp/slocservice.tmp <<'EOF'
 {
   "url": "https://bluehorizon.network/services/locgps",
   "name": "gps",
@@ -39,6 +39,7 @@ read -dr '' slocservice <<EOF
   ]
 }
 EOF
+slocservice=$(cat /tmp/slocservice.tmp)
 
 echo -e "\n\n[D] service based loc gps service payload: $slocservice"
 
@@ -50,7 +51,7 @@ if [ "$ERR" != "null" ]; then
   exit 2
 fi
 
-read -dr '' slocservice <<EOF
+cat > /tmp/slocservice.tmp <<'EOF'
 {
     "url": "https://bluehorizon.network/service-cpu",
     "name": "cpu",
@@ -69,6 +70,7 @@ read -dr '' slocservice <<EOF
     ]
 }
 EOF
+slocservice=$(cat /tmp/slocservice.tmp)
 
 echo -e "\n\n[D] service based cpu service payload: $slocservice"
 
@@ -82,7 +84,7 @@ if [ "$ERR" != "null" ]; then
     fi 
 fi
 
-read -dr '' slocservice <<EOF
+cat > /tmp/slocservice.tmp <<'EOF'
 {
   "url": "https://bluehorizon.network/services/network2",
   "name": "gps",
@@ -91,6 +93,7 @@ read -dr '' slocservice <<EOF
   "attributes": []
 }
 EOF
+slocservice=$(cat /tmp/slocservice.tmp)
 
 echo -e "\n\n[D] service based network2 service payload: $slocservice"
 
@@ -107,7 +110,7 @@ fi
 elif [ "$PATTERN" == "sall" ] || [ "$PATTERN" = "sloc" ]; then
 
 # and then configure by service API
-read -dr '' slocservice <<EOF
+cat > /tmp/slocservice.tmp <<'EOF'
 {
   "url": "https://bluehorizon.network/services/locgps",
   "name": "gps",
@@ -131,6 +134,7 @@ read -dr '' slocservice <<EOF
   ]
 }
 EOF
+slocservice=$(cat /tmp/slocservice.tmp)
 
 echo -e "\n\n[D] service based loc gps service payload: $slocservice"
 

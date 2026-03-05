@@ -9,7 +9,7 @@ fi
 # Begin testing global agreement protocol attributes
 
 # missing protocol definition
-read -dr '' agreementprotocolattribute <<EOF
+cat > /tmp/agreementprotocolattribute.tmp <<'EOF'
 {
   "type": "AgreementProtocolAttributes",
   "label": "Agreement Protocols",
@@ -18,6 +18,7 @@ read -dr '' agreementprotocolattribute <<EOF
   "mappings": {}
 }
 EOF
+agreementprotocolattribute=$(cat /tmp/agreementprotocolattribute.tmp)
 
 echo -e "\n\n[D] agreement protocol payload: $agreementprotocolattribute"
 
@@ -40,7 +41,7 @@ else
 fi
 
 # no protocols specified
-read -dr '' agreementprotocolattribute <<EOF
+cat > /tmp/agreementprotocolattribute.tmp <<'EOF'
 {
   "type": "AgreementProtocolAttributes",
   "label": "Agreement Protocols",
@@ -51,6 +52,7 @@ read -dr '' agreementprotocolattribute <<EOF
   }
 }
 EOF
+agreementprotocolattribute=$(cat /tmp/agreementprotocolattribute.tmp)
 
 echo -e "\n\n[D] agreement protocol payload: $agreementprotocolattribute"
 
@@ -73,7 +75,7 @@ else
 fi
 
 # protocol is not a number
-read -dr '' agreementprotocolattribute <<EOF
+cat > /tmp/agreementprotocolattribute.tmp <<'EOF'
 {
   "type": "AgreementProtocolAttributes",
   "label": "Agreement Protocols",
@@ -84,6 +86,7 @@ read -dr '' agreementprotocolattribute <<EOF
   }
 }
 EOF
+agreementprotocolattribute=$(cat /tmp/agreementprotocolattribute.tmp)
 
 echo -e "\n\n[D] agreement protocol payload: $agreementprotocolattribute"
 
@@ -106,7 +109,7 @@ else
 fi
 
 # protocol is not an array of numbers
-read -dr '' agreementprotocolattribute <<EOF
+cat > /tmp/agreementprotocolattribute.tmp <<'EOF'
 {
   "type": "AgreementProtocolAttributes",
   "label": "Agreement Protocols",
@@ -117,6 +120,7 @@ read -dr '' agreementprotocolattribute <<EOF
   }
 }
 EOF
+agreementprotocolattribute=$(cat /tmp/agreementprotocolattribute.tmp)
 
 echo -e "\n\n[D] agreement protocol payload: $agreementprotocolattribute"
 
@@ -139,7 +143,7 @@ else
 fi
 
 # fred is not one of the supported protocol names
-read -dr '' agreementprotocolattribute <<EOF
+cat > /tmp/agreementprotocolattribute.tmp <<'EOF'
 {
   "type": "AgreementProtocolAttributes",
   "label": "Agreement Protocols",
@@ -154,6 +158,7 @@ read -dr '' agreementprotocolattribute <<EOF
   }
 }
 EOF
+agreementprotocolattribute=$(cat /tmp/agreementprotocolattribute.tmp)
 
 echo -e "\n\n[D] agreement protocol payload: $agreementprotocolattribute"
 
@@ -176,7 +181,7 @@ else
 fi
 
 # blockchain not specified correctly
-read -dr '' agreementprotocolattribute <<EOF
+cat > /tmp/agreementprotocolattribute.tmp <<'EOF'
 {
   "type": "AgreementProtocolAttributes",
   "label": "Agreement Protocols",
@@ -191,6 +196,7 @@ read -dr '' agreementprotocolattribute <<EOF
   }
 }
 EOF
+agreementprotocolattribute=$(cat /tmp/agreementprotocolattribute.tmp)
 
 echo -e "\n\n[D] agreement protocol payload: $agreementprotocolattribute"
 
@@ -213,7 +219,7 @@ else
 fi
 
 # blockchain array not specified correctly
-read -dr '' agreementprotocolattribute <<EOF
+cat > /tmp/agreementprotocolattribute.tmp <<'EOF'
 {
   "type": "AgreementProtocolAttributes",
   "label": "Agreement Protocols",
@@ -228,6 +234,7 @@ read -dr '' agreementprotocolattribute <<EOF
   }
 }
 EOF
+agreementprotocolattribute=$(cat /tmp/agreementprotocolattribute.tmp)
 
 echo -e "\n\n[D] agreement protocol payload: $agreementprotocolattribute"
 
@@ -250,7 +257,7 @@ else
 fi
 
 # blockchain type is not a number
-read -dr '' agreementprotocolattribute <<EOF
+cat > /tmp/agreementprotocolattribute.tmp <<'EOF'
 {
   "type": "AgreementProtocolAttributes",
   "label": "Agreement Protocols",
@@ -270,6 +277,7 @@ read -dr '' agreementprotocolattribute <<EOF
   }
 }
 EOF
+agreementprotocolattribute=$(cat /tmp/agreementprotocolattribute.tmp)
 
 echo -e "\n\n[D] agreement protocol payload: $agreementprotocolattribute"
 
@@ -292,7 +300,7 @@ else
 fi
 
 # blockchain name is not a number
-read -dr '' agreementprotocolattribute <<EOF
+cat > /tmp/agreementprotocolattribute.tmp <<'EOF'
 {
   "type": "AgreementProtocolAttributes",
   "label": "Agreement Protocols",
@@ -312,6 +320,7 @@ read -dr '' agreementprotocolattribute <<EOF
   }
 }
 EOF
+agreementprotocolattribute=$(cat /tmp/agreementprotocolattribute.tmp)
 
 echo -e "\n\n[D] agreement protocol payload: $agreementprotocolattribute"
 
@@ -334,7 +343,7 @@ else
 fi
 
 # blockchain type is not one of the supported types for Basic protocol
-read -dr '' agreementprotocolattribute <<EOF
+cat > /tmp/agreementprotocolattribute.tmp <<'EOF'
 {
   "type": "AgreementProtocolAttributes",
   "label": "Agreement Protocols",
@@ -354,6 +363,7 @@ read -dr '' agreementprotocolattribute <<EOF
   }
 }
 EOF
+agreementprotocolattribute=$(cat /tmp/agreementprotocolattribute.tmp)
 
 echo -e "\n\n[D] agreement protocol payload: $agreementprotocolattribute"
 
@@ -379,7 +389,7 @@ fi
 # Now testing service specific agreement protocol attributes
 
 # missing protocol specification
-read -dr '' netspeedservice <<EOF
+cat > /tmp/netspeedservice.tmp <<'EOF'
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -396,6 +406,7 @@ read -dr '' netspeedservice <<EOF
   ]
 }
 EOF
+netspeedservice=$(cat /tmp/netspeedservice.tmp)
 
 echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
@@ -418,7 +429,7 @@ else
 fi
 
 # empty protocol array
-read -dr '' netspeedservice <<EOF
+cat > /tmp/netspeedservice.tmp <<'EOF'
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -437,6 +448,7 @@ read -dr '' netspeedservice <<EOF
   ]
 }
 EOF
+netspeedservice=$(cat /tmp/netspeedservice.tmp)
 
 echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
@@ -459,7 +471,7 @@ else
 fi
 
 # invalid value type for protocol
-read -dr '' netspeedservice <<EOF
+cat > /tmp/netspeedservice.tmp <<'EOF'
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -478,6 +490,7 @@ read -dr '' netspeedservice <<EOF
   ]
 }
 EOF
+netspeedservice=$(cat /tmp/netspeedservice.tmp)
 
 echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
@@ -500,7 +513,7 @@ else
 fi
 
 # invalid value type for protocol
-read -dr '' netspeedservice <<EOF
+cat > /tmp/netspeedservice.tmp <<'EOF'
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -519,6 +532,7 @@ read -dr '' netspeedservice <<EOF
   ]
 }
 EOF
+netspeedservice=$(cat /tmp/netspeedservice.tmp)
 
 echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
@@ -541,7 +555,7 @@ else
 fi
 
 # fred is not a known protocol
-read -dr '' netspeedservice <<EOF
+cat > /tmp/netspeedservice.tmp <<'EOF'
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -564,6 +578,7 @@ read -dr '' netspeedservice <<EOF
   ]
 }
 EOF
+netspeedservice=$(cat /tmp/netspeedservice.tmp)
 
 echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
@@ -586,7 +601,7 @@ else
 fi
 
 # invalid value type for protocol
-read -dr '' netspeedservice <<EOF
+cat > /tmp/netspeedservice.tmp <<'EOF'
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -609,6 +624,7 @@ read -dr '' netspeedservice <<EOF
   ]
 }
 EOF
+netspeedservice=$(cat /tmp/netspeedservice.tmp)
 
 echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
@@ -631,7 +647,7 @@ else
 fi
 
 # invalid value type for protocol
-read -dr '' netspeedservice <<EOF
+cat > /tmp/netspeedservice.tmp <<'EOF'
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -654,6 +670,7 @@ read -dr '' netspeedservice <<EOF
   ]
 }
 EOF
+netspeedservice=$(cat /tmp/netspeedservice.tmp)
 
 echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
@@ -676,7 +693,7 @@ else
 fi
 
 # invalid value type for blockchain type
-read -dr '' netspeedservice <<EOF
+cat > /tmp/netspeedservice.tmp <<'EOF'
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -704,6 +721,7 @@ read -dr '' netspeedservice <<EOF
   ]
 }
 EOF
+netspeedservice=$(cat /tmp/netspeedservice.tmp)
 
 echo -e "\n\n[D] agreement protocol payload: $netspeedservice"
 
@@ -726,7 +744,7 @@ else
 fi
 
 # invalid value type for blockchain name
-read -dr '' netspeedservice <<EOF
+cat > /tmp/netspeedservice.tmp <<'EOF'
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -754,6 +772,7 @@ read -dr '' netspeedservice <<EOF
   ]
 }
 EOF
+netspeedservice=$(cat /tmp/netspeedservice.tmp)
 
 echo -e "\n\n[D] agreement protocol payload: $netspeedservice"
 
@@ -776,7 +795,7 @@ else
 fi
 
 # invalid blockchain type for known protocol
-read -dr '' netspeedservice <<EOF
+cat > /tmp/netspeedservice.tmp <<'EOF'
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/network",
   "${SERVICE_ORG}": "IBM",
@@ -804,6 +823,7 @@ read -dr '' netspeedservice <<EOF
   ]
 }
 EOF
+netspeedservice=$(cat /tmp/netspeedservice.tmp)
 
 echo -e "\n\n[D] agreement protocol payload: $netspeedservice"
 
@@ -831,7 +851,7 @@ fi
 if [ "$PATTERN" = "" ]
 then
 
-read -dr '' netspeedservice <<EOF
+cat > /tmp/netspeedservice.tmp <<'EOF'
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/no-such-service",
   "${SERVICE_NAME}": "no-such",
@@ -853,6 +873,7 @@ read -dr '' netspeedservice <<EOF
   ]
 }
 EOF
+netspeedservice=$(cat /tmp/netspeedservice.tmp)
 
 echo -e "\n\n[D] agreement protocol payload: $netspeedservice"
 
@@ -870,7 +891,7 @@ fi
 else
 
 # When patterns are in use, the device side cannot set any policy, there should be an error
-read -dr '' netspeedservice <<EOF
+cat > /tmp/netspeedservice.tmp <<'EOF'
 {
   "${SERVICE_URL}": "https://bluehorizon.network/${SERVICE_MODE}s/no-such-service",
   "${SERVICE_NAME}": "no-such",
@@ -892,6 +913,7 @@ read -dr '' netspeedservice <<EOF
   ]
 }
 EOF
+netspeedservice=$(cat /tmp/netspeedservice.tmp)
 
 echo -e "\n\n[D] agreement protocol payload: $netspeedservice"
 

@@ -24,7 +24,7 @@ then
         # IBM/netspeed depends on: IBM/nework, IBN/network2, IBM/cpu
         # e2edev@somecomp.com/netspeed depends on: e2edev@somecomp.com/network, e2edev@somecomp.com/network2, IBM/cpu e2edev@somecomp.com/cpu
 
-        read -dr '' snsconfig <<EOF
+        cat > /tmp/snsconfig.tmp <<'EOF'
 [
   {
     "serviceOrgid": "IBM",
@@ -91,6 +91,7 @@ then
   }
 ]
 EOF
+        snsconfig=$(cat /tmp/snsconfig.tmp)
         echo -e "\n\n[D] user input for netspeed service: $snsconfig"
         echo "Registering user input for netspeed service"
         RES=$(echo "$snsconfig" | curl -sS -X PATCH -w '%{http_code}' -H "Content-Type: application/json" --data @- "$ANAX_API/node/userinput")
@@ -102,7 +103,7 @@ EOF
         # Configure the netspeed service variables, at an older version level just to be sure
         # that the runtime will still pick them up for the newer version that is installed in the exchange.
 
-        read -dr '' snsconfig <<EOF
+        cat > /tmp/snsconfig.tmp <<'EOF'
 [
   {
     "serviceOrgid": "IBM",
@@ -177,6 +178,7 @@ EOF
   }
 ]
 EOF
+        snsconfig=$(cat /tmp/snsconfig.tmp)
 
         echo -e "\n\n[D] user input for netspeed service: $snsconfig"
         echo "Registering user input for netspeed service"

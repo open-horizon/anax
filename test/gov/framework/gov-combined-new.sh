@@ -49,6 +49,10 @@ export PASS=${PASS:-"anax1pw"}
 export TOKEN=${TOKEN:-"Abcdefghijklmno1"}
 export EXCH="${EXCH_APP_HOST}"
 
+# Export AGBOT_API if not already set (from Makefile)
+export AGBOT_API=${AGBOT_API:-}
+export AGBOT2_API=${AGBOT2_API:-}
+
 # Detect client IP for service connections (CSS, Exchange, etc.)
 # E2EDEV_CLIENT_IP should be set by Makefile, but provide fallback
 if [ -z "${E2EDEV_CLIENT_IP:-}" ]; then

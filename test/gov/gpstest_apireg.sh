@@ -13,7 +13,7 @@ then
 echo -e "Pattern is set to $PATTERN"
 
   # add user input with /node/userinput api
-  read -dr '' nodeui <<EOF
+  cat > /tmp/nodeui.tmp <<'EOF'
 [
     {
       "serviceOrgid": "IBM",
@@ -42,6 +42,7 @@ echo -e "Pattern is set to $PATTERN"
 ]
 
 EOF
+  nodeui=$(cat /tmp/nodeui.tmp)
   echo "Adding service configurarion for service-gps with /node/userinput api..."
   RES=$(echo "$nodeui" | curl -sS -X PATCH -w "%{http_code}" -H "Content-Type: application/json" --data @- "$ANAX_API/node/userinput")
   if [ "$RES" = "" ]
@@ -61,7 +62,7 @@ EOF
 # blockchain is in use
 else
 
-read -dr '' splitgpsservice <<EOF
+cat > /tmp/splitgpsservice.tmp <<'EOF'
 {
   "sensor_url": "https://bluehorizon.network/microservices/gps",
   "sensor_name": "gps",
@@ -115,6 +116,7 @@ read -dr '' splitgpsservice <<EOF
   ]
 }
 EOF
+splitgpsservice=$(cat /tmp/splitgpsservice.tmp)
 
 echo -e "\n\n[D] split gps service payload with BC: $splitgpsservice"
 

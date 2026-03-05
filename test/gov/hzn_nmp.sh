@@ -79,7 +79,7 @@ cat <<'EOF' > /tmp/nmp_example_4.json
 }
 EOF
 
-read -r -d '' inspectSampleNMP <<'EOF'
+cat > /tmp/inspectSampleNMP.tmp <<'EOF'
 {
   "label": "",                               /* A short description of the policy. */
   "description": "",                         /* (Optional) A much longer description of the policy. */
@@ -104,6 +104,7 @@ read -r -d '' inspectSampleNMP <<'EOF'
   }
 }
 EOF
+inspectSampleNMP=$(cat /tmp/inspectSampleNMP.tmp)
 
 cat <<'EOF' > /tmp/nmp_status_1.json
 {

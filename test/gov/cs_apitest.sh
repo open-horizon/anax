@@ -11,11 +11,12 @@ fi
 # transition from configuring to configuring
 echo "Testing Configstate API"
 
-read -dr '' newhzndevice <<EOF
+cat > /tmp/newhzndevice.tmp <<'EOF'
 {
   "state": "configuring"
 }
 EOF
+newhzndevice=$(cat /tmp/newhzndevice.tmp)
 
 echo "Testing for noop state change in configstate API"
 RES=$(echo "$newhzndevice" | curl -sS -X PUT -H "Content-Type: application/json" --data @- "$ANAX_API/node/configstate")
@@ -40,11 +41,12 @@ fi
 
 echo "Testing Configstate API"
 
-read -dr '' newhzndevice <<EOF
+cat > /tmp/newhzndevice.tmp <<'EOF'
 {
   "state": "configured"
 }
 EOF
+newhzndevice=$(cat /tmp/newhzndevice.tmp)
 
 echo "Testing for transition to configured in configstate API"
 RES=$(echo "$newhzndevice" | curl -sS -X PUT -H "Content-Type: application/json" --data @- "$ANAX_API/node/configstate")
@@ -87,11 +89,12 @@ fi
 # transition from configured to configuring
 echo "Testing Configstate API"
 
-read -dr '' newhzndevice <<EOF
+cat > /tmp/newhzndevice.tmp <<'EOF'
 {
   "state": "configuring"
 }
 EOF
+newhzndevice=$(cat /tmp/newhzndevice.tmp)
 
 echo "Testing for transition to configuring in configstate API"
 RES=$(echo "$newhzndevice" | curl -sS -X PUT -H "Content-Type: application/json" --data @- "$ANAX_API/node/configstate")
