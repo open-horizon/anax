@@ -3,6 +3,46 @@
 This file provides guidance to agents when working with code in this repository.
 
 > **Last Updated:** March 2026
+## Mode Selection Guidelines
+
+When orchestrating tasks or delegating work to specialized modes, follow these guidelines:
+
+### For Orchestrator Agents (Bob)
+
+**Prefer Advanced Mode over Code Mode** when delegating code-related tasks that may require:
+- Access to MCP (Model Context Protocol) tools
+- Browser tools for documentation lookup
+- Complex multi-step operations requiring additional context
+- Tasks that might need external resources or references
+
+**Use Advanced Mode** when:
+- The task is straightforward code editing without external dependencies
+- No MCP or Browser tools are needed
+- The scope is well-defined and limited
+
+**Example Decision Tree:**
+```
+Need to fix code issues?
+├─ Requires external docs/references? → Use Advanced Mode
+├─ Needs MCP tools? → Use Advanced Mode
+├─ Simple editing only? → Use Advanced Mode
+└─ Complex refactoring? → Use Advanced Mode
+```
+
+### For All Agent Types
+
+**Mode Selection Principles:**
+1. **Match capability to task**: Choose the mode whose tools best fit the task requirements
+2. **Consider tool access**: Advanced mode has MCP and Browser tools; Code mode does not
+3. **Scope appropriately**: Break large tasks into mode-appropriate subtasks
+4. **Document reasoning**: When delegating, explain why a specific mode was chosen
+
+**Common Patterns:**
+- **Plan Mode**: Design, architecture, strategy before implementation
+- **Code/Advanced Mode**: Implementation, refactoring, bug fixes
+- **Ask Mode**: Explanations, analysis, recommendations
+- **Orchestrator Mode**: Multi-step coordination, workflow management
+
 
 ## Project Overview
 
