@@ -9,25 +9,36 @@ When orchestrating tasks or delegating work to specialized modes, follow these g
 
 ### For Orchestrator Agents (Bob)
 
-**Prefer Advanced Mode over Code Mode** when delegating code-related tasks that may require:
-- Access to MCP (Model Context Protocol) tools
-- Browser tools for documentation lookup
-- Complex multi-step operations requiring additional context
-- Tasks that might need external resources or references
+**STRONGLY PREFER Advanced Mode over Code Mode** for all code-related tasks. Advanced mode should be the default choice for code work unless there is a specific reason to use Code mode.
 
-**Use Advanced Mode** when:
-- The task is straightforward code editing without external dependencies
-- No MCP or Browser tools are needed
-- The scope is well-defined and limited
+**Use Advanced Mode (Default for Code Work)** when:
+- Making any code changes, refactoring, or bug fixes
+- The task scope is not extremely narrow and well-defined
+- You might need external documentation or references
+- The task could benefit from MCP or Browser tools
+- There's any uncertainty about requirements or implementation
+- **In general: When in doubt, choose Advanced mode**
+
+**Use Code Mode (Rare Exception)** ONLY when ALL of these conditions are met:
+- The task is an extremely simple, well-defined edit
+- No external documentation or references will be needed
+- No MCP or Browser tools will be needed
+- The scope is absolutely clear and limited
+- You are completely certain Advanced mode's capabilities won't be needed
 
 **Example Decision Tree:**
 ```
-Need to fix code issues?
-├─ Requires external docs/references? → Use Advanced Mode
-├─ Needs MCP tools? → Use Advanced Mode
-├─ Simple editing only? → Use Advanced Mode
-└─ Complex refactoring? → Use Advanced Mode
+Need to make code changes?
+├─ Is this an extremely simple, well-defined edit?
+│  ├─ Yes → Consider Code mode (but Advanced is still fine)
+│  └─ No → Use Advanced Mode
+├─ Might need docs/references? → Use Advanced Mode
+├─ Might need MCP tools? → Use Advanced Mode
+├─ Any uncertainty? → Use Advanced Mode
+└─ Default choice → Use Advanced Mode
 ```
+
+**Key Principle**: Advanced mode is the safer, more capable choice. Only use Code mode when you're absolutely certain the task is simple enough that Advanced mode's additional capabilities won't be needed. When in doubt, always choose Advanced mode.
 
 ### For All Agent Types
 

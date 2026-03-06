@@ -19,6 +19,14 @@ then
 fi
 
 #
+# Check if MicroK8s is installed before attempting cleanup
+#
+if ! command -v microk8s >/dev/null 2>&1 && ! command -v microk8s.status >/dev/null 2>&1; then
+    echo "MicroK8s not found, skipping Kubernetes cleanup"
+    exit 0
+fi
+
+#
 # Check if microk8s is running.
 #
 
