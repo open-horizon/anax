@@ -151,6 +151,7 @@ E2EDEV_HOST_IP ?= 0.0.0.0
 # Used for: CSS_URL, DOCKER_EXCH, AGBOT_API, and other service URLs
 # Detection order: default route IP → hostname -I → fallback to 127.0.0.1
 # Note: run_kube.sh has its own IP detection for Kubernetes pod configuration
+# For VM environments: Override with E2EDEV_CLIENT_IP=127.0.0.1 if services bind to localhost
 E2EDEV_CLIENT_IP ?= $(shell ip route get 1.1.1.1 2>/dev/null | grep -oP 'src \K\S+' || hostname -I 2>/dev/null | awk '{print $$1}' || echo "127.0.0.1")
 
 # ============================================================================
