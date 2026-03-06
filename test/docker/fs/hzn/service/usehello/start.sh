@@ -85,6 +85,9 @@ do
         if [ "${BADRES}" == "" ]
         then
             echo "Error Return from object poll: ${OBJS}"
+            CMD="curl -sL ${AUTH}${CERT}${BASEURL}${OBJECT_TYPE}?received=true -v"
+            echo "result of command: ${CMD}"
+            curl -sL ${AUTH}${CERT}${BASEURL}${OBJECT_TYPE}?received=true -v
             exit 1
         fi
 

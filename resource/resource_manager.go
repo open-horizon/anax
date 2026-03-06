@@ -120,6 +120,7 @@ func (r ResourceManager) setupFileSyncService(am *AuthenticationManager) error {
 		common.Configuration.ObjectQueueBufferSize = r.config.GetFSSObjectQueueSize()
 		common.Configuration.HTTPESSClientTimeout = r.config.GetHTTPESSClientTimeout()
 		common.Configuration.HTTPESSObjClientTimeout = r.config.GetHTTPESSObjClientTimeout()
+		common.Configuration.UnixSocketFilePermissions = r.config.GetUnixSocketFilePermissions()
 	}
 
 	if r.nodeType == persistence.DEVICE_TYPE_CLUSTER {
