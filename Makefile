@@ -578,6 +578,8 @@ ifneq ($(GOPATH),$(TMPGOPATH))
 	if [ ! -z $(GOPATH) ] && [ -w $(GOPATH) ] && [ -d $(GOPATH) ]; then \
 		mkdir -p $(GOPATH)/pkg $(GOPATH)/bin; \
 	fi
+	# Ensure TMPGOPATH directories exist for Go module cache
+	mkdir -p $(TMPGOPATH)/pkg $(TMPGOPATH)/bin
 endif
 
 i18n-catalog: gopathlinks deps $(TMPGOPATH)/bin/gotext
@@ -618,8 +620,15 @@ ifneq ($(GOPATH),$(TMPGOPATH))
 		ln -s "$(CURDIR)" "$(PKGPATH)"; \
 	fi
 	for d in bin pkg; do \
-		if [ ! -L "$(TMPGOPATH)/$$d" ]; then \
-			ln -s $(GOPATH)/$$d $(TMPGOPATH)/$$d; \
+		# Remove broken symlinks or files that shouldn't be there
+		if [ -e "$(TMPGOPATH)/$$d" ] || [ -L "$(TMPGOPATH)/$$d" ]; then \
+			if [ ! -d "$(TMPGOPATH)/$$d" ]; then \
+				rm -f "$(TMPGOPATH)/$$d"; \
+			fi; \
+		fi; \
+		# Create symlink only if GOPATH has the directory and TMPGOPATH doesn't
+		if [ -d "$(GOPATH)/$$d" ] && [ ! -e "$(TMPGOPATH)/$$d" ]; then \
+			ln -s "$(GOPATH)/$$d" "$(TMPGOPATH)/$$d"; \
 		fi; \
 	done
 	if [ ! -L "$(TMPGOPATH)/.cache" ] && [ -d "$(GOPATH)/.cache" ]; then \
