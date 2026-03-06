@@ -577,8 +577,12 @@ test-network:
 # $(ANAX_SOURCE)/anax: Build anax binaries and Docker images
 # Builds: anax daemon, hzn CLI, ESS image, CSS image
 $(ANAX_SOURCE)/anax:
-	@echo "Building anax"
-	cd $(ANAX_SOURCE) && make clean && make && make ess-docker-image && make css-docker-image
+	@echo "Building anax with arch=$(arch)"
+	cd $(ANAX_SOURCE) && \
+		$(MAKE) clean && \
+		$(MAKE) arch=$(arch) && \
+		$(MAKE) arch=$(arch) ess-docker-image && \
+		$(MAKE) arch=$(arch) css-docker-image
 
 # e2edevtest-docker-prereqs: Prepare directories and configuration for legacy containerized tests
 # Creates required directories and processes configuration templates
@@ -853,9 +857,9 @@ download-agbot-image:
 get-anax-images:
 	@echo "Configuring agbot prerequisites"
 	@docker image inspect $(DOCKER_ANAX_K8S_INAME) >/dev/null 2>&1 || \
-		(cd $(ANAX_SOURCE) && make anax-k8s-image)
+		(cd $(ANAX_SOURCE) && $(MAKE) arch=$(arch) anax-k8s-image)
 	@docker image inspect $(DOCKER_ANAX_INAME) >/dev/null 2>&1 || \
-		(cd $(ANAX_SOURCE) && make anax-image)
+		(cd $(ANAX_SOURCE) && $(MAKE) arch=$(arch) anax-image)
 
 # get-agbot-image: Build or update agbot image
 # If image exists, updates it with latest anax and hzn binaries
@@ -864,8 +868,8 @@ get-agbot-image:
 	if [[ "$(AGBOT_IMAGE_TAG)" == "e2edev" ]]; then \
 		if ! docker image inspect $(AGBOT_IMAGE_NAME):$(AGBOT_IMAGE_TAG) >/dev/null 2>&1; then \
 	    	echo -e "Building agbot image $(AGBOT_IMAGE_NAME):$(AGBOT_IMAGE_TAG)"; \
-			cd $(ANAX_SOURCE) && make agbot-image; \
-			docker tag $(AGBOT_IMAGE_NAME):testing $(AGBOT_IMAGE_NAME):e2edev; \
+	  cd $(ANAX_SOURCE) && $(MAKE) arch=$(arch) agbot-image; \
+	  docker tag $(AGBOT_IMAGE_NAME):testing $(AGBOT_IMAGE_NAME):e2edev; \
 			docker images; \
 	    else \
 	    	echo "Update $(AGBOT_IMAGE_NAME):$(AGBOT_IMAGE_TAG) image with latest anax and hzn."; \

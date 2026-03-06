@@ -620,13 +620,11 @@ ifneq ($(GOPATH),$(TMPGOPATH))
 		ln -s "$(CURDIR)" "$(PKGPATH)"; \
 	fi
 	for d in bin pkg; do \
-		# Remove broken symlinks or files that shouldn't be there
 		if [ -e "$(TMPGOPATH)/$$d" ] || [ -L "$(TMPGOPATH)/$$d" ]; then \
 			if [ ! -d "$(TMPGOPATH)/$$d" ]; then \
 				rm -f "$(TMPGOPATH)/$$d"; \
 			fi; \
 		fi; \
-		# Create symlink only if GOPATH has the directory and TMPGOPATH doesn't
 		if [ -d "$(GOPATH)/$$d" ] && [ ! -e "$(TMPGOPATH)/$$d" ]; then \
 			ln -s "$(GOPATH)/$$d" "$(TMPGOPATH)/$$d"; \
 		fi; \
