@@ -494,14 +494,18 @@ clean:
 	@echo "Light cleanup complete"
 	@echo "========================================="
 
-# Medium cleanup: clean + removes test containers, temp files, and dangling images
-# Use this for a more thorough cleanup while preserving the management hub and base images
-# Preserves: Management hub (Exchange, CSS, Agbot), base images
+# Medium cleanup: clean + removes management hub and test containers
+# Use this for a more thorough cleanup while preserving base images
+# Preserves: Base images (Exchange, CSS, Agbot, database images)
 cleaner: clean
 	@echo -e "\n========================================="
 	@echo "MEDIUM cleanup (Level 2)"
-	@echo "Preserves: Management hub, base images"
+	@echo "Preserves: Base images"
 	@echo "========================================="
+	@echo "Removing the all-in-one management hub"
+	-@ANAX_SOURCE=$(ANAX_SOURCE) $(ANAX_SOURCE)/test/gov/stop_mgmt_hub.sh 2>/dev/null || true
+	@echo "Removing the $(DOCKER_VAULT_CNAME) container"
+	-@docker rm -f "$(DOCKER_VAULT_CNAME)" 2>/dev/null || true
 	@echo "Removing e2edevtest container"
 	-@docker rm -f "$(DOCKER_TEST_CNAME)" 2>/dev/null || true
 	@echo "Removing the $(DOCKER_REG_CNAME) container"
@@ -919,6 +923,7 @@ run-mgmthub: get-agbot-image get-css-image get-vault-image get-anax-images
 	echo "\nHZN_LISTEN_IP is $(E2EDEV_HOST_IP)"; \
 	export \
 		EXCHANGE_ROOT_PW=$(EXCH_ROOTPW) \
+		EXCH_ROOTPW=$(EXCH_ROOTPW) \
 		EXCHANGE_IMAGE_TAG=$(DOCKER_EXCH_TAG) \
 		EXCHANGE_LOG_LEVEL=$(EXCHANGE_LOG_LEVEL) \
 		EXCHANGE_DATABASE=$(EXCHDB_NAME); \
