@@ -1,10 +1,55 @@
 #!/bin/bash
 
+# Check if we should skip Kubernetes tests
 if [[ "$NOKUBE" = "1" ]]; then
-  echo "Skipping $0"
-  exit
+    echo "Skipping Kubernetes tests (NOKUBE=1)"
+    exit 0
 fi
 
+# Check if MicroK8s is available
+if ! command -v microk8s >/dev/null 2>&1 && ! command -v microk8s.start >/dev/null 2>&1; then
+    echo "========================================="
+    echo "WARNING: MicroK8s not found on this system"
+    echo "========================================="
+    echo ""
+    echo "Kubernetes cluster agent tests require MicroK8s to be installed."
+    echo ""
+    
+    # Detect OS and provide appropriate guidance
+    if [ -f /etc/os-release ]; then
+        # shellcheck disable=SC1091
+        . /etc/os-release
+        case "$ID" in
+            ubuntu|debian)
+                echo "Install on Ubuntu/Debian:"
+                echo "  sudo snap install microk8s --classic --channel=1.33/stable"
+                echo "  sudo usermod -a -G microk8s \$USER"
+                echo "  newgrp microk8s"
+                ;;
+            fedora|rhel|centos|rocky|almalinux)
+                echo "Install on Fedora/RHEL/CentOS:"
+                echo "  sudo dnf install snapd"
+                echo "  sudo systemctl enable --now snapd.socket"
+                echo "  sudo ln -s /var/lib/snapd/snap /snap"
+                echo "  # Log out and back in, then:"
+                echo "  sudo snap install microk8s --classic --channel=1.33/stable"
+                echo "  sudo usermod -a -G microk8s \$USER"
+                echo "  newgrp microk8s"
+                ;;
+            *)
+                echo "Install MicroK8s: https://microk8s.io/docs/getting-started"
+                ;;
+        esac
+    else
+        echo "Install MicroK8s: https://microk8s.io/docs/getting-started"
+    fi
+    
+    echo ""
+    echo "Or skip these tests by setting: NOKUBE=1"
+    echo ""
+    echo "Continuing without Kubernetes tests..."
+    exit 0
+fi
 
 # Enable debug tracing when DEBUG=1 or RUNNER_DEBUG=1 (GitHub Actions debug mode).
 if [ "${DEBUG:-0}" = "1" ] || [ "${RUNNER_DEBUG:-0}" = "1" ]; then
@@ -53,6 +98,60 @@ if [ $RC -ne 0 ]
 then
 	echo "Try to install microk8s"
 	
+	# Check if snap is available (required for MicroK8s)
+	if ! command -v snap >/dev/null 2>&1; then
+		echo "ERROR: snap package manager not found"
+		echo ""
+		
+		# Detect OS and provide installation guidance
+		if [ -f /etc/os-release ]; then
+			# shellcheck disable=SC1091
+			. /etc/os-release
+			case "$ID" in
+				fedora|rhel|centos|rocky|almalinux)
+					echo "Install snapd on Fedora/RHEL/CentOS:"
+					echo "  sudo dnf install snapd"
+					echo "  sudo systemctl enable --now snapd.socket"
+					echo "  sudo ln -s /var/lib/snapd/snap /snap"
+					echo "  # Log out and back in, or restart"
+					;;
+				*)
+					echo "Install snapd: https://snapcraft.io/docs/installing-snapd"
+					;;
+			esac
+		fi
+		
+		echo ""
+		echo "To skip Kubernetes tests: NOKUBE=1"
+		exit 1
+	fi
+	
+	# Check if snapd service is running (critical on Fedora/RHEL)
+	if ! systemctl is-active --quiet snapd.socket 2>/dev/null; then
+		echo "WARNING: snapd.socket service not running"
+		echo "Attempting to start snapd.socket..."
+		
+		if sudo systemctl start snapd.socket 2>/dev/null; then
+			echo "snapd.socket started successfully"
+			sleep 2
+		else
+			echo "ERROR: Failed to start snapd.socket"
+			echo "Try manually: sudo systemctl enable --now snapd.socket"
+			exit 1
+		fi
+	fi
+	
+	# Check if SELinux is enforcing (Fedora/RHEL)
+	if command -v getenforce >/dev/null 2>&1; then
+		SELINUX_STATUS=$(getenforce 2>/dev/null || echo "Disabled")
+		if [ "$SELINUX_STATUS" = "Enforcing" ]; then
+			echo "INFO: SELinux is enforcing"
+			echo "MicroK8s may require SELinux policy adjustments"
+			echo "See: https://microk8s.io/docs/install-alternatives#heading--selinux"
+			echo ""
+		fi
+	fi
+	
 	# Retry snap install with exponential backoff (network timeouts are common in CI)
 	# Maximum total time: ~270s (4.5 minutes) to stay under 5 minute limit
 	MAX_RETRIES=3
@@ -73,8 +172,46 @@ then
 				sleep $RETRY_DELAY
 				RETRY_DELAY=$((RETRY_DELAY * 2))  # Exponential backoff (5s, 10s)
 			else
-				echo "Unable to install microk8s after $MAX_RETRIES attempts: $IRC"
-				echo "This may be due to network timeouts accessing snapcraft.io"
+				echo "========================================="
+				echo "ERROR: Unable to install MicroK8s"
+				echo "========================================="
+				echo "Failed after $MAX_RETRIES attempts (exit code: $IRC)"
+				echo ""
+				echo "To install manually:"
+				echo ""
+				
+				# Detect OS and provide appropriate guidance
+				if [ -f /etc/os-release ]; then
+					# shellcheck disable=SC1091
+					. /etc/os-release
+					case "$ID" in
+						ubuntu|debian)
+							echo "Ubuntu/Debian:"
+							echo "  sudo snap install microk8s --classic --channel=1.33/stable"
+							;;
+						fedora|rhel|centos|rocky|almalinux)
+							echo "Fedora/RHEL/CentOS:"
+							echo "  sudo dnf install snapd"
+							echo "  sudo systemctl enable --now snapd.socket"
+							echo "  sudo ln -s /var/lib/snapd/snap /snap"
+							echo "  sudo snap install microk8s --classic --channel=1.33/stable"
+							;;
+						*)
+							echo "See: https://microk8s.io/docs/getting-started"
+							;;
+					esac
+				fi
+				
+				echo ""
+				echo "Or use alternative Kubernetes (kind, k3s, minikube)"
+				echo "Or skip Kubernetes tests: NOKUBE=1"
+				echo ""
+				echo "Common issues:"
+				echo "  - Network timeouts accessing snapcraft.io"
+				echo "  - Snap service not running (systemctl start snapd.socket)"
+				echo "  - Insufficient permissions (add user to microk8s group)"
+				echo ""
+				echo "Documentation: https://microk8s.io/docs/troubleshooting"
 				exit 1
 			fi
 		fi

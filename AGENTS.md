@@ -3,6 +3,57 @@
 This file provides guidance to agents when working with code in this repository.
 
 > **Last Updated:** March 2026
+## Mode Selection Guidelines
+
+When orchestrating tasks or delegating work to specialized modes, follow these guidelines:
+
+### For Orchestrator Agents (Bob)
+
+**STRONGLY PREFER Advanced Mode over Code Mode** for all code-related tasks. Advanced mode should be the default choice for code work unless there is a specific reason to use Code mode.
+
+**Use Advanced Mode (Default for Code Work)** when:
+- Making any code changes, refactoring, or bug fixes
+- The task scope is not extremely narrow and well-defined
+- You might need external documentation or references
+- The task could benefit from MCP or Browser tools
+- There's any uncertainty about requirements or implementation
+- **In general: When in doubt, choose Advanced mode**
+
+**Use Code Mode (Rare Exception)** ONLY when ALL of these conditions are met:
+- The task is an extremely simple, well-defined edit
+- No external documentation or references will be needed
+- No MCP or Browser tools will be needed
+- The scope is absolutely clear and limited
+- You are completely certain Advanced mode's capabilities won't be needed
+
+**Example Decision Tree:**
+```
+Need to make code changes?
+├─ Is this an extremely simple, well-defined edit?
+│  ├─ Yes → Consider Code mode (but Advanced is still fine)
+│  └─ No → Use Advanced Mode
+├─ Might need docs/references? → Use Advanced Mode
+├─ Might need MCP tools? → Use Advanced Mode
+├─ Any uncertainty? → Use Advanced Mode
+└─ Default choice → Use Advanced Mode
+```
+
+**Key Principle**: Advanced mode is the safer, more capable choice. Only use Code mode when you're absolutely certain the task is simple enough that Advanced mode's additional capabilities won't be needed. When in doubt, always choose Advanced mode.
+
+### For All Agent Types
+
+**Mode Selection Principles:**
+1. **Match capability to task**: Choose the mode whose tools best fit the task requirements
+2. **Consider tool access**: Advanced mode has MCP and Browser tools; Code mode does not
+3. **Scope appropriately**: Break large tasks into mode-appropriate subtasks
+4. **Document reasoning**: When delegating, explain why a specific mode was chosen
+
+**Common Patterns:**
+- **Plan Mode**: Design, architecture, strategy before implementation
+- **Code/Advanced Mode**: Implementation, refactoring, bug fixes
+- **Ask Mode**: Explanations, analysis, recommendations
+- **Orchestrator Mode**: Multi-step coordination, workflow management
+
 
 ## Project Overview
 

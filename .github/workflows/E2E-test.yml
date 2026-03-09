@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - master
+      - v2.32
       - v2.31
       - v2.30
       - v2.29
@@ -15,9 +16,7 @@ on:
 jobs:
   test:
     # The type of runner that the job will run on
-    runs-on:
-      - self-hosted
-      - ubuntu-latest
+    runs-on: ubuntu-latest
 
     # Strategy allows specifying matrix axis(es) that will run for the test
     strategy:
