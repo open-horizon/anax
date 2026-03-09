@@ -5,9 +5,9 @@ ARG ARCH
 RUN apt-get update \
     && apt-get -y install vim iptables build-essential wget git iputils-ping net-tools curl jq kafkacat apt-transport-https socat software-properties-common lsb-release gettext-base
 
-ARG DOCKER_VER=26.1.2
+ARG DOCKER_VER=28.5.2
 ARG GO_VER=1.24.6
-ARG VAULT_VER=1.14.8-1
+ARG VAULT_VER=1.20.4-1
 
 # install docker cli
 RUN curl -4fsSLO https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_VER}.tgz \
