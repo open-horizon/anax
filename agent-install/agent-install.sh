@@ -2867,11 +2867,11 @@ function start_device_agent_container() {
             load_docker_image agent_image_full_path $AGENT_IMAGE_TAR_FILE
 
             #rm ${AGENT_IMAGE_TAR_FILE}   # do not remove the file they gave us
-            export HC_DONT_PULL=1   # horizon-container should get it straight from the tar file we got from CSS, not try to go to docker hub to get it
+            export HC_DONT_PULL=1   # horizon-container should get it straight from the tar file we got from CSS, not try to go to github container registry to get it
             export HC_DOCKER_IMAGE=${agent_image_full_path%:*}   # remove the tag
             export HC_DOCKER_TAG=${agent_image_full_path##*:}   # remove everything but the tag
         elif [[ $INPUT_FILE_PATH == https://github.com/open-horizon/anax/releases* ]]; then
-            : # we've already set HC_DOCKER_TAG from the horizon-cli version. From there horizon-container naturally does the right thing (pulls it from docker hub)
+            : # we've already set HC_DOCKER_TAG from the horizon-cli version. From there horizon-container naturally does the right thing (pulls it from github container registry)
         elif [[ -f $AGENT_IMAGE_TAR_FILE ]]; then
             # They gave us the agent docker image tar file in the input path
             log_info "Unpacking and docker loading $AGENT_IMAGE_TAR_FILE ..."
@@ -2879,11 +2879,11 @@ function start_device_agent_container() {
             load_docker_image agent_image_full_path $AGENT_IMAGE_TAR_FILE
 
             #rm ${AGENT_IMAGE_TAR_FILE}   # do not remove the file they gave us
-            export HC_DONT_PULL=1   # horizon-container should get it straight from the tar file we got from CSS, not try to go to docker hub to get it
+            export HC_DONT_PULL=1   # horizon-container should get it straight from the tar file we got from CSS, not try to go to github container registry to get it
             export HC_DOCKER_IMAGE=${agent_image_full_path%:*}   # remove the tag
             export HC_DOCKER_TAG=${agent_image_full_path##*:}   # remove everything but the tag
         fi
-        #else let horizon-container do its default thing (run openhorizon/amd64_anax:latest)
+        #else let horizon-container do its default thing (run ghcr.io/open-horizon/amd64_anax:latest)
     else
         # just a restart, but we have to find the image and version
         container_info=$(${DOCKER_ENGINE} inspect ${container_name})
@@ -3489,14 +3489,14 @@ function loadClusterAgentImage() {
             get_input_file_css_path input_path
             download_css_file "$input_path/$AGENT_K8S_IMAGE_TAR_FILE"
         elif [[ $INPUT_FILE_PATH == https://github.com/open-horizon/anax/releases* ]]; then
-            # Get the docker image from docker hub in this case
+            # Get the docker image from github container registry in this case
             local image_tag=$(get_anax_release_version $INPUT_FILE_PATH)   # use the version from INPUT_FILE_PATH, if possible
             if [[ -z $image_tag ]]; then
                 image_tag='latest'
             fi
             local image_arch=$(get_cluster_image_arch)
-            local image_path="openhorizon/${image_arch}_anax_k8s:$image_tag"
-            log_info "Pulling $image_path from docker hub..."
+            local image_path="ghcr.io/open-horizon/${image_arch}_anax_k8s:$image_tag"
+            log_info "Pulling $image_path from github container registry..."
             ${DOCKER_ENGINE} pull "$image_path"
             chk $? "pulling $image_path"
             AGENT_IMAGE=$image_path
@@ -3611,14 +3611,14 @@ function loadClusterAgentAutoUpgradeCronJobImage() {
             get_input_file_css_path input_path
             download_css_file "$input_path/$CRONJOB_AUTO_UPGRADE_K8S_TAR_FILE"
         elif [[ $INPUT_FILE_PATH == https://github.com/open-horizon/anax/releases* ]]; then
-            # Get the docker image from docker hub in this case
+            # Get the docker image from github container registry in this case
             local image_tag=$(get_anax_release_version $INPUT_FILE_PATH)   # use the version from INPUT_FILE_PATH, if possible
             if [[ -z $image_tag ]]; then
                 image_tag='latest'
             fi
             local image_arch=$(get_cluster_image_arch)
-            local image_path="openhorizon/${image_arch}_auto-upgrade-cronjob_k8s:$image_tag"
-            log_info "Pulling $image_path from docker hub..."
+            local image_path="ghcr.io/open-horizon/${image_arch}_auto-upgrade-cronjob_k8s:$image_tag"
+            log_info "Pulling $image_path from github container registry......"
             ${DOCKER_ENGINE} pull "$image_path"
             chk $? "pulling $image_path"
             CRONJOB_AUTO_UPGRADE_IMAGE=$image_path
