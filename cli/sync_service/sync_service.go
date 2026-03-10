@@ -318,6 +318,7 @@ func startESS(cw *container.ContainerWorker, network *docker.Network, org string
 		"LOG_TRACE_DESTINATION=stdout",
 		"TRACE_LEVEL=TRACE",
 		"TRACE_ROOT_PATH=/tmp/",
+		"UNIX_SOCKET_FILE_PERMISSIONS=0666",
 	}
 	envVars = append(envVars, "ORG_ID="+org)
 	envVars = append(envVars, "DESTINATION_ID="+dev.GetNodeId())
