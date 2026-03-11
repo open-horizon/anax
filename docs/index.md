@@ -1,9 +1,9 @@
 ---
 copyright: Contributors to the Open Horizon project
-years: 2022 - 2025
+years: 2022 - 2026
 title: Agent (anax)
 description: Open Horizon Anax Agent Documentation
-lastupdated: 2025-05-03
+lastupdated: 2026-01-30
 nav_order: 5
 has_children: True
 has_toc: False
@@ -20,6 +20,31 @@ layout: page
 
 # {{site.data.keyword.edge_notm}} Agent Documentation
 {: #anaxdocs}
+
+## Edge Cluster Agent Installation
+
+### [Planning to install an edge cluster agent](planning_edge_cluster_agent.md)
+
+Planning considerations for installing an edge cluster agent.
+
+#### Preparing an edge cluster
+
+* [Installing an OCP cluster](install_ocp_edge_cluster.md)
+* [Setting up a local image registry for a Red Hat OpenShift Container Platform edge cluster](setting_up_ocp_image_registry.md)
+* [Installing a K3s cluster](install_k3s_cluster.md)
+* [Setup edge cluster local image registry for K3s](setup_k3s_image_registry.md)
+* [Installing a microk8s cluster](install_microk8s_cluster.md)
+* [Setup edge cluster local image registry for MicroK8s](setup_microk8s_image_registry.md)
+* [Setting variables to use a remote image registry](setting_remote_image_registry.md)
+
+#### Installing an edge cluster agent
+
+* [Installing the agent on Red Hat OpenShift Container Platform Kubernetes edge cluster](installing_ocp_edge_cluster_agent.md)
+* [Installing the agent on K3s and MicroK8s edge clusters](installing_k3s_microk8s_agent.md)
+* [Deploying services to your edge cluster](deploying_services_cluster.md)
+* [Configuring a storage class](configuring_storage_class.md)
+
+### [Removing the agent from an edge cluster](removing_agent_from_cluster.md)
 
 ## [Agent authentication](authentication_overview.md)
 
