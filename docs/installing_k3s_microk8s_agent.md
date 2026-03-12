@@ -3,11 +3,9 @@ copyright: Contributors to the Open Horizon project
 years: 2022 - 2026
 title: Installing the agent on K3s and MicroK8s edge clusters
 description: Documentation for installing the agent on K3s and MicroK8s edge clusters
-lastupdated: 2026-02-19
-nav_order: 19
-parent: Agent (anax)
-has_children: false
-has_toc: false
+lastupdated: 2026-03-12
+nav_order: 2
+parent: Installing the agent on an edge cluster
 ---
 
 {:new_window: target="blank"}
