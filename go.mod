@@ -14,7 +14,7 @@ require (
 	github.com/google/go-containerregistry/pkg/authn/k8schain v0.0.0-20240418155129-98dd3e91704f
 	github.com/gorilla/mux v1.8.1
 	github.com/lib/pq v1.10.9
-	github.com/open-horizon/edge-sync-service v1.12.6
+	github.com/open-horizon/edge-sync-service v1.12.7
 	github.com/open-horizon/edge-utilities v0.11.0
 	github.com/open-horizon/rsapss-tool v0.0.0-20190416131035-2fc75eb3b6ea
 	github.com/operator-framework/api v0.36.0
