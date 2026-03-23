@@ -2,7 +2,7 @@
 
 # This script gathers the necessary information and files to install the Horizon agent and register an edge node
 
-function getHznVersion() { local hzn_version=$(hzn version | grep "^Horizon CLI"); echo ${hzn_version##* }; }
+function getHznVersion() { export HZN_LANG=en_US; local hzn_version=$(hzn version | grep "^Horizon CLI"); echo ${hzn_version##* }; }
 
 # Global constants
 SUPPORTED_NODE_TYPES='ARM32-Deb ARM64-Deb AMD64-Deb x86_64-RPM arm64-macOS x86_64-macOS x86_64-Cluster ppc64le-RPM ppc64le-Cluster s390x-RPM s390x-Deb ALL'
@@ -516,8 +516,8 @@ function test_IsFileInCss() {
             USER_AUTH="root/root:$($K8S_CLI_TOOL get secret ibm-edge-auth -n $NAMESPACE -o jsonpath="{.data.exchange-root-pass}" | base64 --decode)"
             chk $? 'getting exchange root creds'
         fi
-	
-	objects=$( hzn mms object list -u ${USER_AUTH} -o ${org} -t ${objectType}  -i ${objectID} | grep -v "Listing"  | jq '. | length' ) 
+
+	objects=$( export HZN_LANG=en_US; hzn mms object list -u ${USER_AUTH} -o ${org} -t ${objectType}  -i ${objectID} | grep -v "Listing"  | jq '. | length' ) 
 	rc=$?  
 	if [[ $rc -eq 0  && $objects -gt 0 ]]; then 
 		true
