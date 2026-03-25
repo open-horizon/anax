@@ -3,11 +3,9 @@ copyright: Contributors to the Open Horizon project
 years: 2022 - 2026
 title: Configuring a storage class
 description: Documentation for configuring storage class for edge cluster agents
-lastupdated: 2026-02-18
-nav_order: 21
-parent: Agent (anax)
-has_children: false
-has_toc: false
+lastupdated: 2026-03-12
+nav_order: 4
+parent: Installing the agent on an edge cluster
 ---
 
 {:new_window: target="blank"}
