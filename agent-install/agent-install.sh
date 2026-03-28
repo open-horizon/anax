@@ -58,7 +58,7 @@ AGENT_CONTAINER_PORT_BASE=8080
 DEFAULT_AGENT_NAMESPACE="openhorizon-agent"
 SERVICE_ACCOUNT_NAME="agent-service-account"
 CLUSTER_ROLE_BINDING_NAME="openhorizon-agent-cluster-rule"
-ROLE_BINDING_NAME="role-binding"
+ROLE_BINDING_NAME="openhorizon-agent-namespace-admin-rolebinding"
 DEPLOYMENT_NAME="agent"
 SECRET_NAME="openhorizon-agent-secrets"
 IMAGE_PULL_SECRET_NAME="registry-creds"
@@ -4171,8 +4171,12 @@ function create_service_account() {
         log_info "serviceaccount ${SERVICE_ACCOUNT_NAME} exists, skip creating serviceaccount"
     fi
 
-    create_cluster_role_binding
-
+    if ! $NAMESPACE_SCOPED; then
+        create_cluster_role_binding
+    else
+        create_role_binding
+    fi
+ 
     log_debug "create_service_account() end"
 }
 
@@ -4193,6 +4197,24 @@ function create_cluster_role_binding() {
     fi
 
     log_debug "create_cluster_role_binding() end"
+}
+
+# Cluster only: to create role binding, bind service account to namespace admin
+function create_role_binding() {
+    log_debug "create_role_binding() begin"
+
+    log_verbose "checking if rolebinding exist..."
+
+    if ! $KUBECTL get rolebinding ${ROLE_BINDING_NAME} -n ${AGENT_NAMESPACE} 2>/dev/null; then
+        log_verbose "Binding ${SERVICE_ACCOUNT_NAME} to namespace admin..."
+        $KUBECTL create rolebinding ${ROLE_BINDING_NAME} --serviceaccount=${AGENT_NAMESPACE}:${SERVICE_ACCOUNT_NAME} --clusterrole=admin -n ${AGENT_NAMESPACE}
+        chk $? "creating rolebinding for ${AGENT_NAMESPACE}:${SERVICE_ACCOUNT_NAME}"
+        log_info "rolebinding ${ROLE_BINDING_NAME} created"
+    else
+        log_info "rolebinding ${ROLE_BINDING_NAME} exists, skip creating rolebinding"
+    fi
+
+    log_debug "create_role_binding() end"
 }
 
 # Cluster only: to create secret from cert file for agent deployment
