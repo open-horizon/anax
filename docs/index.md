@@ -1,9 +1,9 @@
 ---
 copyright: Contributors to the Open Horizon project
 years: 2022 - 2026
-title: Agent (anax)
-description: Open Horizon Anax Agent Documentation
-lastupdated: 2026-01-30
+title: Edge node agents (anax)
+description: Open Horizon Edge Node Agent Documentation
+lastupdated: 2026-04-08
 nav_order: 5
 has_children: True
 has_toc: False
@@ -21,87 +21,74 @@ layout: page
 # {{site.data.keyword.edge_notm}} Agent Documentation
 {: #anaxdocs}
 
-## Edge Cluster Agent Installation
+## Installing edge clusters
 
-### [Planning to install an edge cluster agent](planning_edge_cluster_agent.md)
+Before you can install an agent, you must install and configure edge clusters first. For more information, see [Installing edge clusters](../../installing/edge_clusters.md).
 
-Planning considerations for installing an edge cluster agent.
+## Installing an agent on an edge device
 
-#### Preparing an edge cluster
+* [Installing an agent on an edge device](overview.md)
 
-* [Installing an OCP cluster](install_ocp_edge_cluster.md)
-* [Setting up a local image registry for a Red Hat OpenShift Container Platform edge cluster](setting_up_ocp_image_registry.md)
-* [Installing a K3s cluster](install_k3s_cluster.md)
-* [Setup edge cluster local image registry for K3s](setup_k3s_image_registry.md)
-* [Installing a microk8s cluster](install_microk8s_cluster.md)
-* [Setup edge cluster local image registry for MicroK8s](setup_microk8s_image_registry.md)
-* [Setting variables to use a remote image registry](setting_remote_image_registry.md)
+## Installing an agent on an edge cluster
 
-#### Installing an edge cluster agent
+Install the {{site.data.keyword.edge_notm}} agent on edge clusters.
 
 * [Installing the agent on Red Hat OpenShift Container Platform Kubernetes edge cluster](installing_ocp_edge_cluster_agent.md)
 * [Installing the agent on K3s and MicroK8s edge clusters](installing_k3s_microk8s_agent.md)
 * [Deploying services to your edge cluster](deploying_services_cluster.md)
 * [Configuring a storage class](configuring_storage_class.md)
+* [Removing the agent from an edge cluster](removing_agent_from_cluster.md)
 
-### [Removing the agent from an edge cluster](removing_agent_from_cluster.md)
+## Installing an agent in a container
 
-## [Agent authentication](authentication_overview.md)
+* [Installing an agent in a container](agent_container_manual_deploy.md)
 
-There are different authentication methods for the anax agent to communicate with the {{site.data.keyword.edge_notm}} Management Hub.
+## Configuring authentication
 
-## [Automatic agent upgrade using policy based node management](node_management_overview.md)
+Configure authentication methods for the anax agent to communicate with the {{site.data.keyword.edge_notm}} management hub.
 
-Automatic agent upgrade is a policy-based node management feature that allows an org admin to create node management policies that deploy upgrade jobs to nodes and manages them autonomously. This allows the administrator to ensure that all the nodes in the system are using the intended versions.
+* [Authenticating to the management hub](authentication_overview.md)
+* [Managing secrets](secrets.md)
 
-## [Instructions for starting an agent in a container on Linux](agent_container_manual_deploy.md)
+## Configuring policies
 
-Use these instructions to start the agent in a container and have more control over the details than that allowed by the `horizon-container` script.
+Configure policies for deployment, node management, and service behavior.
 
-## [{{site.data.keyword.horizon}} Agent Installation overview](overview.md)
+* [Policy based deployment](policy.md)
+* [JSON fields of a deployment policy](deployment_policy.md)
+* [Built-in policy properties](built_in_policy.md)
+* [Policy properties and constraints](properties_and_constraints.md)
+* [Node policies](node_policy.md)
+* [Model objects](model_policy.md)
 
-This section contains an overview of the installation script, including OS and CPU architecture requirements, a description, detailed usage information including commandline flags, installing anax-in-container, and an installation package tree.
+## Defining and deploying services
 
-## [{{site.data.keyword.horizon}} Agreement Bot APIs](agreement_bot_api.md)
+Define and deploy services to edge nodes and clusters.
 
-This section contains the {{site.data.keyword.horizon}} JSON APIs for the {{site.data.keyword.horizon}} system running an Agreement Bot.
+* [Managing the lifecycle of services](managed_workloads.md)
+* [Service Definition](service_def.md)
+* [Deployment Strings](deployment_string.md)
 
-## [{{site.data.keyword.horizon}} APIs](api.md)
+## Upgrading agents automatically
 
-This section contains the {{site.data.keyword.horizon}} REST APIs for the {{site.data.keyword.horizon}} agent running on an edge node.
+Automatic upgrade information for the {{site.data.keyword.edge_notm}} agent.
 
-## [{{site.data.keyword.horizon}} Attributes](attributes.md)
+* [Using NMPs to upgrade agents automatically](node_management_overview.md)
+* [Node management policies](node_management_policy.md)
+* [JSON representation of an upgrade manifest](agentfile_manifest.md)
+* [JSON representation of an NMP status](node_management_status.md)
 
-This section contains the definition for each attribute that can be set on the [POST /attribute](./api.md#api-post--attribute) API or the [POST /service/config](./api.md#api-post--serviceconfig) API.
+## Advanced features
 
-## [Policy Properties](built_in_policy.md)
+Advanced features and configurations for the {{site.data.keyword.edge_notm}} agent.
 
-There are built-in property names that can be used in the policies.
+* [High Availability node groups](ha_groups.md)
+* [Multi-namespace for cluster agent](agent_in_multi_namespace.md)
 
-## [Deployment Policy](deployment_policy.md)
+## API Reference
 
-A deployment policy is just one aspect of the deployment capability, and is described here in detail.
+API documentation for the {{site.data.keyword.edge_notm}} agent.
 
-## [{{site.data.keyword.horizon}} Deployment Strings](deployment_string.md)
-
-When defining services in the {{site.data.keyword.horizon}} Exchange, the deployment field defines how the service will be deployed.
-
-## [{{site.data.keyword.horizon}} Edge Service Detail](managed_workloads.md)
-
-{{site.data.keyword.edge_notm}} manages the lifecycle, connectivity, and other features of services it launches on a device. This section is intended for developers creating {{site.data.keyword.horizon}} service container workload definitions.
-
-## [Model Object](model_policy.md)
-
-Model objects in {{site.data.keyword.edge_notm}} are the metadata representation of application metadata objects.
-
-## [Policy based deployment](policy.md)
-
-The policy based deployment support in {{site.data.keyword.edge_notm}} enables containerized workloads (services) to be deployed to edge nodes that are running the {{site.data.keyword.horizon}} agent and which are registered to an {{site.data.keyword.edge_notm}} Management Hub.
-
-## [Policy Properties and Constraints](properties_and_constraints.md)
-
-Properties and constraints are the foundation of the policy expressions used to direct {{site.data.keyword.edge_notm}}'s workload deployment engine.
-
-## [Service Definition](service_def.md)
-
-{{site.data.keyword.edge_notm}} deploys services to edge nodes, where those services are comprised of at least one container image and a configuration that conditions how the service executes.
+* [{{site.data.keyword.horizon}} APIs](api.md)
+* [Attributes for {{site.data.keyword.horizon}} POST APIs](attributes.md)
+* [Agreement Bot APIs](agreement_bot_api.md)

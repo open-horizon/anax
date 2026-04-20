@@ -1,11 +1,11 @@
 ---
 copyright: Contributors to the Open Horizon project
 years: 2022 - 2026
-title: Planning to install an edge cluster agent
-description: Planning considerations for installing an edge cluster agent
-lastupdated: 2026-01-30
+title: Installing edge clusters
+description: Installing and configuring edge clusters as prerequisites for installing an agent
+lastupdated: 2026-04-07
 nav_order: 10
-parent: Agent (anax)
+parent: Edge node agents (anax)
 has_children: true
 has_toc: false
 ---
@@ -18,8 +18,8 @@ has_toc: false
 {:child: .link .ulchildlink}
 {:childlinks: .ullinks}
 
-# Planning to install an edge cluster agent
-{: #planning_edge_cluster_agent}
+# Installing edge clusters
+{: #installing_edge_clusters}
 
-Before installing the {{site.data.keyword.edge_notm}} agent on an edge cluster, review the planning considerations and prerequisites.
+Before installing the {{site.data.keyword.edge_notm}} agent on an edge cluster, you must first install and configure the edge cluster itself. The following sections describe how to install different types of Kubernetes edge clusters and configure their image registries.
 {:shortdesc}

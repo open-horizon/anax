@@ -1,12 +1,18 @@
 ---
 copyright: Contributors to the Open Horizon project
-years: 2022 - 2025
-title: Deployment Policy
+years: 2022 - 2026
+title: JSON fields of a deployment policy
 description: Description of Deployment policy json fields
-lastupdated: 2025-05-03
-nav_order: 8
-parent: Agent (anax)
+lastupdated: 2026-04-08
+nav_order: 2
+parent: Configuring policies
+grand_parent: Edge node agents (anax)
 ---
+
+nav_order: 1
+parent: Configuring policies
+grand_parent: Edge node agents (anax)
+
 
 {:new_window: target="blank"}
 {:shortdesc: .shortdesc}

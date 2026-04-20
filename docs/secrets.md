@@ -1,11 +1,14 @@
 ---
 copyright: Contributors to the Open Horizon project
-years: 2022 - 2025
-title: Secrets
+years: 2022 - 2026
+title: Managing secrets
 description: Secrets Management
-lastupdated: 2025-05-03
-nav_order: 9
-parent: Agent (anax)
+lastupdated: 2026-04-08
+nav_order: 2
+parent: Configuring authentication
+grand_parent: Edge node agents (anax)
+has_children: false
+has_toc: false
 ---
 
 {:new_window: target="blank"}
