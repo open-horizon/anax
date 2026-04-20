@@ -266,7 +266,7 @@ function setMgmtHubURLs() {
     export HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL:-"$CLUSTER_URL/edge-exchange/v1"}
     export HZN_FSS_CSSURL=${HZN_FSS_CSSURL:-"$CLUSTER_URL/edge-css/"}
     export HZN_AGBOT_URL=${HZN_AGBOT_URL:-"$CLUSTER_URL/edge-agbot/"}
-    export HZN_FDO_SVC_URL=${HZN_FDO_SVC_URL:-"$CLUSTER_URL/edge-fdo/api"}
+    export HZN_FDO_SVC_URL=${HZN_FDO_SVC_URL:-"$CLUSTER_URL/edge-fdo-ocs/api"}
 }
 
 # Method to store the software package version if it is not set yet
