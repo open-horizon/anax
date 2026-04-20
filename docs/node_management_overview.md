@@ -1,11 +1,14 @@
 ---
 copyright: Contributors to the Open Horizon project
-years: 2022 - 2025
-title: Node management overview
+years: 2022 - 2026
+title: Using NMPs to upgrade agents automatically
 description: Automatic agent upgrade using policy based node management
-lastupdated: 2025-05-03
-nav_order: 12
-parent: Agent (anax)
+lastupdated: 2026-04-08
+nav_order: 1
+parent: parent: Upgrading agents automatically
+grand_parent: Edge node agents (anax)
+has_children: false
+has_toc: false
 ---
 
 {:new_window: target="blank"}
@@ -16,7 +19,7 @@ parent: Agent (anax)
 {:child: .link .ulchildlink}
 {:childlinks: .ullinks}
 
-# Node management overview
+# Using NMPs to upgrade agents automatically
 {: #overview-nmp}
 
 ## Automatic agent upgrade

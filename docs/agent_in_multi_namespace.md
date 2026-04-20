@@ -1,15 +1,18 @@
 ---
 copyright: Contributors to the Open Horizon project
-years: 2022 - 2025
-title: Multi-namespace for cluster agent
-description: Documentation for Overview
-lastupdated: 2025-08-22
-nav_order: 21
-parent: Agent (anax)
+years: 2022 - 2026
+title: Namespace scoping for cluster agents 
+description: Namespace scoping for cluster agents 
+lastupdated: 2026-04-20
+nav_order: 2
+parent: Advanced features
+grand_parent: Edge node agents (anax)
+has_children: false
+has_toc: false
 ---
 # Overview
 
-Open Horizon supports two types of Edge cluster agents: cluster scope and namespace scope. 
+{{site.data.keyword.edge_notm}} supports two types of Edge cluster agents: cluster scope and namespace scope. 
 
 - Cluster agent with **cluster scope** has permission to deploy and manage cluster service in all namespaces inside the Kubernetes cluster. Only one agent with cluster scope can be installed per Kubernetes cluster.
 
@@ -17,7 +20,7 @@ Open Horizon supports two types of Edge cluster agents: cluster scope and namesp
 
 ## Install Namespace Scoped Agent
 
-After configuring the edge cluster (see [here](./cluster_install.md)) run `agent-install.sh` with `--namespace <namespace-to-install-agent>` and `--namespace-scoped`
+After configuring the edge cluster (see [Installing edge clusters](../../installing/edge_clusters.md)) run `agent-install.sh` with `--namespace <namespace-to-install-agent>` and `--namespace-scoped`
 
 **Note**: `--namespace` is equivalent to environment variable `AGENT_NAMESPACE`
     

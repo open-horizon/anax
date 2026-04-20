@@ -1,11 +1,14 @@
 ---
 copyright: Contributors to the Open Horizon project
-years: 2022 - 2025
-title: Policy Properties and Constraints
+years: 2022 - 2026
+title: Policy properties and constraints
 description: Policy Properties and constraints
-lastupdated: 2025-05-03
-nav_order: 17
-parent: Agent (anax)
+lastupdated: 2026-04-08
+nav_order: 4
+parent: Configuring policies
+grand_parent: Edge node agents (anax)
+has_children: false
+has_toc: false
 ---
 
 {:new_window: target="blank"}
