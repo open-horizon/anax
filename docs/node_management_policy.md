@@ -1,11 +1,14 @@
 ---
 copyright: Contributors to the Open Horizon project
-years: 2022 - 2025
-title: Node management policy
+years: 2022 - 2026
+title: Node management policies
 description: Automatic agent upgrade using policy based node management
-lastupdated: 2025-05-03
-nav_order: 13
-parent: Agent (anax)
+lastupdated: 2026-04-08
+nav_order: 2
+parent: Upgrading agents automatically
+grand_parent: Edge node agents (anax)
+has_children: false
+has_toc: false
 ---
 
 {:new_window: target="blank"}
