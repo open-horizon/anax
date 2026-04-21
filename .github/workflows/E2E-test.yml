@@ -9,6 +9,9 @@ on:
       - v2.31
       - v2.30
       - v2.29
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
 
 # Jobs executed when workflow is triggered
 jobs:
