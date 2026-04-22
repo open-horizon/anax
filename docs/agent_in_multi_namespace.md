@@ -20,7 +20,7 @@ Open Horizon supports two types of Edge cluster agents: cluster scope and namesp
 After configuring the edge cluster (see [here](./cluster_install.md)) run `agent-install.sh` with `--namespace <namespace-to-install-agent>` and `--namespace-scoped`
 
 **Note**: `--namespace` is equivalent to environment variable `AGENT_NAMESPACE`
-    
+
 ```bash
 ./agent-install.sh -D cluster -i anax: -c css: -k css: --namespace <namespace-to-install-agent> --namespace-scoped
 ```

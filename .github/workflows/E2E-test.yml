@@ -15,19 +15,25 @@ jobs:
   changes:
     runs-on: ubuntu-24.04
     outputs:
-      onlydocs: ${{ steps.filter.outputs.docs == 'true' && steps.filter.outputs.other == 'false' }}
+      onlydocs: ${{ steps.doc_filter.outputs.docs == 'true' && steps.other_filter.outputs.other == 'false' }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
-        id: filter
+        id: doc_filter
         with:
           filters: |
             docs:
               - 'docs/**'
               - '**.md'
+
+      - uses: dorny/paths-filter@v3
+        id: other_filter
+        with:
+          predicate-quantifier: 'every'
+          filters: |
             other:
               - '!docs/**'
-              - '!*.md'
+              - '!**/*.md'
   
   test:
     needs: changes
