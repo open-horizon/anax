@@ -9,13 +9,35 @@ on:
       - v2.31
       - v2.30
       - v2.29
-    paths-ignore:
-      - 'docs/**'
-      - '**.md'
 
 # Jobs executed when workflow is triggered
 jobs:
+  changes:
+    runs-on: ubuntu-24.04
+    outputs:
+      onlydocs: ${{ steps.doc_filter.outputs.docs == 'true' && steps.other_filter.outputs.other == 'false' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: doc_filter
+        with:
+          filters: |
+            docs:
+              - 'docs/**'
+              - '**.md'
+
+      - uses: dorny/paths-filter@v3
+        id: other_filter
+        with:
+          predicate-quantifier: 'every'
+          filters: |
+            other:
+              - '!docs/**'
+              - '!**/*.md'
+  
   test:
+    needs: changes
+
     # The type of runner that the job will run on
     runs-on: ubuntu-24.04
 
@@ -52,8 +74,10 @@ jobs:
           
       # Build the e2edev docker images 
       - name: Build the e2edev docker images
+        if: needs.changes.outputs.onlydocs == 'false'
         run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make -C test build-remote
 
       # E2E development test
       - name: E2E dev-test
+        if: needs.changes.outputs.onlydocs == 'false'
         run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make -C test clean && make -C test test TEST_VARS=${{matrix.tests}}

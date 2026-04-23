@@ -23,7 +23,7 @@ has_toc: false
 After configuring the edge cluster (see [Installing edge clusters](../../installing/edge_clusters.md)) run `agent-install.sh` with `--namespace <namespace-to-install-agent>` and `--namespace-scoped`
 
 **Note**: `--namespace` is equivalent to environment variable `AGENT_NAMESPACE`
-    
+
 ```bash
 ./agent-install.sh -D cluster -i anax: -c css: -k css: --namespace <namespace-to-install-agent> --namespace-scoped
 ```
