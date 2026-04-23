@@ -2,11 +2,10 @@
 copyright: Contributors to the Open Horizon project
 years: 2022 - 2026
 title: Authenticating to the management hub
-description: Overview of different authentication mechanisms
-lastupdated: 2026-04-08
-nav_order: 1
-parent: Configuring authentication
-grand_parent: Edge node agents (anax)
+description: Overview of available authentication mechanisms
+lastupdated: 2026-04-23
+nav_order: 4
+parent: Edge node agents (anax)
 has_children: false
 has_toc: false
 ---
@@ -19,7 +18,7 @@ has_toc: false
 {:child: .link .ulchildlink}
 {:childlinks: .ullinks}
 
-# Authentication overview
+# Authenticating to the management hub
 {: #overview-authentication}
 
 There are two ways a user can authenticate in order to run CLI commands: with a username and password, or with an API key.
