@@ -1,11 +1,14 @@
 ---
 copyright: Contributors to the Open Horizon project
-years: 2022 - 2025
-title: Horizon Edge Service Detail
-description: Horizon Edge Services details
-lastupdated: 2025-05-03
-nav_order: 10
-parent: Agent (anax)
+years: 2022 - 2026
+title: Managing the lifecycle of services
+description: Creating service workload definitions
+lastupdated: 2026-04-08
+nav_order: 1
+parent: Defining and deploying services
+grand_parent: Edge node agents (anax)
+has_children: false
+has_toc: false
 ---
 
 {:new_window: target="blank"}

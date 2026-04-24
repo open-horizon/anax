@@ -1,11 +1,14 @@
 ---
 copyright: Contributors to the Open Horizon project
-years: 2022 - 2025
-title: Automatic Agent Upgrade manifests
-description: Automatic Agent Upgrade manifests
-lastupdated: 2025-05-03
+years: 2022 - 2026
+title: JSON representation of an upgrade manifest
+description: JSON representation of an upgrade manifest
+lastupdated: 2026-04-08
 nav_order: 3
-parent: Agent (anax)
+parent: Upgrading agents automatically
+grand_parent: Edge node agents (anax)
+has_children: false
+has_toc: false
 ---
 
 {:new_window: target="blank"}
