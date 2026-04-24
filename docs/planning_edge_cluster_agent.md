@@ -3,11 +3,7 @@ copyright: Contributors to the Open Horizon project
 years: 2022 - 2026
 title: Installing edge clusters
 description: Installing and configuring edge clusters as prerequisites for installing an agent
-lastupdated: 2026-04-07
-nav_order: 10
-parent: Edge node agents (anax)
-has_children: true
-has_toc: false
+lastupdated: 2026-04-24
 ---
 
 {:new_window: target="blank"}
