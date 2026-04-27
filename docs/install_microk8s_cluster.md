@@ -3,12 +3,7 @@ copyright: Contributors to the Open Horizon project
 years: 2022 - 2026
 title: Installing a microk8s cluster
 description: Documentation for installing a MicroK8s edge cluster
-lastupdated: 2026-04-07
-nav_order: 5
-parent: Installing edge clusters
-grand_parent: Edge node agents (anax)
-has_children: false
-has_toc: false
+lastupdated: 2026-04-24
 ---
 
 {:new_window: target="blank"}
