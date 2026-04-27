@@ -383,6 +383,9 @@ func (c KubeClient) CreateConfigMap(envVars map[string]string, agId string, name
 	// hzn-env-vars-<agId>
 	hznEnvConfigMap := corev1.ConfigMap{ObjectMeta: metav1.ObjectMeta{Name: fmt.Sprintf("%s-%s", HZN_ENV_VARS, agId)}, Data: envVars}
 	res, err := c.Client.CoreV1().ConfigMaps(namespace).Create(context.Background(), &hznEnvConfigMap, metav1.CreateOptions{})
+	if err != nil && errors.IsAlreadyExists(err) {
+		_, err = c.Client.CoreV1().ConfigMaps(namespace).Update(context.Background(), &hznEnvConfigMap, metav1.UpdateOptions{})
+	}
 	if err != nil {
 		return "", fmt.Errorf("error: failed to create config map for %s: %v", agId, err)
 	}
@@ -417,6 +420,10 @@ func (c KubeClient) CreateESSAuthSecrets(fssAuthFilePath string, agId string, na
 			Data: secretData,
 		}
 		res, err := c.Client.CoreV1().Secrets(namespace).Create(context.Background(), &fssSecret, metav1.CreateOptions{})
+		if err != nil && errors.IsAlreadyExists(err) {
+			_, err = c.Client.CoreV1().Secrets(namespace).Update(context.Background(), &fssSecret, metav1.UpdateOptions{})
+		}
+
 		if err != nil {
 			return "", fmt.Errorf("error: failed to create ess auth secret for %s: %v", agId, err)
 		}
@@ -475,6 +482,10 @@ func (c KubeClient) CreateK8SSecrets(serviceSecretsMap map[string]string, agId s
 	secretsLabel := map[string]string{"name": HZN_SERVICE_SECRETS}
 	hznServiceSecrets := corev1.Secret{ObjectMeta: metav1.ObjectMeta{Name: fmt.Sprintf("%s-%s", HZN_SERVICE_SECRETS, agId), Labels: secretsLabel}, StringData: serviceSecretsMap}
 	res, err := c.Client.CoreV1().Secrets(namespace).Create(context.Background(), &hznServiceSecrets, metav1.CreateOptions{})
+	if err != nil && errors.IsAlreadyExists(err) {
+		_, err = c.Client.CoreV1().Secrets(namespace).Update(context.Background(), &hznServiceSecrets, metav1.UpdateOptions{})
+	}
+
 	if err != nil {
 		return "", fmt.Errorf("error: failed to create k8s secrets that contains service secrets for %s: %v", agId, err)
 	}
