@@ -748,10 +748,6 @@ func (d DeploymentAppsV1) Install(c KubeClient, namespace string) error {
 
 	// Create the config map.
 	mapName, err := c.CreateConfigMap(d.EnvVarMap, d.AgreementId, namespace)
-	if err != nil && errors.IsAlreadyExists(err) {
-		c.DeleteConfigMap(d.AgreementId, namespace)
-		mapName, err = c.CreateConfigMap(d.EnvVarMap, d.AgreementId, namespace)
-	}
 	if err != nil {
 		return err
 	}
@@ -759,18 +755,16 @@ func (d DeploymentAppsV1) Install(c KubeClient, namespace string) error {
 	// create k8s secrets object from ess auth file. d.FssAuthFilePath == "" if kubeworker is updating service vault secret
 	if d.FssAuthFilePath != "" {
 		essAuthSecretName, err := c.CreateESSAuthSecrets(d.FssAuthFilePath, d.AgreementId, namespace)
-		if err != nil && errors.IsAlreadyExists(err) {
-			c.DeleteESSAuthSecrets(d.AgreementId, namespace)
-			essAuthSecretName, _ = c.CreateESSAuthSecrets(d.FssAuthFilePath, d.AgreementId, namespace)
+		if err != nil {
+			return err
 		}
 		glog.V(3).Infof(kwlog(fmt.Sprintf("ess auth secret %v is created under namespace: %v", essAuthSecretName, namespace)))
 	}
 
 	if d.FssCertFilePath != "" {
 		essCertSecretName, err := c.CreateESSCertSecrets(d.FssCertFilePath, d.AgreementId, namespace)
-		if err != nil && errors.IsAlreadyExists(err) {
-			c.DeleteESSCertSecrets(d.AgreementId, namespace)
-			essCertSecretName, _ = c.CreateESSCertSecrets(d.FssCertFilePath, d.AgreementId, namespace)
+		if err != nil {
+			return err
 		}
 		glog.V(3).Infof(kwlog(fmt.Sprintf("ess cert secret %v is created under namespace: %v", essCertSecretName, namespace)))
 	}
@@ -781,9 +775,8 @@ func (d DeploymentAppsV1) Install(c KubeClient, namespace string) error {
 	} else {
 		glog.V(3).Infof(kwlog(fmt.Sprintf("MMSPVCConfig is enabled %v, creating the MMS PVC", d.MMSPVCConfig)))
 		pvcName, err := c.CreateMMSPVC(d.EnvVarMap, d.MMSPVCConfig, d.AgreementId, namespace)
-		if err != nil && errors.IsAlreadyExists(err) {
-			c.DeleteMMSPVC(d.AgreementId, namespace)
-			pvcName, _ = c.CreateMMSPVC(d.EnvVarMap, d.MMSPVCConfig, d.AgreementId, namespace)
+		if err != nil {
+			return err
 		}
 		glog.V(3).Infof(kwlog(fmt.Sprintf("MMS pvc %v is created under namespace: %v", pvcName, namespace)))
 	}
@@ -802,10 +795,6 @@ func (d DeploymentAppsV1) Install(c KubeClient, namespace string) error {
 		}
 
 		secretsName, err := c.CreateK8SSecrets(decodedSecrets, d.AgreementId, namespace)
-		if err != nil && errors.IsAlreadyExists(err) {
-			c.DeleteK8SSecrets(d.AgreementId, namespace)
-			secretsName, err = c.CreateK8SSecrets(d.ServiceSecrets, d.AgreementId, namespace)
-		}
 		if err != nil {
 			return err
 		}
