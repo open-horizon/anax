@@ -5,11 +5,12 @@ title: Using NMPs to upgrade agents automatically
 description: Automatic agent upgrade using policy based node management
 lastupdated: 2026-04-08
 nav_order: 1
-parent: parent: Upgrading agents automatically
+parent: Upgrading agents automatically
 grand_parent: Edge node agents (anax)
 has_children: false
 has_toc: false
 ---
+
 
 {:new_window: target="blank"}
 {:shortdesc: .shortdesc}
