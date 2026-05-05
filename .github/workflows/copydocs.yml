@@ -16,7 +16,7 @@ jobs:
         uses: andstor/copycat-action@v3
         with:
           commit_message: "Syncing from anax"
-          clean: true
+          clean: false
           personal_token: ${{ secrets.PERSONAL_TOKEN }}
           src_path: docs
           dst_path: /docs/anax
