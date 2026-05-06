@@ -21,9 +21,35 @@ env:
 
 # Jobs executed when workflow is triggered
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      onlydocs: ${{ steps.doc_filter.outputs.docs == 'true' && steps.other_filter.outputs.other == 'false' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: go/src/github.com/${{ github.repository }}
+          
+      - uses: dorny/paths-filter@v3
+        id: doc_filter
+        with:
+          filters: |
+            docs:
+              - 'docs/**'
+              - '**.md'
+
+      - uses: dorny/paths-filter@v3
+        id: other_filter
+        with:
+          predicate-quantifier: 'every'
+          filters: |
+            other:
+              - '!docs/**'
+              - '!**/*.md'
 
   # Migrating workflow causes run number to be reset to 1, offset so our versions don't go back in time.
   offset-build-number:
+    needs: changes
     runs-on: ubuntu-latest
     outputs: 
       BUILD_NUMBER: ${{ steps.offset.outputs.BUILD_NUMBER }}
