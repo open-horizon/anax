@@ -27,9 +27,6 @@ jobs:
       onlydocs: ${{ steps.doc_filter.outputs.docs == 'true' && steps.other_filter.outputs.other == 'false' }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          path: go/src/github.com/${{ github.repository }}
-          
       - uses: dorny/paths-filter@v3
         id: doc_filter
         with:
