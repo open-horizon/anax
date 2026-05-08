@@ -32,7 +32,7 @@ The edge node agent-install script script:
 Operating systems and architectures explicitly supported by the installation script.  Please note that an environment must be both supported by the installation script, and [an installation package must be available](https://github.com/open-horizon/anax/releases), in order to successfully install the agent.  Environments that meet both criteria are noted in **bold** below.
 
 - Device
-  - Ubuntu: xenial (16.x), bionic (18.x), focal (20.x), jammy (22.x), noble (24.x)
+  - Ubuntu: xenial (16.x), bionic (18.x), focal (20.x), jammy (22.x), noble (24.x), resolute (26.x)
     - **amd64, arm64, s390x**
   - Raspbian/RaspberryPi OS: stretch (9), buster (10), bullseye (11), bookworm (12)
     - **armhf, arm64**
