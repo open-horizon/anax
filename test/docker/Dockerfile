@@ -3,11 +3,11 @@ FROM ubuntu:24.04
 ARG ARCH
 
 RUN apt-get update \
-    && apt-get -y install vim iptables build-essential wget git iputils-ping net-tools curl jq kafkacat apt-transport-https socat software-properties-common lsb-release gettext-base
+    && apt-get -y install vim iptables build-essential wget git iputils-ping net-tools curl jq unzip kafkacat apt-transport-https socat software-properties-common lsb-release gettext-base
 
 ARG DOCKER_VER=28.5.2
 ARG GO_VER=1.24.6
-ARG VAULT_VER=1.20.4-1
+ARG VAULT_VER=1.20.4
 
 # install docker cli
 RUN curl -4fsSLO https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_VER}.tgz \
@@ -16,9 +16,9 @@ RUN curl -4fsSLO https://download.docker.com/linux/static/stable/x86_64/docker-$
 
 RUN curl https://dl.google.com/go/go${GO_VER}.linux-amd64.tar.gz | tar -xzf- -C /usr/local/
 
-RUN curl -4fsSL https://apt.releases.hashicorp.com/gpg | apt-key add - && \
-    apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main" && \
-    apt-get update && apt-get -y install vault=${VAULT_VER} ;
+RUN curl -L -o vault_${VAULT_VER}_linux_amd64.zip https://releases.hashicorp.com/vault/${VAULT_VER}/vault_${VAULT_VER}_linux_amd64.zip && \
+    unzip vault_${VAULT_VER}_linux_amd64.zip && \
+    mv vault /usr/local/bin/
 
 ENV GOROOT=/usr/local/go
 ENV PATH="${PATH}:${GOROOT}/bin"
