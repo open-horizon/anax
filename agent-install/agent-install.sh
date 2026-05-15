@@ -19,7 +19,7 @@ VERB_DEBUG=5
 # You can add to these lists of supported values by setting/exporting the corresponding <varname>_APPEND variable to a string of space-separated words.
 # This allows you to experiment with platforms or variations that are not yet officially tested/supported.
 SUPPORTED_DEBIAN_VARIANTS=(ubuntu raspbian debian $SUPPORTED_DEBIAN_VARIANTS_APPEND)   # compared to what our detect_distro() sets DISTRO to
-SUPPORTED_DEBIAN_VERSION=(noble bullseye jammy focal bionic buster xenial stretch bookworm resolute $SUPPORTED_DEBIAN_VERSION_APPEND)   # compared to what our detect_distro() sets CODENAME to
+SUPPORTED_DEBIAN_VERSION=(noble bullseye jammy focal bionic buster xenial stretch bookworm resolute trixie $SUPPORTED_DEBIAN_VERSION_APPEND)   # compared to what our detect_distro() sets CODENAME to
 SUPPORTED_DEBIAN_ARCH=(amd64 arm64 armhf s390x $SUPPORTED_DEBIAN_ARCH_APPEND)   # compared to dpkg --print-architecture
 SUPPORTED_REDHAT_VARIANTS=(rhel redhatenterprise centos fedora $SUPPORTED_REDHAT_VARIANTS_APPEND)   # compared to what our detect_distro() sets DISTRO to
 # Note: version 8 and 9 are added because that is what /etc/os-release returns for DISTRO_VERSION_NUM on centos
@@ -2132,8 +2132,12 @@ function debian_device_install_prereqs() {
     if [[ $AGENT_ONLY_CLI == 'true' ]]; then
         runCmdQuietly apt-get install -yqf curl jq cron
     else
-        runCmdQuietly apt-get install -yqf curl jq software-properties-common net-tools cron
-
+        if [[ "$CODENAME" == "noble" ]] || [[ "$CODENAME" == "jammy" ]] || [[ "$CODENAME" == "xenial" ]] || [[ "$CODENAME" == "stretch" ]] || [[ "$CODENAME" == "bookworm" ]] || [[ "$CODENAME" == "resolute" ]]; then
+            runCmdQuietly apt-get install -yqf curl jq software-properties-common net-tools cron
+        else
+            runCmdQuietly apt-get install -yqf curl jq net-tools cron
+        fi
+        
         if ! isCmdInstalled docker; then
             log_info "Docker is required, installing it..."
             if [ "${DISTRO}" == "raspbian" ]; then
