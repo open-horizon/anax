@@ -34,15 +34,15 @@ Operating systems and architectures explicitly supported by the installation scr
 - Device
   - Ubuntu: xenial (16.x), bionic (18.x), focal (20.x), jammy (22.x), noble (24.x), resolute (26.x)
     - **amd64, arm64, s390x**
-  - Raspbian/RaspberryPi OS: stretch (9), buster (10), bullseye (11), bookworm (12)
+  - Raspbian/RaspberryPi OS: stretch (9), buster (10), bullseye (11), bookworm (12), trixie (13)
     - **armhf, arm64**
-  - Debian: stretch (9), buster (10), bullseye (11), bookworm (12)
+  - Debian: stretch (9), buster (10), bullseye (11), bookworm (12), trixie (13)
     - **amd64, armhf, arm64, s390x**
-  - RHEL: 7.6, 7.9, 8.1 - 8.5 (via Docker), 8.6 - 8.10 and 9.0 - 9.7 (via Podman 4.x or 5.x), 10.0, 10.1 (via Podman 4.x or 5.x)
+  - RHEL: 7.6, 7.9, 8.1 - 8.5 (via Docker), 8.6 - 8.10 and 9.0 - 9.8 (via Podman 4.x or 5.x), 10.0 - 10.2 (via Podman 4.x or 5.x)
     - **amd64, ppc64le**, aarch64, riscv64, **s390x**
   - CentOS: 8.1 - 8.5 (via Docker)
     - **amd64, ppc64le**, aarch64, riscv64
-  - Fedora: 32, 35 - 43
+  - Fedora: 32, 35 - 44
     - **amd64, ppc64le**, aarch64, riscv64
   - macOS
     - **amd64, M1, M2, M4**
