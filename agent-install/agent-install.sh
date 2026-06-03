@@ -2530,7 +2530,7 @@ function install_redhat_device_horizon_pkgs() {
         compare_rpm_pkg local_modified $new_pkg || rc=$?
         if [ $rc -eq 1 ]; then
             log_info "Installing $latest_files ..."
-            dnf install -yq $latest_files
+            dnf install --nogpgcheck -yq $latest_files
             if [[ $AGENT_ONLY_CLI != 'true' && $AGENT_IN_CONTAINER != 'true' ]]; then
                 wait_until_agent_ready
                 AGENT_WAS_RESTARTED='true'
@@ -2538,7 +2538,7 @@ function install_redhat_device_horizon_pkgs() {
         elif [ $rc -eq 2 ] && [[ "$AGENT_OVERWRITE" == true ]]; then
             log_info "Downgrading to $latest_files because AGENT_OVERWRITE==$AGENT_OVERWRITE ..."
             # Note: dnf automatically detects the specified pkg files are a lower version and downgrades them. If we need to switch to yum, we'll have to use yum downgrade ...
-            dnf install -yq $latest_files
+            dnf install --nogpgcheck -yq $latest_files
             if [[ $AGENT_ONLY_CLI != 'true' && $AGENT_IN_CONTAINER != 'true' ]]; then
                 wait_until_agent_ready
                 AGENT_WAS_RESTARTED='true'
