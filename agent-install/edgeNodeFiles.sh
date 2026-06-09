@@ -22,7 +22,7 @@ AUTO_UPGRADE_CRONJOB_K8S_IMAGE='_auto-upgrade-cronjob_k8s'
 AGENT_K8S_ARCHITECTURES=("amd64" "s390x")
 
 AGENT_IMAGE_TAG=$(getHznVersion)
-DEFAULT_PULL_REGISTRY='docker.io/openhorizon'
+DEFAULT_PULL_REGISTRY='ghcr.io/open-horizon'
 MANIFEST_NAME='edgeNodeFiles_manifest'
 
 # Global variables
@@ -36,6 +36,10 @@ SOFTWARE_PACKAGE_VERSION='0'
 PACKAGE_NAME=${PACKAGE_NAME:-horizon-edge-packages-4.4.0}
 AGENT_NAMESPACE=${AGENT_NAMESPACE:-openhorizon-agent}
 # EDGE_CLUSTER_STORAGE_CLASS   # this can also be specified, that default is the empty string
+
+
+# Type of container engine to use; RedHat might have podman
+DOCKER_ENGINE="docker"
 
 function scriptUsage() {
     cat << EOF
@@ -188,10 +192,14 @@ function checkPrereqsAndInput () {
     echo " - hzn installed"
 
     if [[ $EDGE_NODE_TYPE == 'x86_64-Cluster' || $EDGE_NODE_TYPE == 'ppc64le-Cluster' || $EDGE_NODE_TYPE == 'ALL' ]]; then
-        if ! command -v docker >/dev/null 2>&1; then
-            fatal 2 "docker is not installed."
+        if command -v docker >/dev/null 2>&1; then
+            echo " - docker installed"
+        elif command -v podman >/dev/null 2>&1; then
+            DOCKER_ENGINE="podman"
+            echo " - podman installed"
+        else
+            fatal 2 "No docker or podman installed."
         fi
-        echo " - docker installed"
     fi
     echo ""
 
@@ -320,17 +328,17 @@ function getAgentK8sImageTarFile() {
         else
             if [[ ($PULL_REGISTRY != $DEFAULT_PULL_REGISTRY) && ($ALREADY_LOGGED_INTO_REGISTRY == 'false') ]]; then
                 echo "Logging into $PULL_REGISTRY ..."
-                echo "$REGISTRY_PASSWORD" | docker login -u $REGISTRY_USERNAME --password-stdin $PULL_REGISTRY
+                echo "$REGISTRY_PASSWORD" | ${DOCKER_ENGINE} login -u $REGISTRY_USERNAME --password-stdin $PULL_REGISTRY
                 chk $? "logging into edge cluster's registry: $PULL_REGISTRY"
                 ALREADY_LOGGED_INTO_REGISTRY='true'
             fi
 
             echo "Pulling $PULL_REGISTRY/${the_k8s_image}:$AGENT_IMAGE_TAG ..."
-            docker pull $PULL_REGISTRY/${the_k8s_image}:$AGENT_IMAGE_TAG
+            ${DOCKER_ENGINE} pull $PULL_REGISTRY/${the_k8s_image}:$AGENT_IMAGE_TAG
             chk $? "pulling $PULL_REGISTRY/${the_k8s_image}:$AGENT_IMAGE_TAG"
 
             echo "Saving ${the_k8s_image}:$AGENT_IMAGE_TAG to ${the_k8s_image_tar_file} ..."
-            docker save $PULL_REGISTRY/${the_k8s_image}:$AGENT_IMAGE_TAG | gzip > ${the_k8s_image_tar_file}
+            ${DOCKER_ENGINE} save $PULL_REGISTRY/${the_k8s_image}:$AGENT_IMAGE_TAG | gzip > ${the_k8s_image_tar_file}
             chk $? "saving $PULL_REGISTRY/${the_k8s_image}:$AGENT_IMAGE_TAG"
         fi
 
@@ -365,17 +373,17 @@ function getAutoUpgradeCronjobK8sImageTarFile() {
         else
             if [[ ($PULL_REGISTRY != $DEFAULT_PULL_REGISTRY) && ($ALREADY_LOGGED_INTO_REGISTRY == 'false') ]]; then
                 echo "Logging into $PULL_REGISTRY ..."
-                echo "$REGISTRY_PASSWORD" | docker login -u $REGISTRY_USERNAME --password-stdin $PULL_REGISTRY
+                echo "$REGISTRY_PASSWORD" | ${DOCKER_ENGINE} login -u $REGISTRY_USERNAME --password-stdin $PULL_REGISTRY
                 chk $? "logging into edge cluster's registry: $PULL_REGISTRY"
                 ALREADY_LOGGED_INTO_REGISTRY='true'
             fi
 
             echo "Pulling $PULL_REGISTRY/${the_k8s_cronjob_image}:$AGENT_IMAGE_TAG ..."
-            docker pull $PULL_REGISTRY/${the_k8s_cronjob_image}:$AGENT_IMAGE_TAG
+            ${DOCKER_ENGINE} pull $PULL_REGISTRY/${the_k8s_cronjob_image}:$AGENT_IMAGE_TAG
             chk $? "pulling $PULL_REGISTRY/${the_k8s_cronjob_image}:$AGENT_IMAGE_TAG"
 
             echo "Saving ${the_k8s_cronjob_image}:$AGENT_IMAGE_TAG to ${the_k8s_cronjob_image_tar_file} ..."
-            docker save $PULL_REGISTRY/${the_k8s_cronjob_image}:$AGENT_IMAGE_TAG | gzip > ${the_k8s_cronjob_image_tar_file}
+            ${DOCKER_ENGINE} save $PULL_REGISTRY/${the_k8s_cronjob_image}:$AGENT_IMAGE_TAG | gzip > ${the_k8s_cronjob_image_tar_file}
             chk $? "saving $PULL_REGISTRY/${the_k8s_cronjob_image}:$AGENT_IMAGE_TAG"
         fi
 
@@ -840,17 +848,17 @@ function getHorizonPackageFiles() {
         else
             if [[ ($PULL_REGISTRY != $DEFAULT_PULL_REGISTRY) && ($ALREADY_LOGGED_INTO_REGISTRY == 'false') ]]; then
                 echo "Logging into $PULL_REGISTRY ..."
-                echo "$REGISTRY_PASSWORD" | docker login -u $REGISTRY_USERNAME --password-stdin $PULL_REGISTRY
+                echo "$REGISTRY_PASSWORD" | ${DOCKER_ENGINE} login -u $REGISTRY_USERNAME --password-stdin $PULL_REGISTRY
                 chk $? "logging into edge cluster's registry: $PULL_REGISTRY"
                 ALREADY_LOGGED_INTO_REGISTRY='true'
             fi
 
             echo "Pulling $PULL_REGISTRY/${put_ARCH}${AGENT_IMAGE}:$AGENT_IMAGE_TAG ..."
-            docker pull $PULL_REGISTRY/${put_ARCH}${AGENT_IMAGE}:$AGENT_IMAGE_TAG
+            ${DOCKER_ENGINE} pull $PULL_REGISTRY/${put_ARCH}${AGENT_IMAGE}:$AGENT_IMAGE_TAG
             chk $? "pulling $PULL_REGISTRY/${put_ARCH}${AGENT_IMAGE}:$AGENT_IMAGE_TAG"
 
             echo "Saving ${put_ARCH}${AGENT_IMAGE}:$AGENT_IMAGE_TAG to ${put_ARCH}$AGENT_IMAGE_TAR_FILE ..."
-            docker save $PULL_REGISTRY/${put_ARCH}${AGENT_IMAGE}:$AGENT_IMAGE_TAG | gzip > ${put_ARCH}${AGENT_IMAGE_TAR_FILE}
+            ${DOCKER_ENGINE} save $PULL_REGISTRY/${put_ARCH}${AGENT_IMAGE}:$AGENT_IMAGE_TAG | gzip > ${put_ARCH}${AGENT_IMAGE_TAR_FILE}
             chk $? "saving $PULL_REGISTRY/${put_ARCH}${AGENT_IMAGE}:$AGENT_IMAGE_TAG"
         fi
 
