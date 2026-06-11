@@ -7,7 +7,41 @@ if [[ ! -f /etc/default/horizon ]]; then
     # Note: postrm deletes this file in the purge case
 fi
 
+DOCKER_ENGINE="docker"
+command -v docker >/dev/null 2>&1
+rc=$?
+if [[ $rc -ne 0 ]]; then
+    command -v podman >/dev/null 2>&1
+    rc=$?
+    if [[ $rc -eq 0 ]]; then
+        DOCKER_ENGINE="podman"
+    fi
+fi
+
+#if podman, DockerEndpoint needs to change
+if [[ "${DOCKER_ENGINE}" == "podman" ]]; then
+   anaxjson=$(jq -c . /etc/horizon/anax.json)
+   anaxjson=$( jq  ".Edge.DockerEndpoint = \"unix:///var/run/podman/podman.sock\" " <<< $anaxjson)
+   echo "${anaxjson}" > /etc/horizon/anax.json
+fi
+
+#if systemctl > /dev/null 2>&1; then  # for testing installation in docker container
 systemctl daemon-reload
+
+#if podman, need to make sure podman.service is set to autostart since horizon depends on it
+if [[ "${DOCKER_ENGINE}" == "podman" ]]; then
+        if systemctl --quiet is-enabled podman.service; then
+                :   # all good
+        else
+                systemctl enable podman.service
+        fi
+        if systemctl --quiet is-active podman.service; then
+                :   # all good
+        else
+                systemctl start podman.service
+        fi
+fi
+
 systemctl enable horizon.service
 if systemctl --quiet is-active horizon.service; then
 	systemctl stop horizon.service   # in case this was an update
