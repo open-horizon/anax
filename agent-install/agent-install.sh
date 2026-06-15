@@ -2138,20 +2138,22 @@ function debian_device_install_prereqs() {
             runCmdQuietly apt-get install -yqf curl jq net-tools cron
         fi
         
-        if ! isCmdInstalled docker; then
-            log_info "Docker is required, installing it..."
-            if [ "${DISTRO}" == "raspbian" ]; then
-                curl -sSL get.docker.com | sh
-            else
-                curl -fsSL https://download.docker.com/linux/$DISTRO/gpg | apt-key add -
-                add-apt-repository -y "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/$DISTRO $(lsb_release -cs) stable"
-                set +e
-                apt-get update -q > /dev/null 2>&1
-                if [[ $? -ne 0 ]]; then
-                    log_warning "Failed to execute apt-get update -q, skip updating apt package index.."
+        if [[ ${DOCKER_ENGINE} != "podman" ]]; then
+            if ! isCmdInstalled docker; then
+                log_info "Docker is required, installing it..."
+                if [ "${DISTRO}" == "raspbian" ]; then
+                    curl -sSL get.docker.com | sh
+                else
+                    curl -fsSL https://download.docker.com/linux/$DISTRO/gpg | apt-key add -
+                    add-apt-repository -y "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/$DISTRO $(lsb_release -cs) stable"
+                    set +e
+                    apt-get update -q > /dev/null 2>&1
+                    if [[ $? -ne 0 ]]; then
+                        log_warning "Failed to execute apt-get update -q, skip updating apt package index.."
+                    fi
+                    set -e
+                    runCmdQuietly apt-get install -yqf docker-ce docker-ce-cli containerd.io
                 fi
-                set -e
-                runCmdQuietly apt-get install -yqf docker-ce docker-ce-cli containerd.io
             fi
         fi
     fi
