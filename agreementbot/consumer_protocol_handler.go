@@ -239,16 +239,34 @@ func (b *BaseConsumerProtocolHandler) DispatchProtocolMessage(cmd *NewProtocolMe
 
 	// Figure out what kind of message this is
 	if reply, rerr := cph.AgreementProtocolHandler("", "", "").ValidateReply(string(cmd.Message)); rerr == nil {
-		agreementWork := NewHandleReply(reply, cmd.From, cmd.PubKey, cmd.MessageId)
-		cph.WorkQueue().InboundHigh() <- &agreementWork
-		if glog.V(5) {
-			glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued reply message")))
+		if ag, err := b.db.FindSingleAgreementByAgreementId(reply.AgreementId(), reply.Protocol(), []persistence.AFilter{}); err != nil {
+			glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error finding agreement %v in the db", reply.AgreementId())))
+		} else if ag == nil {
+			glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("reply ignored, cannot find agreement %v in the db", reply.AgreementId())))
+		} else if ag.DeviceId != cmd.From {
+			glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("reply ignored, reply message for %v came from id %v but agreement is with %v", reply.AgreementId(), cmd.From, ag.DeviceId)))
+		} else {
+			agreementWork := NewHandleReply(reply, cmd.From, cmd.PubKey, cmd.MessageId)
+			cph.WorkQueue().InboundHigh() <- &agreementWork
+			if glog.V(5) {
+				glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued reply message")))
+			}
 		}
-	} else if _, aerr := cph.AgreementProtocolHandler("", "", "").ValidateDataReceivedAck(string(cmd.Message)); aerr == nil {
-		agreementWork := NewHandleDataReceivedAck(string(cmd.Message), cmd.From, cmd.PubKey, cmd.MessageId)
-		cph.WorkQueue().InboundHigh() <- &agreementWork
-		if glog.V(5) {
-			glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued data received ack message")))
+	} else if dra, aerr := cph.AgreementProtocolHandler("", "", "").ValidateDataReceivedAck(string(cmd.Message)); aerr == nil {
+		if drAck, ok := dra.(*abstractprotocol.BaseDataReceivedAck); !ok {
+			glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("unable to cast Data Received Ack %v to %v Proposal Reply, is %T", dra, cph.Name(), dra)))
+		} else if ag, err := b.db.FindSingleAgreementByAgreementId(drAck.AgreementId(), reply.Protocol(), []persistence.AFilter{}); err != nil {
+			glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error finding agreement %v in the db", drAck.AgreementId())))
+		} else if ag == nil {
+			glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("data received ack ignored, cannot find agreement %v in the db", drAck.AgreementId())))
+		} else if ag.DeviceId != cmd.From {
+			glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("data received ack ignored, data received ack message for %v came from id %v but agreement is with %v", drAck.AgreementId(), cmd.From, ag.DeviceId)))
+		} else {
+			agreementWork := NewHandleDataReceivedAck(string(cmd.Message), cmd.From, cmd.PubKey, cmd.MessageId)
+			cph.WorkQueue().InboundHigh() <- &agreementWork
+			if glog.V(5) {
+				glog.Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued data received ack message")))
+			}
 		}
 	} else if can, cerr := cph.AgreementProtocolHandler("", "", "").ValidateCancel(string(cmd.Message)); cerr == nil {
 		// Before dispatching the cancel to a worker thread, make sure it's a valid cancel
