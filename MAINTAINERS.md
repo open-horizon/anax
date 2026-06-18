@@ -5,7 +5,6 @@ See the information about [community membership roles](https://wiki.lfedge.org/d
 
 | Name         | GitHub      | email                    |
 | ------------ | ----------- | ------------------------ |
-| David Booz   | dabooz      | <booz@us.ibm.com>        |
 | Joe Pearson  | joewxboy    | <joe.pearson@us.ibm.com> |
 | John Walicki | johnwalicki | <johnwalicki@gmail.com>  |
 | Lily Zhang   | liilyZhang  | <zhangl@us.ibm.com>      |
@@ -18,3 +17,4 @@ The emeritus maintainers of this repository are:
 | ------------ | ----------- | ------------------------ |
 | Ling Gao     | linggao     |                          |
 | Max McAdam   | maxmcadam   |                          |
+| David Booz   | dabooz      |                          |
