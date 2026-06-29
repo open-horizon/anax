@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi9-minimal:latest
+FROM registry.access.redhat.com/ubi10-minimal:latest
 
 LABEL vendor="IBM"
 LABEL summary="The agent in a general purpose container."
@@ -11,7 +11,7 @@ ARG DOCKER_VER=27.5.1
 # anax does not use iptables directly but the github.com/coreos/go-iptables/iptables dependency needs the directory structure
 # Install docker cli, which requires tar / gunzip to unpack, then remove tar / gzip packages
 # Create required directories
-ARG REQUIRED_RPMS="openssl ca-certificates shadow-utils jq iptables vim-minimal psmisc procps-ng tar gzip"
+ARG REQUIRED_RPMS="openssl ca-certificates shadow-utils jq nftables vim-minimal psmisc procps-ng tar gzip curl"
 RUN  microdnf update  -y libxml2 --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager \
   && microdnf install -y --nodocs --setopt=install_weak_deps=0 --disableplugin=subscription-manager ${REQUIRED_RPMS} \
   && curl -4fsSLO https://download.docker.com/linux/static/stable/aarch64/docker-${DOCKER_VER}.tgz \
@@ -21,8 +21,12 @@ RUN  microdnf update  -y libxml2 --nodocs --setopt=install_weak_deps=0 --disable
   && microdnf clean all --disableplugin=subscription-manager \
   && rm -rf /mnt/rootfs/var/cache/* /mnt/rootfs/var/log/dnf* /mnt/rootfs/var/log/yum.* \
   && mkdir -p /licenses /usr/horizon/bin /usr/horizon/web /var/horizon \
-  && mkdir -p /etc/horizon/agbot/policy.d /etc/horizon/policy.d /etc/horizon/trust
-
+  && mkdir -p /etc/horizon/agbot/policy.d /etc/horizon/policy.d /etc/horizon/trust \
+  && printf '#!/bin/sh\necho "iptables v1.8.7 (nf_tables)"\n' > /usr/sbin/iptables \
+  && printf '#!/bin/sh\necho "ip6tables v1.8.7 (nf_tables)"\n' > /usr/sbin/ip6tables \
+  && printf '#!/bin/sh\nexit 0\n' > /usr/sbin/iptables-save \
+  && printf '#!/bin/sh\nexit 0\n' > /usr/sbin/iptables-restore \
+  && chmod +x /usr/sbin/iptables /usr/sbin/ip6tables /usr/sbin/iptables-save /usr/sbin/iptables-restore
 # add license file
 COPY LICENSE.txt /licenses
 
@@ -37,5 +41,8 @@ ADD hzn /usr/bin/
 WORKDIR /root
 COPY script/anax.service /root/
 
+
+# This is for testing locally. Will remove later.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD curl -sf http://localhost:8510/status > /dev/null || exit 1
 # You can add a 2nd arg to this on the docker run cmd or the CMD statement in another dockerfile, to configure a specific environment
 ENTRYPOINT ["/root/anax.service", "start"]
