@@ -611,7 +611,7 @@ Environment Variables:
 	exUserRemoveKeyUser := exUserRemoveKeyCmd.Arg("user", msgPrinter.Sprintf("Username of key owner")).Required().String()
 	exUserRemoveKeyId := exUserRemoveKeyCmd.Arg("keyid", msgPrinter.Sprintf("ID of the key to remove")).Required().String()
 	exUserRemoveKeyForce := exUserRemoveKeyCmd.Flag("force", msgPrinter.Sprintf("Force removal without confirmation")).Short('f').Bool()
-	
+
 	exVersionCmd := exchangeCmd.Command("version", msgPrinter.Sprintf("Display the version of the Horizon Exchange."))
 
 	keyCmd := app.Command("key", msgPrinter.Sprintf("List and manage keys for signing and verifying services."))

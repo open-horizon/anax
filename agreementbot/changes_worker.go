@@ -208,7 +208,7 @@ func (w *ChangesWorker) findAndProcessChanges() {
 	// Poll the CSS for object policy changes. This is a different changes mechanism than the one used by the exchange.
 	oldTime := w.mmsObjectPollTime
 	//Change to just use a granularity of seconds
-        updated_mmsObjectPollTime := time.Now().UTC().Unix() * 1000 * 1000 * 1000
+	updated_mmsObjectPollTime := time.Now().UTC().Unix() * 1000 * 1000 * 1000
 
 	for _, org := range w.orgList {
 
@@ -218,10 +218,10 @@ func (w *ChangesWorker) findAndProcessChanges() {
 		} else if len(*mmsObjPolicies) != 0 {
 			w.Messages() <- events.NewMMSObjectPoliciesMessage(events.OBJECT_POLICIES_CHANGED, (*mmsObjPolicies))
 			// Only advance the time when updated models are found
-                        w.mmsObjectPollTime = updated_mmsObjectPollTime
-		} else if w.mmsObjectPollTime == 0 { 
-                        w.mmsObjectPollTime = updated_mmsObjectPollTime
-                }
+			w.mmsObjectPollTime = updated_mmsObjectPollTime
+		} else if w.mmsObjectPollTime == 0 {
+			w.mmsObjectPollTime = updated_mmsObjectPollTime
+		}
 
 	}
 	glog.V(3).Infof(chglog(fmt.Sprintf("done looking for object policy changes")))
