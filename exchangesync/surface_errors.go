@@ -2,11 +2,11 @@ package exchangesync
 
 import (
 	"fmt"
-	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
+	bolt "go.etcd.io/bbolt"
 	"golang.org/x/text/message"
 	"time"
 )

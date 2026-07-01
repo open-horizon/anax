@@ -3,11 +3,11 @@ package persistence
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/semanticversion"
+	bolt "go.etcd.io/bbolt"
 	"time"
 )
 

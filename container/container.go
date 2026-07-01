@@ -16,7 +16,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/boltdb/bolt"
 	"github.com/coreos/go-iptables/iptables"
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/golang/glog"
@@ -31,6 +30,7 @@ import (
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/resource"
 	"github.com/open-horizon/anax/worker"
+	bolt "go.etcd.io/bbolt"
 	"golang.org/x/sys/unix"
 )
 

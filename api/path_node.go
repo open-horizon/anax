@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/cutil"
@@ -14,6 +13,7 @@ import (
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/version"
+	bolt "go.etcd.io/bbolt"
 )
 
 // Global "static" field to remember that unconfig is in progress. We can't tell from the configstate in the node

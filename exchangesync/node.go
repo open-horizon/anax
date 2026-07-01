@@ -2,7 +2,6 @@ package exchangesync
 
 import (
 	"fmt"
-	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
@@ -10,6 +9,7 @@ import (
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/version"
+	bolt "go.etcd.io/bbolt"
 	"os"
 	"sync"
 )

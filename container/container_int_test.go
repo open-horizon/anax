@@ -19,13 +19,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/boltdb/bolt"
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/container"
 	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/persistence"
+	bolt "go.etcd.io/bbolt"
 )
 
 func contentFromTar(fname string, in *bytes.Buffer) (*bytes.Buffer, error) {

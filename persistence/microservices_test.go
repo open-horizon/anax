@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/boltdb/bolt"
+	bolt "go.etcd.io/bbolt"
 )
 
 // Parent and child, simple case.

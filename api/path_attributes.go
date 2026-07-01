@@ -7,10 +7,10 @@ import (
 	"io"
 	"reflect"
 
-	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
+	bolt "go.etcd.io/bbolt"
 )
 
 func attributesContains(given []persistence.Attribute, sp *persistence.ServiceSpec, typeString string) *persistence.Attribute {

@@ -3,7 +3,6 @@ package nodemanagement
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/eventlog"
@@ -13,6 +12,7 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/semanticversion"
 	"github.com/open-horizon/anax/version"
+	bolt "go.etcd.io/bbolt"
 	"os"
 	"path"
 	"sort"

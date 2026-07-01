@@ -3,13 +3,13 @@ package api
 import (
 	"errors"
 	"fmt"
-	"github.com/boltdb/bolt"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/exchangesync"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/persistence"
+	bolt "go.etcd.io/bbolt"
 )
 
 // Return an empty policy object or the object that's in the local database.

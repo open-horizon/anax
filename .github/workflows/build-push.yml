@@ -110,7 +110,7 @@ jobs:
     # Strategy allows specifying matrix axis(es) that will run for the test
     strategy:
       matrix:
-        architecture: ['amd64', 'arm64', 'armhf', 'ppc64el', 's390x']
+        architecture: ['amd64', 'arm64', 'armhf', 'ppc64el', 's390x', 'riscv64']
         platform: ['linux']
 
     # Variables that are available to all steps in the job
