@@ -3,12 +3,12 @@ package api
 import (
 	"errors"
 	"fmt"
-	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
+	bolt "go.etcd.io/bbolt"
 	"sort"
 )
 

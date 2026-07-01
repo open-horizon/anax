@@ -8,7 +8,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
@@ -19,6 +18,7 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/semanticversion"
 	"github.com/open-horizon/anax/worker"
+	bolt "go.etcd.io/bbolt"
 )
 
 const (

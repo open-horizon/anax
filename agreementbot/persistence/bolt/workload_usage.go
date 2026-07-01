@@ -3,9 +3,9 @@ package bolt
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/agreementbot/persistence"
+	bolt "go.etcd.io/bbolt"
 	"strconv"
 )
 

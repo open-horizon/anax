@@ -3,7 +3,6 @@ package imagefetch
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/boltdb/bolt"
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
@@ -11,6 +10,7 @@ import (
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/worker"
+	bolt "go.etcd.io/bbolt"
 	"strings"
 )
 

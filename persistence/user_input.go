@@ -3,8 +3,8 @@ package persistence
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/boltdb/bolt"
 	"github.com/open-horizon/anax/policy"
+	bolt "go.etcd.io/bbolt"
 )
 
 const NODE_USERINPUT = "nodeuserinput"                              // The bucket name in the bolt DB.

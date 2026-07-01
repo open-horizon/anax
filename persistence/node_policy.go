@@ -3,8 +3,8 @@ package persistence
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/boltdb/bolt"
 	"github.com/open-horizon/anax/exchangecommon"
+	bolt "go.etcd.io/bbolt"
 )
 
 // Constants used throughout the code.

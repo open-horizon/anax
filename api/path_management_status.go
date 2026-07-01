@@ -2,12 +2,12 @@ package api
 
 import (
 	"fmt"
-	"github.com/boltdb/bolt"
 	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/persistence"
+	bolt "go.etcd.io/bbolt"
 	"strings"
 )
 
