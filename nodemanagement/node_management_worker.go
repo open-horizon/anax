@@ -2,7 +2,6 @@ package nodemanagement
 
 import (
 	"fmt"
-	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
@@ -13,6 +12,7 @@ import (
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/worker"
+	bolt "go.etcd.io/bbolt"
 	"strings"
 	"sync"
 )

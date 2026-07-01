@@ -6,13 +6,13 @@ import (
 	"os"
 	"sync"
 
-	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/persistence"
+	bolt "go.etcd.io/bbolt"
 )
 
 var nodePolicyUpdateLock sync.Mutex //The lock that protects the nodePolicyLastUpdated value

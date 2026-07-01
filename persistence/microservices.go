@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/satori/go.uuid"
+	bolt "go.etcd.io/bbolt"
 	"strconv"
 	"time"
 )

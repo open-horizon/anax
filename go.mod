@@ -5,7 +5,6 @@ go 1.25.7
 require (
 	github.com/adams-sarah/test2doc v0.0.0-20211124171229-79cd42e7411d
 	github.com/alecthomas/participle v0.7.1
-	github.com/boltdb/bolt v1.3.1
 	github.com/coreos/go-iptables v0.6.0
 	github.com/fsouza/go-dockerclient v1.12.1
 	github.com/go-ini/ini v1.66.4
@@ -21,6 +20,7 @@ require (
 	github.com/operator-framework/operator-lifecycle-manager v0.38.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/stretchr/testify v1.11.1
+	go.etcd.io/bbolt v1.4.3
 	golang.org/x/crypto v0.48.0
 	golang.org/x/sys v0.41.0
 	golang.org/x/text v0.34.0
@@ -117,7 +117,6 @@ require (
 	github.com/xdg-go/scram v1.2.0 // indirect
 	github.com/xdg-go/stringprep v1.0.4 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78 // indirect
-	go.etcd.io/bbolt v1.4.3 // indirect
 	go.mongodb.org/mongo-driver v1.17.9 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect

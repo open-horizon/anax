@@ -3,7 +3,7 @@ package persistence
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/boltdb/bolt"
+	bolt "go.etcd.io/bbolt"
 )
 
 const NODE_STATUS = "node_status"

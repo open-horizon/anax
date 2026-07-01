@@ -3,12 +3,12 @@ package resource
 import (
 	"errors"
 	"fmt"
-	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/worker"
+	bolt "go.etcd.io/bbolt"
 )
 
 type ResourceWorker struct {

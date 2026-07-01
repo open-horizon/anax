@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/basicprotocol"
@@ -16,6 +15,7 @@ import (
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/resource"
 	"github.com/open-horizon/anax/worker"
+	bolt "go.etcd.io/bbolt"
 )
 
 type BasicProtocolHandler struct {

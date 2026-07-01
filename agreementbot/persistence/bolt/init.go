@@ -3,8 +3,8 @@ package bolt
 import (
 	"errors"
 	"fmt"
-	"github.com/boltdb/bolt"
 	"github.com/open-horizon/anax/config"
+	bolt "go.etcd.io/bbolt"
 	"os"
 	"path"
 	"time"

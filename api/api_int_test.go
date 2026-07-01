@@ -18,7 +18,6 @@ import (
 	"time"
 
 	"github.com/adams-sarah/test2doc/test"
-	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
 	"github.com/open-horizon/anax/apicommon"
@@ -28,6 +27,7 @@ import (
 	"github.com/open-horizon/anax/worker"
 	"github.com/open-horizon/rsapss-tool/listkeys"
 	"github.com/stretchr/testify/assert"
+	bolt "go.etcd.io/bbolt"
 )
 
 func handleResp(r *http.Response, expectedStatus int) ([]byte, error) {

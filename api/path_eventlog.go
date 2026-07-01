@@ -2,10 +2,10 @@ package api
 
 import (
 	"fmt"
-	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/persistence"
+	bolt "go.etcd.io/bbolt"
 	"golang.org/x/text/message"
 	"sort"
 )

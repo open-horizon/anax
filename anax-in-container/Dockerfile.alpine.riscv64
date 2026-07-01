@@ -1,0 +1,31 @@
+# Explicitly use the riscv64 Alpine base image
+FROM riscv64/alpine:latest
+
+LABEL vendor="IBM"
+LABEL summary="The agent in a general purpose container."
+LABEL description="A container which holds the edge node agent, to be used in environments where there is no operating system package that can install the agent natively."
+
+# install docker cli
+# make required directories
+RUN apk add --no-cache  \
+    bash jq shadow openssh-client openssl ca-certificates \
+    iptables  docker util-linux pigz  \
+    && mkdir -p /licenses && mkdir -p /usr/horizon/bin /usr/horizon/web /var/horizon \
+    && mkdir -p /etc/horizon/agbot/policy.d /etc/horizon/policy.d /etc/horizon/trust
+
+# add license file
+COPY LICENSE.txt /licenses
+
+# copy the horizon configurations
+COPY config/anax.json /etc/horizon/
+COPY config/hzn.json /etc/horizon/
+
+# copy anax and hzn binaries
+ADD anax /usr/horizon/bin/
+ADD hzn /usr/bin/
+
+WORKDIR /root
+COPY script/anax.service /root/
+
+# You can add a 2nd arg to this on the docker run cmd or the CMD statement in another dockerfile, to configure a specific environment
+ENTRYPOINT ["/root/anax.service", "start"]

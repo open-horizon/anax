@@ -7,12 +7,12 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/boltdb/bolt"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/version"
+	bolt "go.etcd.io/bbolt"
 )
 
 // The input data newStatus is either from the status.json file or from the /nodemanagement/status/nmp

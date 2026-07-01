@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/agreement"
 	"github.com/open-horizon/anax/agreementbot"
@@ -30,6 +29,7 @@ import (
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/resource"
 	"github.com/open-horizon/anax/worker"
+	bolt "go.etcd.io/bbolt"
 	"os"
 	"os/signal"
 	"path"

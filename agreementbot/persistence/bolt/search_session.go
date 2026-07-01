@@ -3,8 +3,8 @@ package bolt
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
+	bolt "go.etcd.io/bbolt"
 	"strconv"
 	"time"
 )
