@@ -23,9 +23,7 @@ env:
 # Jobs executed when workflow is triggered
 jobs:
   test-build:
-    runs-on:
-      group: "RISE RISC-V Runners"
-      labels: ubuntu-24.04-riscv
+    runs-on: ubuntu-24.04-riscv-lily
     steps:
       - run: uname -m  # riscv64
   
