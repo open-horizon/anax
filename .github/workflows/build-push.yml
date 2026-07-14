@@ -22,6 +22,11 @@ env:
 
 # Jobs executed when workflow is triggered
 jobs:
+  test-build:
+    runs-on: ubuntu-24.04-riscv
+    steps:
+      - run: uname -m  # riscv64
+  
   changes:
     runs-on: ubuntu-latest
     outputs:
