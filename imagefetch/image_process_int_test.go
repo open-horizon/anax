@@ -20,11 +20,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/boltdb/bolt"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/rsapss-tool/sign"
+	bolt "go.etcd.io/bbolt"
 
 	"github.com/stretchr/testify/assert"
 )

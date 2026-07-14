@@ -1,8 +1,8 @@
 package eventlog
 
 import (
-	"github.com/boltdb/bolt"
 	"github.com/open-horizon/anax/persistence"
+	bolt "go.etcd.io/bbolt"
 	"golang.org/x/text/message"
 )
 

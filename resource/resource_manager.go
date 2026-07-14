@@ -8,7 +8,6 @@ import (
 	"path"
 	"time"
 
-	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/exchange"
@@ -19,6 +18,7 @@ import (
 	"github.com/open-horizon/edge-utilities/logger"
 	"github.com/open-horizon/edge-utilities/logger/log"
 	"github.com/open-horizon/edge-utilities/logger/trace"
+	bolt "go.etcd.io/bbolt"
 )
 
 type ResourceManager struct {

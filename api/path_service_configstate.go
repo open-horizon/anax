@@ -2,13 +2,13 @@ package api
 
 import (
 	"fmt"
-	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/semanticversion"
+	bolt "go.etcd.io/bbolt"
 )
 
 // get the service configuration state for all the registered services.

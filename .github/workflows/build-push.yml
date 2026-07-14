@@ -104,13 +104,13 @@ jobs:
   linux-build-push:
     needs: offset-build-number
 
-    # The type of runner that the job will run on 
-    runs-on: ubuntu-latest
+    # The type of runner that the job will run on #ubuntu-latest
+    runs-on: ${{ (matrix.architecture == 'riscv64') && 'ubuntu-24.04-riscv' || 'ubuntu-latest' }}
 
     # Strategy allows specifying matrix axis(es) that will run for the test
     strategy:
       matrix:
-        architecture: ['amd64', 'arm64', 'armhf', 'ppc64el', 's390x']
+        architecture: ['amd64', 'arm64', 'armhf', 'ppc64el', 's390x', 'riscv64']
         platform: ['linux']
 
     # Variables that are available to all steps in the job
@@ -314,7 +314,7 @@ jobs:
       # Build Docker Images
       - name: Build Docker Images
         shell: bash
-        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64' || matrix.architecture == 's390x')
+        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64' || matrix.architecture == 's390x' || matrix.architecture == 'riscv64')
         run: | 
           # Makes and pushes arch_cloud-sync-service and arch_edge-sync-service images
           cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
@@ -329,13 +329,16 @@ jobs:
           fi
 
           # Specify if we should use buildx for multiarch, github runner is amd64 so we only need this for arm and ppc
-          if [[ ${arch} == 'arm64' || ${arch} == 'ppc64el' || ${arch} == 's390x' ]]; then
+          if [[ ${arch} == 'arm64' || ${arch} == 'ppc64el' || ${arch} == 's390x' || ${arch} == 'riscv64' ]]; then
               export USE_DOCKER_BUILDX=true
           fi
 
           make anax-image                         # Makes and pushes arch_anax
-          make anax-k8s-image                     # Makes and pushes arch_anax_k8s
-          make auto-upgrade-cronjob-k8s-image     # Makes and pushes arch_auto-upgrade-cronjob-k8s
+
+          if [[ ${arch} == 'amd64' || ${arch} == 'ppc64el' || ${arch} == 'arm64' || ${arch} == 's390x' ]]; then
+            make anax-k8s-image                     # Makes and pushes arch_anax_k8s
+            make auto-upgrade-cronjob-k8s-image     # Makes and pushes arch_auto-upgrade-cronjob-k8s
+          fi
 
           # Outputs created docker images for viewing
           echo "**************"
@@ -345,7 +348,7 @@ jobs:
       # Push Docker Images to Dockerhub
       - name: Push Docker Images
         shell: bash
-        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64' || matrix.architecture == 's390x')
+        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64' || matrix.architecture == 's390x' || matrix.architecture == 'riscv64')
         run: |
           cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
           # Names of the images created for each architecture
@@ -357,6 +360,8 @@ jobs:
               images=('arm64_anax' 'arm64_anax_k8s' 'arm64_auto-upgrade-cronjob_k8s' 'arm64_edge-sync-service')
           elif [[ ${arch} == 's390x' ]]; then
               images=('s390x_anax' 's390x_anax_k8s' 's390x_auto-upgrade-cronjob_k8s' 's390x_edge-sync-service')
+          elif [[ ${arch} == 'riscv64' ]]; then
+              images=('riscv64_anax')
           fi
 
           # Push those images

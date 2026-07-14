@@ -3,7 +3,6 @@ package api
 import (
 	"errors"
 	"fmt"
-	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
@@ -13,6 +12,7 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/semanticversion"
+	bolt "go.etcd.io/bbolt"
 )
 
 // Return an empty user input object or the object that's in the local database.

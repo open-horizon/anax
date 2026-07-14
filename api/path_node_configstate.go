@@ -3,7 +3,6 @@ package api
 import (
 	"errors"
 	"fmt"
-	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/compcheck"
 	"github.com/open-horizon/anax/config"
@@ -16,6 +15,7 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/semanticversion"
+	bolt "go.etcd.io/bbolt"
 	"strings"
 )
 

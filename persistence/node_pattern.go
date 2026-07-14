@@ -2,7 +2,7 @@ package persistence
 
 import (
 	"fmt"
-	"github.com/boltdb/bolt"
+	bolt "go.etcd.io/bbolt"
 )
 
 // Constants used throughout the code.

@@ -3,8 +3,8 @@ package bolt
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/boltdb/bolt"
 	"github.com/open-horizon/anax/agreementbot/persistence"
+	bolt "go.etcd.io/bbolt"
 )
 
 const HABUCKET = "ha_updates"
