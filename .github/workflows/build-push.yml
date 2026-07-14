@@ -7,6 +7,7 @@ on:
   push:
     branches:
       - master
+      - feat2373
       - v2.31
       - v2.30
       - v2.29
@@ -104,13 +105,13 @@ jobs:
   linux-build-push:
     needs: offset-build-number
 
-    # The type of runner that the job will run on #ubuntu-latest
-    runs-on: ${{ (matrix.architecture == 'riscv64') && 'ubuntu-24.04-riscv' || 'ubuntu-latest' }}
+    # The type of runner that the job will run on 
+    runs-on: ubuntu-24.04-riscv
 
     # Strategy allows specifying matrix axis(es) that will run for the test
     strategy:
       matrix:
-        architecture: ['amd64', 'arm64', 'armhf', 'ppc64el', 's390x', 'riscv64']
+        architecture: ['riscv64']
         platform: ['linux']
 
     # Variables that are available to all steps in the job
