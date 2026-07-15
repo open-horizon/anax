@@ -106,12 +106,12 @@ jobs:
     needs: offset-build-number
 
     # The type of runner that the job will run on 
-    runs-on: ubuntu-24.04-riscv
+    runs-on: ${{ (matrix.architecture == 'riscv64') && 'ubuntu-24.04-riscv' || 'ubuntu-latest' }}
 
     # Strategy allows specifying matrix axis(es) that will run for the test
     strategy:
       matrix:
-        architecture: ['riscv64']
+        architecture: ['amd64', 'arm64', 'armhf', 'ppc64el', 's390x', 'riscv64']
         platform: ['linux']
 
     # Variables that are available to all steps in the job
