@@ -128,6 +128,7 @@ jobs:
     steps:
       # Upgrade Docker engine version, needed for building images
       - name: Install Latest Docker Version
+        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64' || matrix.architecture == 'armhf' || matrix.architecture == 's390x')
         run: |
           sudo apt-get purge docker-ce docker-ce-cli containerd.io runc containerd moby-buildx moby-cli moby-compose moby-containerd moby-engine moby-runc
 
