@@ -2010,20 +2010,11 @@ function mac_trust_cert() {
     local tmp_dir=$(get_tmp_dir)
     local tmp_file="${tmp_dir}/rights"
 
+    echo "Need to add a trusted certificate $cert_file. If a dialog box is shown to ask your permission, please allow."
+
     set -x   # echo'ing this cmd because on mac it is usually the 1st sudo cmd and want them to know why they are being prompted for pw
-
-    # save the old permission
-    sudo security authorizationdb read com.apple.trust-settings.admin > $tmp_file
-
-    # set the permission to 'allow' to bypass the prompt
-    sudo security authorizationdb write com.apple.trust-settings.admin allow
-
     # add the cerfiticate
     sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain "$cert_file"
-
-    # restore the old permission
-    sudo security authorizationdb write com.apple.trust-settings.admin < $tmp_file
-    rm -f $tmp_file
 
     { set +x; } 2>/dev/null
 
@@ -2045,7 +2036,7 @@ function install_macos() {
         fi
 
         if [[ $AGENT_ONLY_CLI != 'true' ]]; then
-            confirmCmds socat docker jq
+            confirmCmds socat ${DOCKER_ENGINE} jq
         fi
 
         if [[ $AGENT_AUTO_UPGRADE != 'true' ]]; then
@@ -4673,7 +4664,7 @@ function get_docker_engine() {
 
     log_debug "get_docker_engine() begin"
 
-    if is_linux; then
+    if is_linux || is_macos; then
         if isCmdInstalled docker; then
             : # use docker
         elif isCmdInstalled podman;  then

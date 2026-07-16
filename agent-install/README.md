@@ -135,7 +135,7 @@ Command line flags override the corresponding environment variables or config fi
 
 `-O <exchange org>` - The exchange organization id
 
-`-u <exchange credentials>` -  specifies your exchange user credentials in the form `iamapikey:<api-key>` or `username:password`
+`-u <exchange credentials>` -  specifies your exchange user credentials in the form `apikey:<api-key>` or `username:password`
 
 `-d <node id>` - the node id to register with. For individual not batch install only.
 

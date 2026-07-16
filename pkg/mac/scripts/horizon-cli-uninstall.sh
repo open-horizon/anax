@@ -21,10 +21,29 @@ fi
 SRCDIR=/Users/Shared
 DESTDIR=/usr/local
 
+# Default to docker
+DOCKER_ENGINE=docker
+
+# Returns exit code 0 if the specified cmd is in the path
+function isCmdInstalled() {
+    local cmd=$1
+    command -v $cmd >/dev/null 2>&1
+}
+
+function get_docker_engine() {
+    if isCmdInstalled docker; then
+        : # use docker
+    elif isCmdInstalled podman;  then
+        DOCKER_ENGINE="podman"
+    fi
+}
+
 isContainerRunning() {
-	docker ps --filter "name=$1" | tail -n +2 | grep -q -w "$1"
+	${DOCKER_ENGINE} ps --filter "name=$1" | tail -n +2 | grep -q -w "$1"
 	return $?
 }
+
+get_docker_engine
 
 # The agent container "requires" the horizon-cli, so stop/remove the container (but not the image) before removing horizon-cli
 if isContainerRunning horizon1; then
