@@ -28,7 +28,7 @@ There are several techniques to start the agent in a container providing differe
 ## Prerequisites
 {: #container-prereqs}
 
-Docker or Podman needs to be installed on the host device. Review [instructions on installing Docker on Linux ](https://docs.docker.com/engine/install/){:target="_blank"}{: .externalLink} or the [instructions on installing Podman on Linux ](https://podman.io/getting-started/installation){:target="_blank"}{: .externalLink}. {{site.data.keyword.macOS_notm}} users might require a Docker Desktop license, if necessary, and install Docker on your device. For more information, see the [Docker installation for Mac ](https://docs.docker.com/docker-for-mac/install/){:target="_blank"}{: .externalLink} documentation.
+Docker or Podman needs to be installed on the host device. Review [instructions on installing Docker on Linux ](https://docs.docker.com/engine/install/){:target="_blank"}{: .externalLink} or the [instructions on installing Podman on Linux ](https://podman.io/getting-started/installation){:target="_blank"}{: .externalLink}. {{site.data.keyword.macOS_notm}} users might require a Docker Desktop license, if necessary, and install Docker on your device. For more information, see the [Docker installation for Mac ](https://docs.docker.com/docker-for-mac/install/){:target="_blank"}{: .externalLink} documentation. Alternatively, Podman can also be used on {{site.data.keyword.macOS_notm}}.
 
 If your management hub uses Secure Socket Layer (SSL) encryption, the management hub SSL certificate is required.
 
