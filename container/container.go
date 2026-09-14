@@ -888,7 +888,9 @@ func serviceStart(client *docker.Client,
 				Force:          true,
 			})
 			if err != nil {
-				return fail(container, serviceName, fmt.Errorf("error connecting network: %v to container id: %v as endpoint: %v, error: %v", cfg.NetworkID, container.ID, cfg.Aliases, err))
+				docker_networks, _ := client.ListNetworks()
+				containers, _ := client.ListContainers(docker.ListContainersOptions{All: true})
+				return fail(container, serviceName, fmt.Errorf("error connecting network: %v to container id: %v as endpoint: %v, cfg is: %v, error: %v, list network: %v, list containers: %v", cfg.NetworkID, container.ID, cfg.Aliases, cfg, err, docker_networks, containers))
 			}
 		}
 	}
