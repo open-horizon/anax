@@ -93,7 +93,7 @@ func InvokeExchange(httpClient *http.Client, method string, urlPath string, user
 			}
 			glog.Infof(rpclogString(fmt.Sprintf("Invoking exchange %v at %v with %v", method, urlPath, payload_str)))
 		} else {
-			glog.Infof(rpclogString(fmt.Sprintf("Invoking exchange %v at %v with %v", method, urlPath, params)))
+			glog.Infof(rpclogString(fmt.Sprintf("Invoking exchange %v at %v with payload type %T", method, urlPath, params)))
 		}
 	}
 

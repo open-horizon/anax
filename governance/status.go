@@ -134,7 +134,7 @@ func (w *GovernanceWorker) reportDeviceStatus(cfgStates []events.ServiceConfigSt
 	statusChanged = changeInWorkloadStatuses(unmarshalledNodeStatus, oldWlStatus)
 
 	if statusChanged {
-		glog.V(5).Infof(logString(fmt.Sprintf("device status to report to the exchange: %v", device_status_new)))
+		glog.V(5).Infof(logString(fmt.Sprintf("device status to report to the exchange: %v", device_status_new.String())))
 
 		if err := w.writeStatusToExchange(&device_status_new); err != nil {
 			glog.Errorf(logString(err))
@@ -143,7 +143,7 @@ func (w *GovernanceWorker) reportDeviceStatus(cfgStates []events.ServiceConfigSt
 			glog.Errorf(logString(err))
 		}
 	} else {
-		glog.V(5).Infof(logString(fmt.Sprintf("device status unchanged, skipping report to exchange: %v", device_status_new)))
+		glog.V(5).Infof(logString(fmt.Sprintf("device status unchanged, skipping report to exchange: %v", device_status_new.String())))
 	}
 	return 60
 }

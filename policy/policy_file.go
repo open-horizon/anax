@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -508,7 +509,7 @@ func (self *Policy) String() string {
 		res += fmt.Sprintf("Name: %v Value: %v\n", p.Name, p.Value)
 	}
 	res += fmt.Sprintf("Constraints: %v\n", self.Constraints)
-	res += fmt.Sprintf("Data Verification: %v\n", self.DataVerify)
+	res += fmt.Sprintf("Data Verification: %v\n", self.DataVerify.String())
 	res += fmt.Sprintf("Node Health: %v\n", self.NodeH)
 	res += fmt.Sprintf("SecretBinding: %v\n", self.SecretBinding)
 
@@ -911,13 +912,17 @@ func (c *Contents) ConflictsWithAlreadyTracked(org string, pol *Policy) string {
 
 func CreatePolicyFile(filepath string, org string, name string, p *Policy) (string, error) {
 
+	if !isValidPolicyFileComponent(name) {
+		return "", errors.New(fmt.Sprintf("Error writing policy file, invalid policy file name component %v", name))
+	}
+
 	// Store the policy on the filesystem in an org based hierarchy
 	fullFilePath := fmt.Sprintf("%v%v/", filepath, org)
 	fullFileName := fmt.Sprintf("%v%v.policy", fullFilePath, name)
 	if err := os.MkdirAll(fullFilePath, 0o764); err != nil {
 		return "", errors.New(fmt.Sprintf("Error writing policy file, cannot create file path %v", fullFilePath))
 	} else if err := WritePolicyFile(p, fullFileName); err != nil {
-		return "", errors.New(fmt.Sprintf("Error writing out policy file %v, to %v, error: %v", *p, fullFileName, err))
+		return "", errors.New(fmt.Sprintf("Error writing out policy file %v, to %v, error: %v", p.String(), fullFileName, err))
 	}
 	return fullFileName, nil
 
@@ -1212,4 +1217,14 @@ func ObscureSecretDetails(policy string) (string, error) {
 		}
 	}
 	return policy, nil
+}
+
+func isValidPolicyFileComponent(component string) bool {
+	if component == "" {
+		return false
+	}
+	if strings.Contains(component, "/") || strings.Contains(component, "\\") || strings.Contains(component, "..") {
+		return false
+	}
+	return component == filepath.Base(component)
 }

@@ -2,8 +2,8 @@ package cutil
 
 import (
 	"bufio"
-	"crypto/md5"
 	crypto_rand "crypto/rand"
+	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
@@ -797,9 +797,8 @@ func RemoveArchFromServiceId(sId string) string {
 
 // GetHashFromString returns the md5 hash for given string
 func GetHashFromString(str string) string {
-	hasher := md5.New()
-	hasher.Write([]byte(str))
-	return hex.EncodeToString(hasher.Sum(nil))
+	h := sha256.Sum256([]byte(str))
+	return hex.EncodeToString(h[:])[:32]
 }
 
 // Get Docker endpoint to use. Default to docker.sock and only check podman if that isn't there

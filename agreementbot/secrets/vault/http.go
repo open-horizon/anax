@@ -10,6 +10,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -197,10 +198,37 @@ func (vs *AgbotVaultSecrets) invokeVaultWithRetry(token string, url string, meth
 	return resp, err
 }
 
+func validateVaultRequest(method, rawURL string) (string, error) {
+	switch method {
+	case http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete, http.MethodPatch, "LIST":
+	default:
+		return "", fmt.Errorf("unsupported HTTP method: %q", method)
+	}
+
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		return "", fmt.Errorf("invalid vault URL: %w", err)
+	}
+
+	if u.Scheme != "http" && u.Scheme != "https" {
+		return "", fmt.Errorf("invalid vault URL scheme: %q", u.Scheme)
+	}
+	if u.Host == "" {
+		return "", fmt.Errorf("vault URL missing host")
+	}
+
+	return u.String(), nil
+}
+
 // Common function to invoke the Vault API.
 func (vs *AgbotVaultSecrets) invokeVault(token string, url string, method string, body interface{}) (*http.Response, error) {
 
-	apiMsg := fmt.Sprintf("%v %v", method, url)
+	validatedURL, err := validateVaultRequest(method, url)
+	if err != nil {
+		return nil, err
+	}
+
+	apiMsg := fmt.Sprintf("%v %v", method, validatedURL)
 
 	var requestBody io.Reader
 	if body != nil {
@@ -212,7 +240,7 @@ func (vs *AgbotVaultSecrets) invokeVault(token string, url string, method string
 	}
 
 	// Create an outgoing HTTP request for the vault.
-	req, err := http.NewRequest(method, url, requestBody)
+	req, err := http.NewRequest(method, validatedURL, requestBody)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("unable to create HTTP request for %v, error %v", apiMsg, err))
 	}
