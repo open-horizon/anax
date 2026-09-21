@@ -220,24 +220,53 @@ func (b *BasicProtocolHandler) HandleExtensionMessage(cmd *NewProtocolMessageCom
 
 	// Figure out what kind of message this is
 	if verify, perr := b.agreementPH.ValidateAgreementVerify(string(cmd.Message)); perr == nil {
-		agreementWork := NewBAgreementVerification(verify, cmd.From, cmd.PubKey, cmd.MessageId)
-		b.WorkQueue().InboundHigh() <- &agreementWork
-		glog.V(5).Infof(BsCPHlogString(fmt.Sprintf("queued agreement verify message")))
-
+		if ag, err := b.db.FindSingleAgreementByAgreementId(verify.AgreementId(), verify.Protocol(), []persistence.AFilter{}); err != nil {
+			glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error finding agreement %v in the db", verify.AgreementId())))
+		} else if ag == nil {
+			glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement verify message ignored, cannot find agreement %v in the db", verify.AgreementId())))
+		} else if ag.DeviceId != cmd.From {
+			glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement verify message ignored, reply message for %v came from id %v but agreement is with %v", verify.AgreementId(), cmd.From, ag.DeviceId)))
+		} else {
+			agreementWork := NewBAgreementVerification(verify, cmd.From, cmd.PubKey, cmd.MessageId)
+			b.WorkQueue().InboundHigh() <- &agreementWork
+			glog.V(5).Infof(BsCPHlogString(fmt.Sprintf("queued agreement verify message")))
+		}
 	} else if verifyr, perr := b.agreementPH.ValidateAgreementVerifyReply(string(cmd.Message)); perr == nil {
-		agreementWork := NewBAgreementVerificationReply(verifyr, cmd.From, cmd.PubKey, cmd.MessageId)
-		b.WorkQueue().InboundHigh() <- &agreementWork
-		glog.V(5).Infof(BsCPHlogString(fmt.Sprintf("queued agreement verify reply message")))
-
+		if ag, err := b.db.FindSingleAgreementByAgreementId(verifyr.AgreementId(), verifyr.Protocol(), []persistence.AFilter{}); err != nil {
+			glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error finding agreement %v in the db", verifyr.AgreementId())))
+		} else if ag == nil {
+			glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement verify reply message ignored, cannot find agreement %v in the db", verifyr.AgreementId())))
+		} else if ag.DeviceId != cmd.From {
+			glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement verify reply message ignored, reply message for %v came from id %v but agreement is with %v", verifyr.AgreementId(), cmd.From, ag.DeviceId)))
+		} else {
+			agreementWork := NewBAgreementVerificationReply(verifyr, cmd.From, cmd.PubKey, cmd.MessageId)
+			b.WorkQueue().InboundHigh() <- &agreementWork
+			glog.V(5).Infof(BsCPHlogString(fmt.Sprintf("queued agreement verify reply message")))
+		}
 	} else if update, perr := b.agreementPH.ValidateUpdate(string(cmd.Message)); perr == nil {
-		agreementWork := NewBAgreementUpdate(update, cmd.From, cmd.PubKey, cmd.MessageId)
-		b.WorkQueue().InboundHigh() <- &agreementWork
-		glog.V(5).Infof(BsCPHlogString(fmt.Sprintf("queued agreement update message")))
+		if ag, err := b.db.FindSingleAgreementByAgreementId(update.AgreementId(), update.Protocol(), []persistence.AFilter{}); err != nil {
+			glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error finding agreement %v in the db", update.AgreementId())))
+		} else if ag == nil {
+			glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement update message ignored, cannot find agreement %v in the db", update.AgreementId())))
+		} else if ag.DeviceId != cmd.From {
+			glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement update message ignored, reply message for %v came from id %v but agreement is with %v", update.AgreementId(), cmd.From, ag.DeviceId)))
+		} else {
+			agreementWork := NewBAgreementUpdate(update, cmd.From, cmd.PubKey, cmd.MessageId)
+			b.WorkQueue().InboundHigh() <- &agreementWork
+			glog.V(5).Infof(BsCPHlogString(fmt.Sprintf("queued agreement update message")))
+		}
 	} else if updater, perr := b.agreementPH.ValidateUpdateReply(string(cmd.Message)); perr == nil {
-		agreementWork := NewBAgreementUpdateReply(updater, cmd.From, cmd.PubKey, cmd.MessageId)
-		b.WorkQueue().InboundHigh() <- &agreementWork
-		glog.V(5).Infof(BsCPHlogString(fmt.Sprintf("queued areement update reply message")))
-
+		if ag, err := b.db.FindSingleAgreementByAgreementId(updater.AgreementId(), updater.Protocol(), []persistence.AFilter{}); err != nil {
+			glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error finding agreement %v in the db", update.AgreementId())))
+		} else if ag == nil {
+			glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement update reply message ignored, cannot find agreement %v in the db", updater.AgreementId())))
+		} else if ag.DeviceId != cmd.From {
+			glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement update reply message ignored, reply message for %v came from id %v but agreement is with %v", updater.AgreementId(), cmd.From, ag.DeviceId)))
+		} else {
+			agreementWork := NewBAgreementUpdateReply(updater, cmd.From, cmd.PubKey, cmd.MessageId)
+			b.WorkQueue().InboundHigh() <- &agreementWork
+			glog.V(5).Infof(BsCPHlogString(fmt.Sprintf("queued agreement update reply message")))
+		}
 	} else {
 		glog.V(5).Infof(BsCPHlogString(fmt.Sprintf("ignoring message: %v because it is an unknown type", string(cmd.Message))))
 		return errors.New(BsCPHlogString(fmt.Sprintf("unknown protocol msg %s", cmd.Message)))
