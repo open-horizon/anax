@@ -75,7 +75,7 @@ type PermissionDenied struct {
 }
 
 func (e *PermissionDenied) Error() string {
-	return fmt.Sprintf("Permission denied, user \"%s\" does not have %s access to %s.", e.ExchangeUser, e.HttpMethod, e.SecretPath)
+	return fmt.Sprintf("Permission denied, user %q does not have %s access to %s.", e.ExchangeUser, e.HttpMethod, e.SecretPath)
 }
 
 // Unauthenticated - 401
@@ -86,7 +86,7 @@ type Unauthenticated struct {
 }
 
 func (e *Unauthenticated) Error() string {
-	return fmt.Sprintf("Unable to authenticate user \"%s\" with exchange: \"%s\".", e.ExchangeUser, e.LoginError.Error())
+	return fmt.Sprintf("Unable to authenticate user %q with exchange: %q.", e.ExchangeUser, e.LoginError.Error())
 }
 
 // SecretsProviderUnavailable - 503
@@ -96,7 +96,7 @@ type SecretsProviderUnavailable struct {
 }
 
 func (e *SecretsProviderUnavailable) Error() string {
-	return fmt.Sprintf("Secrets manager service unavailable: \"%s\"", e.ProviderError.Error())
+	return fmt.Sprintf("Secrets manager service unavailable: %q", e.ProviderError.Error())
 }
 
 // InvalidResponse - 500
@@ -111,11 +111,11 @@ type InvalidResponse struct {
 
 func (e *InvalidResponse) Error() string {
 	if e.ReadError != nil {
-		return fmt.Sprintf("Unable to read the secrets manager response to \"%s %s\": \"%s\"", e.HttpMethod, e.SecretPath, e.ReadError.Error())
+		return fmt.Sprintf("Unable to read the secrets manager response to %q %q: %q", e.HttpMethod, e.SecretPath, e.ReadError.Error())
 	} else {
 		// e.ParseError != nil
-		resp := fmt.Sprintf("Unable to parse the secrets manager response to \"%s %s\": \"%s\"", e.HttpMethod, e.SecretPath, e.ParseError.Error())
-		resp += fmt.Sprintf("\nResponse body: \"%s\"", string(e.Response))
+		resp := fmt.Sprintf("Unable to parse the secrets manager response to %q %q: %q", e.HttpMethod, e.SecretPath, e.ParseError.Error())
+		resp += fmt.Sprintf("\nResponse body: %q", string(e.Response))
 		return resp
 	}
 }
@@ -132,17 +132,17 @@ type BadRequest struct {
 
 func (e *BadRequest) Error() string {
 	if e.ResponseCode == 400 {
-		resp := fmt.Sprintf("Bad request: \"%s %s\"", e.HttpMethod, e.SecretPath)
+		resp := fmt.Sprintf("Bad request: %q %q", e.HttpMethod, e.SecretPath)
 		if e.RequestBody != nil {
 			jsonBytes, err := json.MarshalIndent(e.RequestBody, "", cliutils.JSON_INDENT)
 			if err == nil {
-				resp += fmt.Sprintf("\nRequest body: \"%s\"", jsonBytes)
+				resp += fmt.Sprintf("\nRequest body:%q", jsonBytes)
 			}
 		}
 		return resp
 	} else {
 		// e.ResponseCode == 405
-		return fmt.Sprintf("Bad request, HTTP method not supported: \"%s %s\"", e.HttpMethod, e.SecretPath)
+		return fmt.Sprintf("Bad request, HTTP method not supported: %q %q", e.HttpMethod, e.SecretPath)
 	}
 }
 
@@ -171,7 +171,7 @@ func (e *Unknown) Error() string {
 	response := RespToString(e.Response)
 
 	// return the error message
-	return fmt.Sprintf("Unknown error occurred. Request: \"%s %s \"\nResponse Code: %d\nSecrets manager response: \"%s\"", e.HttpMethod, e.SecretPath, e.ResponseCode, response)
+	return fmt.Sprintf("Unknown error occurred. Request: %q %q\nResponse Code: %d\nSecrets manager response: %q", e.HttpMethod, e.SecretPath, e.ResponseCode, response)
 }
 
 // ----- HELPER FUNCTIONS -----

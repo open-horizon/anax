@@ -17,7 +17,7 @@ run: stop
 
 check:
 	contId=$(shell docker ps -q | head -1) && \
-		helloip=$$(docker inspect --format "{{ .NetworkSettings.IPAddress }}" $$contId) && \
+		helloip=$$(docker inspect --format "{{ .NetworkSettings.Networks.bridge.IPAddress }}" $$contId) && \
 			curl -sSL http://$$helloip:8347 | jq .
 
 stop:

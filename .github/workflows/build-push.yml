@@ -169,10 +169,10 @@ jobs:
           path: go/src/github.com/${{ github.repository }}
 
       # Prepare the environment
-      - name: Set up golang 1.24
+      - name: Set up golang 1.26
         uses: actions/setup-go@v3
         with:
-          go-version: '1.24'
+          go-version: ${{ (matrix.architecture == 'riscv64') && '1.24' || '1.26' }}
           check-latest: true
 
       # The go version will change, so we must get which one we are using for when we build the ppc64el images in the docker env.
@@ -414,10 +414,10 @@ jobs:
           path: go/src/github.com/${{ github.repository }}
 
       # Prepare the environment
-      - name: Set up golang 1.24
+      - name: Set up golang 1.26
         uses: actions/setup-go@v3
         with:
-          go-version: '1.24'
+          go-version: ${{ (matrix.architecture == 'riscv64') && '1.24' || '1.26' }}
           check-latest: true
 
       # Configure version variables for later steps, stored in our workflow env. variables

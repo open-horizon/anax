@@ -444,7 +444,7 @@ func SaveOrUpdateAttribute(db *bolt.DB, attr Attribute, id string, permitPartial
 		if possiblyConflicting, err := FindConflictingAttributes(db, &attr); err != nil {
 			return nil, err
 		} else if possiblyConflicting != nil {
-			glog.Infof("Found conflicting attribute during save of new one. Existing: %v. New: %v", *possiblyConflicting, attr)
+			glog.Infof("Found conflicting attribute during save of new one. Existing: %v. New: %v", (*possiblyConflicting).String(), attr)
 			return nil, &ConflictingAttributeFound{}
 		}
 

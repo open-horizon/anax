@@ -59,10 +59,10 @@ jobs:
           path: go/src/github.com/${{github.repository}}
     
       # Prepares the environment by setting up golang
-      - name: Set up golang 1.24
+      - name: Set up golang 1.26
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: '1.26'
           check-latest: true
 
       - name: Verify Docker version

@@ -466,7 +466,14 @@ func extractImageManifest(tarballPath, targetFolder string) error {
 			continue
 		}
 
-		target := path.Join(targetFolder, header.Name)
+		cleanName := filepath.Clean(header.Name)
+		if filepath.IsAbs(cleanName) || strings.HasPrefix(cleanName, ".."+string(os.PathSeparator)) || cleanName == ".." {
+			return fmt.Errorf("invalid archive entry path: %s", header.Name)
+		}
+
+		targetRoot := filepath.Clean(targetFolder)
+		target := filepath.Join(targetRoot, cleanName)
+
 		switch header.Typeflag {
 		// if it's a manifest file, create it
 		case tar.TypeReg:

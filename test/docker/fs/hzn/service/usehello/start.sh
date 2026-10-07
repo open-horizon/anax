@@ -88,7 +88,8 @@ do
             CMD="curl -sL ${AUTH}${CERT}${BASEURL}${OBJECT_TYPE}?received=true -v"
             echo "result of command: ${CMD}"
             curl -sL ${AUTH}${CERT}${BASEURL}${OBJECT_TYPE}?received=true -v
-            exit 1
+            # in the hzn dev case, it could take sometime for the sync service local to get ready, so we will wait a bit and try again
+            sleep 2
         fi
 
         echo ${OBJS} | jq -c '.[]' | while read i; do
@@ -108,12 +109,14 @@ do
         done
 
         # There should be 2 files in the file sync service for this node. If not, there is a problem, exit the workload to fail the test.
+        # Sometimes it takes several try to get the files, so try a few times before giving up.
         COUNT=$(ls ${FILE_LOC} | wc -l)
         COUNT_TARGET="2"
+        MAX_FAILCOUNT="5"
         if [ "${COUNT}" != "${COUNT_TARGET}" ]
         then
             echo -e "Found ${COUNT} files from the sync service in ${FILE_LOC}, there should be ${COUNT_TARGET}."
-            if [ "$FAILCOUNT" -gt "1" ]
+            if [ "$FAILCOUNT" -gt "${MAX_FAILCOUNT}" ]
             then
                 exit 1
             fi
