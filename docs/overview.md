@@ -1,7 +1,7 @@
 ---
 copyright: Contributors to the Open Horizon project
 years: 2019 - 2026
-lastupdated: 2026-05-05
+lastupdated: 2026-07-16
 title: Installing an agent on an edge device
 description: Instructions and flags used by the agent-install script
 parent: Edge node agents (anax)
@@ -29,32 +29,9 @@ The edge node agent-install script script:
 
 ## Requirements
 
-Operating systems and architectures explicitly supported by the installation script.  Please note that an environment must be both supported by the installation script, and [an installation package must be available](https://github.com/open-horizon/anax/releases), in order to successfully install the agent.  Environments that meet both criteria are noted in **bold** below.
+For supported operating systems, architectures, and hardware prerequisites, see [System Requirements](../../docs/hub/requirements.md).
 
-- Device
-  - Ubuntu: xenial (16.x), bionic (18.x), focal (20.x), jammy (22.x), noble (24.x), resolute (26.x)
-    - **amd64, arm64, s390x**
-  - Raspbian/RaspberryPi OS: stretch (9), buster (10), bullseye (11), bookworm (12), trixie (13)
-    - **armhf, arm64**
-  - Debian: stretch (9), buster (10), bullseye (11), bookworm (12), trixie (13)
-    - **amd64, armhf, arm64, s390x**
-  - RHEL: 7.6, 7.9, 8.1 - 8.5 (via Docker), 8.6 - 8.10 and 9.0 - 9.8 (via Podman 4.x or 5.x), 10.0 - 10.2 (via Podman 4.x or 5.x)
-    - **amd64, ppc64le**, aarch64, riscv64, **s390x**
-  - CentOS: 8.1 - 8.5 (via Docker)
-    - **amd64, ppc64le**, aarch64, riscv64
-  - Fedora: 32, 35 - 44
-    - **amd64, ppc64le**, aarch64, riscv64
-  - macOS
-    - **amd64, M1, M2, M4**
-- Cluster - currently supported versions
-  - {{site.data.keyword.open_shift_cp}}
-    - **amd64, ppc64le, s390x**
-  - Microk8s
-    - **amd64, ppc64le**
-  - k3s
-    - **amd64, arm64, ppc64le**
-
-For more details, see [the `agent-install.sh` source code comments](https://raw.githubusercontent.com/open-horizon/anax/refs/heads/master/agent-install/agent-install.sh).
+For more details on the operating systems and architectures explicitly supported by the installation script, see [the `agent-install.sh` source code comments](https://raw.githubusercontent.com/open-horizon/anax/refs/heads/master/agent-install/agent-install.sh).
 
 ## Description
 
