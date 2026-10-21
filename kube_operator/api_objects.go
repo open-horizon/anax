@@ -688,11 +688,11 @@ func (s SecretCoreV1) Uninstall(c KubeClient, secretName string) {
 }
 
 func (s SecretCoreV1) Status(c KubeClient, namespace string) (interface{}, error) {
-	secretFromKube, err := c.Client.CoreV1().Secrets(namespace).Get(context.Background(), s.Name(), metav1.GetOptions{})
+	_, err := c.Client.CoreV1().Secrets(namespace).Get(context.Background(), s.Name(), metav1.GetOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("%s", kwlog(fmt.Sprintf("Error getting secret status: %v", err)))
 	}
-	return secretFromKube, nil
+	return nil, nil
 }
 
 func (s SecretCoreV1) Update(c KubeClient, namespace string) error {
