@@ -45,7 +45,13 @@ func (a *API) attribute(w http.ResponseWriter, r *http.Request) {
 			glog.Error(apiLogString(fmt.Sprintf("Error processing incoming attributes %v", err)))
 			w.WriteHeader(http.StatusInternalServerError)
 		} else if !inputErr {
-			glog.V(6).Infof(apiLogString(fmt.Sprintf("persistent-type attributes: %v", attrs)))
+			if glog.V(6) {
+				var attrsString []string
+				for _, attr := range attrs {
+					attrsString = append(attrsString, attr.String())
+				}
+				glog.Info(apiLogString(fmt.Sprintf("persistent-type attributes: %v", attrsString)))
+			}
 
 			if len(attrs) != 1 {
 				// only one attr may be specified to add at a time
