@@ -3,8 +3,8 @@ copyright: Contributors to the Open Horizon project
 years: 2022 - 2026
 title: Configuring policies
 description: Policy-based deployment and management for edge nodes
-lastupdated: 2026-04-08
-nav_order: 5
+lastupdated: 2026-10-22
+nav_order: 6
 parent: Edge node agents (anax)
 has_children: true
 has_toc: false

@@ -3,8 +3,8 @@ copyright: Contributors to the Open Horizon project
 years: 2022 - 2026
 title: Installing the agent on an edge cluster
 description: Installing the Open Horizon agent on edge clusters
-lastupdated: 2026-04-08
-nav_order: 2
+lastupdated: 2026-10-22
+nav_order: 3
 parent: Edge node agents (anax)
 has_children: true
 has_toc: false

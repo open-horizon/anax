@@ -3,8 +3,8 @@ copyright: Contributors to the Open Horizon project
 years: 2022 - 2026
 title: Authenticating to the management hub
 description: Overview of available authentication mechanisms
-lastupdated: 2026-04-23
-nav_order: 4
+lastupdated: 2026-10-22
+nav_order: 5
 parent: Edge node agents (anax)
 has_children: false
 has_toc: false
