@@ -3,8 +3,8 @@ copyright: Contributors to the Open Horizon project
 years: 2022 - 2026
 title: Installing an agent in a container
 description: Installing an agent in a container
-lastupdated: 2026-04-08
-nav_order: 3
+lastupdated: 2026-10-22
+nav_order: 4
 parent: Edge node agents (anax)
 ---
 

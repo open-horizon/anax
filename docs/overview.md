@@ -1,7 +1,7 @@
 ---
 copyright: Contributors to the Open Horizon project
 years: 2019 - 2026
-lastupdated: 2026-07-16
+lastupdated: 2026-10-22
 title: Installing an agent on an edge device
 description: Instructions and flags used by the agent-install script
 parent: Edge node agents (anax)
@@ -29,7 +29,7 @@ The edge node agent-install script script:
 
 ## Requirements
 
-For supported operating systems, architectures, and hardware prerequisites, see [System Requirements](../../docs/hub/requirements.md).
+For supported operating systems, architectures, and hardware prerequisites, see [System requirements](../../hub/requirements.md).
 
 For more details on the operating systems and architectures explicitly supported by the installation script, see [the `agent-install.sh` source code comments](https://raw.githubusercontent.com/open-horizon/anax/refs/heads/master/agent-install/agent-install.sh).
 
