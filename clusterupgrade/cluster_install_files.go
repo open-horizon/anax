@@ -474,11 +474,23 @@ func extractImageManifest(tarballPath, targetFolder string) error {
 		targetRoot := filepath.Clean(targetFolder)
 		target := filepath.Join(targetRoot, cleanName)
 
+		absRoot, err := filepath.Abs(targetRoot)
+		if err != nil {
+			return err
+		}
+		absTarget, err := filepath.Abs(target)
+		if err != nil {
+			return err
+		}
+		if absTarget != absRoot && !strings.HasPrefix(absTarget, absRoot+string(os.PathSeparator)) {
+			return fmt.Errorf("invalid archive entry path: %s", header.Name)
+		}
+
 		switch header.Typeflag {
 		// if it's a manifest file, create it
 		case tar.TypeReg:
 			if header.Name == DOCKER_MANIFEST_FILE {
-				f, err := os.OpenFile(target, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode))
+				f, err := os.OpenFile(absTarget, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode))
 				if err != nil {
 					return err
 				}

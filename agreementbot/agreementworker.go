@@ -354,7 +354,7 @@ func (b *BaseAgreementWorker) checkPolicyCompatibility(workerId string, wi *Init
 			}
 			return true, consumPol, nil
 		} else {
-			glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("failed matching node policy %v and %v, error: %v", wi.ProducerPolicy, wi.ConsumerPolicy, reason)))
+			glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("failed matching node policy %v and %v, error: %v", wi.ProducerPolicy.String(), wi.ConsumerPolicy.String(), reason)))
 			return false, nil, nil
 		}
 	}

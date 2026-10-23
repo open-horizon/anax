@@ -363,6 +363,7 @@ func CreateService(service *Service,
 	}
 
 	var attributes []persistence.Attribute
+	var attributesToString []string
 	if service.Attributes != nil {
 		// build a serviceAttribute for each one
 		var err error
@@ -388,6 +389,7 @@ func CreateService(service *Service,
 	userInput := []policy.UserInput{}
 	for _, attr := range attributes {
 		bSave := true
+		attributesToString = append(attributesToString, attr.String())
 		switch attr.(type) {
 		case *persistence.UserInputAttributes:
 			// do not save UserInputAttributes because it will be converted to UserInput and saved.
@@ -404,13 +406,13 @@ func CreateService(service *Service,
 			serviceAgreementProtocols = agpl.([]policy.AgreementProtocol)
 
 		default:
-			glog.V(4).Infof(apiLogString(fmt.Sprintf("Unhandled attr type (%T): %v", attr, attr)))
+			glog.V(4).Infof(apiLogString(fmt.Sprintf("Unhandled attr type (%T): %v", attr, attr.String())))
 		}
 
 		if bSave {
 			_, err := persistence.SaveOrUpdateAttribute(db, attr, "", false)
 			if err != nil {
-				return errorhandler(NewSystemError(fmt.Sprintf("error saving attribute %v, error %v", attr, err))), nil, nil
+				return errorhandler(NewSystemError(fmt.Sprintf("error saving attribute %v, error %v", attr.String(), err))), nil, nil
 			}
 		}
 	}
@@ -469,7 +471,7 @@ func CreateService(service *Service,
 		}
 	}
 
-	glog.V(5).Infof(apiLogString(fmt.Sprintf("Complete Attr list for registration of service %v/%v: %v", *service.Org, *service.Url, attributes)))
+	glog.V(5).Infof(apiLogString(fmt.Sprintf("Complete Attr list for registration of service %v/%v: %v", *service.Org, *service.Url, attributesToString)))
 
 	// Do not create service definiton when this function is called from /service/config for passing in user input.
 	if !from_user {
