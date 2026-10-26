@@ -13,7 +13,7 @@ require (
 	github.com/google/go-containerregistry/pkg/authn/k8schain v0.0.0-20260904000721-8a72a424fdec
 	github.com/gorilla/mux v1.8.1
 	github.com/lib/pq v1.10.9
-	github.com/open-horizon/edge-sync-service v1.12.9
+	github.com/open-horizon/edge-sync-service v1.12.10
 	github.com/open-horizon/edge-utilities v0.11.0
 	github.com/open-horizon/rsapss-tool v0.0.0-20190416131035-2fc75eb3b6ea
 	github.com/operator-framework/api v0.45.0
@@ -93,7 +93,7 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/websocket v1.5.4-0.20250319132907-e064f32e3674 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/klauspost/compress v1.19.2 // indirect
+	github.com/klauspost/compress v1.20.3 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/moby/go-archive v0.3.3 // indirect
