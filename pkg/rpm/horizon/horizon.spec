@@ -48,9 +48,12 @@ mkdir -p $RPM_BUILD_ROOT/usr/horizon/bin $RPM_BUILD_ROOT/usr/horizon/samples $RP
 cp -a fs/* $RPM_BUILD_ROOT/
 
 %files
-#%defattr(-, root, root)
+%dir /usr/horizon
+%dir /usr/horizon/bin
+%dir /usr/horizon/samples
 %license /usr/horizon/LICENSE.txt
-/usr/horizon
+/usr/horizon/bin/*
+/usr/horizon/samples/*
 /lib/systemd/system/horizon.service
 /etc/horizon
 

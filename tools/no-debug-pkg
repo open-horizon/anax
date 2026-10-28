@@ -15,7 +15,10 @@ fi
 # get rid of version's fraction (major releases make sense)
 VER=${VER%%.*}
 
-if [[ "$DISTRO" == fedora && $VER -ge 27 ]];then
+if [[ "$DISTRO" == ubuntu ]];then
+	# Ubuntu's RPM build tools can fail when the generated debuginfo package is empty.
+	echo true;
+elif [[ "$DISTRO" == fedora && $VER -ge 27 ]];then
 	echo true;
 elif [[ $DISTRO =~ ^(centos|rhel)$ && $VER -ge 7 ]];then
 	echo true;
