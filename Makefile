@@ -189,7 +189,9 @@ endif
 
 NO_DEBUG_PKGS := $(shell tools/no-debug-pkg)
 ifeq (${NO_DEBUG_PKGS},true)
+ifneq ($(filter CGO_ENABLED=1,$(COMPILE_ARGS)),)
 	GO_BUILD_LDFLAGS := $(GO_BUILD_LDFLAGS) -linkmode=external
+endif
 endif
 
 ifdef GO_BUILD_LDFLAGS
