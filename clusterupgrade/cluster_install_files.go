@@ -482,7 +482,12 @@ func extractImageManifest(tarballPath, targetFolder string) error {
 		if err != nil {
 			return err
 		}
-		if absTarget != absRoot && !strings.HasPrefix(absTarget, absRoot+string(os.PathSeparator)) {
+
+		relPath, err := filepath.Rel(absRoot, absTarget)
+		if err != nil {
+			return err
+		}
+		if relPath == ".." || strings.HasPrefix(relPath, ".."+string(os.PathSeparator)) {
 			return fmt.Errorf("invalid archive entry path: %s", header.Name)
 		}
 
