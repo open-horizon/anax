@@ -322,9 +322,18 @@ jobs:
       - name: Build Docker Images
         shell: bash
         if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64' || matrix.architecture == 's390x' || matrix.architecture == 'riscv64')
-        run: | 
-          # Makes and pushes arch_cloud-sync-service and arch_edge-sync-service images
+        run: |
           cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+
+          # Specify if we should use buildx for multiarch, github runner is amd64 so we only need this for arm and ppc.
+          # Must be set BEFORE any make targets so that ALL docker builds in this step use the correct --platform flag.
+          # Previously this was set after make ess-docker-image, causing ESS/CSS images for non-amd64 architectures
+          # to be built with the runner's native amd64 platform, producing an incorrect OCI image index.
+          if [[ ${arch} == 'arm64' || ${arch} == 'ppc64el' || ${arch} == 's390x' || ${arch} == 'riscv64' ]]; then
+              export USE_DOCKER_BUILDX=true
+          fi
+
+          # Makes and pushes arch_cloud-sync-service and arch_edge-sync-service images
           if [[ ${arch} == 'amd64' || ${arch} == 'ppc64el' || ${arch} == 'arm64' || ${arch} == 's390x' ]]; then
               make ess-docker-image
               make css-docker-image
@@ -333,11 +342,6 @@ jobs:
           # Makes and pushes amd64_agbot image
           if [[ ${arch} == 'amd64' ]]; then
               make agbot-image
-          fi
-
-          # Specify if we should use buildx for multiarch, github runner is amd64 so we only need this for arm and ppc
-          if [[ ${arch} == 'arm64' || ${arch} == 'ppc64el' || ${arch} == 's390x' || ${arch} == 'riscv64' ]]; then
-              export USE_DOCKER_BUILDX=true
           fi
 
           make anax-image                         # Makes and pushes arch_anax
